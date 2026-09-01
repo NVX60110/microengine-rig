@@ -1,0 +1,23 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    location "system";
+    object meshQualityDict;
+}
+
+/* The regularised 5-degree sector has positive determinants down to 8.9e-5
+   in the first near-axis cell; retain a positive lower bound while avoiding
+   the full-3D default (0.001), which is intended for non-sector meshes. */
+maxNonOrtho 65;
+maxBoundarySkewness 20;
+maxInternalSkewness 4;
+maxConcave 80;
+minVol -1e30;
+minTetQuality 1e-15;
+minTwist 0.02;
+minDeterminant 1e-05;
+minFaceWeight 0.05;
+minVolRatio 0.01;
+nSmoothScale 4;
+errorReduction 0.75;

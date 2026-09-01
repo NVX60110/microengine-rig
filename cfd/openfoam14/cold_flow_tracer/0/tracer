@@ -1,0 +1,20 @@
+FoamFile
+{
+    format ascii;
+    class volScalarField;
+    location "0";
+    object tracer;
+}
+
+dimensions [0 0 0 0 0 0 0];
+internalField uniform 1;
+boundaryField
+{
+    // No passive-scalar flux through any solid wall.
+    piston { type zeroGradient; }
+    liner { type zeroGradient; }
+    cylinderHead { type zeroGradient; }
+    axisCore { type zeroGradient; }
+    symmetryMinus { type zeroGradient; }
+    symmetryPlus { type zeroGradient; }
+}

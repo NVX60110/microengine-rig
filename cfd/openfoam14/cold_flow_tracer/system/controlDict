@@ -1,0 +1,85 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    location "system";
+    object controlDict;
+}
+
+solver fluid;
+
+// Time is crank angle in degrees, using native OpenFOAM v14 engine user time.
+userTime
+{
+    type engine;
+    omega 1200 [rpm];
+}
+
+startFrom startTime;
+startTime -180;
+stopAt endTime;
+endTime 180;
+deltaT 0.5;
+
+// The Courant-controlled solver step is <= 0.15 CAD; write every three steps
+// to retain scalar history at <= 0.5 CAD.
+writeControl timeStep;
+writeInterval 3;
+purgeWrite 0;
+writeFormat ascii;
+writePrecision 12;
+writeCompression off;
+timeFormat general;
+timePrecision 10;
+runTimeModifiable true;
+
+adjustTimeStep yes;
+// Conservative cap for the rapidly changing moving-piston mesh.  This is
+// below the required 0.5 limit and avoids an occasional one-step overshoot.
+maxCo 0.15;
+maxDeltaT 0.15;
+
+functions
+{
+    tracerTransport
+    {
+        type scalarTransport;
+        libs ("libsolverFunctionObjects.so");
+        field tracer;
+        schemesField tracer;
+        solverField tracer;
+        // Molecular Schmidt number is approximated as 0.71 for air.
+        diffusivity viscosity;
+        alphal 1.408;
+        alphat 0;
+    }
+
+    cellVolumes
+    {
+        type writeCellVolumes;
+        libs ("libfieldFunctionObjects.so");
+        executeControl timeStep;
+        executeInterval 3;
+        writeControl timeStep;
+        writeInterval 3;
+    }
+
+    cellCentres
+    {
+        type writeCellCentres;
+        libs ("libfieldFunctionObjects.so");
+        executeControl timeStep;
+        executeInterval 3;
+        writeControl timeStep;
+        writeInterval 3;
+    }
+
+    fieldSnapshots
+    {
+        type writeObjects;
+        libs ("libutilityFunctionObjects.so");
+        objects (p T U tracer);
+        writeControl timeStep;
+        writeInterval 3;
+    }
+}

@@ -1,0 +1,35 @@
+/* OpenFOAM-14: piston-only adaptation of tutorials/XiFluid/kivaTest. */
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    location "constant";
+    object dynamicMeshDict;
+}
+
+mover
+{
+    type multiValveEngine;
+    libs ("libfvMeshMoversMultiValveEngine.so");
+
+    // The liner is allowed to slide while the cylinder head remains fixed.
+    slidingPatches (liner);
+    linerPatches (liner);
+
+    piston
+    {
+        patches (piston);
+        axis (0 0 1);
+        motion
+        {
+            type crankConnectingRodMotion;
+            // Matches build_geometry(): rod = rod/stroke ratio * stroke.
+            conRodLength 0.0112;
+            stroke 0.007;
+        }
+        movingFrozenLayerThickness 0;
+        staticFrozenLayerThickness 0;
+        travelInterval 0.00005;
+        cosineScale 0;
+    }
+}
