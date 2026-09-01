@@ -1,0 +1,13 @@
+# external clones - see mechanisms/PROVENANCE.md
+mechs/
+ckdb/
+pyked/
+
+# regenerable mechanism files
+dme_sk39.yaml
+dme_zhao_full.yaml
+
+__pycache__/
+.venv/
+*.pyc
+*.yaml.bak
