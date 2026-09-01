@@ -1,0 +1,132 @@
+{
+  "conditions": {
+    "config": {
+      "bore_mm": 8.5,
+      "stroke_mm": 7.0,
+      "rod_stroke_ratio": 1.6,
+      "compression_ratio": 7.75,
+      "rpm": 1200.0,
+      "intake_pressure_bar": 3.0,
+      "intake_temperature_K": 300.0,
+      "equivalence_ratio": 0.4,
+      "ignition_mode": "cantera-auto",
+      "fuel_profile": "dme_zhao_sk39",
+      "fuel_profile_file": "",
+      "mechanism_override": "",
+      "phase_override": "",
+      "fuel_override": "",
+      "oxidizer_override": "",
+      "fuel_blend_partner": "CH4",
+      "fuel_primary_mole_fraction": 0.25,
+      "diagnostic_species": "CO,CO2,H2,H2O,O2,CH2O,CH4,CH3OCH3",
+      "gamma": 1.34,
+      "wall_mode": "fixed",
+      "wall_temperature_K": 560.0,
+      "effective_h_W_m2K": 300.0,
+      "wall_mass_g": 2.0,
+      "wall_cp_J_kgK": 850.0,
+      "wall_ambient_temperature_K": 300.0,
+      "wall_ambient_conductance_W_K": 0.0,
+      "wall_heater_power_W": 0.0,
+      "blowby_mode": "annular",
+      "crankcase_pressure_bar": 1.0,
+      "crankcase_temperature_K": 350.0,
+      "ring_end_gap_mm": 0.05,
+      "ring_axial_height_mm": 0.4,
+      "ring_count": 2,
+      "blowby_discharge_coefficient": 0.7,
+      "blowby_effective_area_mm2": 0.0,
+      "blowby_allow_reverse": true,
+      "annular_radial_clearance_um": 3.0,
+      "annular_skirt_length_mm": 8.0,
+      "annular_eccentricity_ratio": 0.5,
+      "annular_dynamic_viscosity_Pa_s": 0.0,
+      "thermal_cycles": 1,
+      "thermal_min_cycles": 5,
+      "thermal_convergence_tolerance_K": 0.05,
+      "cycle_revolutions": 2.0,
+      "spark_deg_atdc": -10.0,
+      "target_burn_fraction": 0.35,
+      "burn_duration_deg": 35.0,
+      "lhv_MJ_kg": 44.0,
+      "stoich_afr": 14.7,
+      "tau_ref_ms": 1.0,
+      "T_ref_K": 950.0,
+      "P_ref_bar": 20.0,
+      "activation_temperature_K": 12000.0,
+      "pressure_exponent": 1.0,
+      "step_deg": 0.25
+    },
+    "zone_options_without_tolerances": {
+      "boundary_mass_fraction": 0.2,
+      "boundary_piston_area_fraction": null,
+      "pressure_equalization_coeff_m_s_Pa": 5e-05,
+      "interzone_heat_transfer_coeff_W_m2K": 100.0,
+      "interface_area_factor": 1.0,
+      "mixing_time_ms": 10.0,
+      "mixing_model": "diffusion-strain",
+      "mixing_length_mm": 1.0,
+      "molecular_diffusivity_m2_s": 3e-06,
+      "piston_strain_coefficient": 1.0,
+      "mixing_min_time_ms": 0.1,
+      "mixing_max_time_ms": 100.0,
+      "boundary_leak_bias": 0.0
+    }
+  },
+  "rows": [
+    {
+      "mechanism": "dme_zhao_sk39",
+      "tolerance_case": "production",
+      "integrator_rtol": 1e-07,
+      "integrator_atol": 1e-14,
+      "gross_imep_bar": 1.7836010627510688,
+      "peak_temperature_K": 929.5100772514322,
+      "max_fuel_consumed_fraction": 0.4455938086773932,
+      "max_pressure_rise_bar_per_deg": 7.242675368902795
+    },
+    {
+      "mechanism": "dme_zhao_sk39",
+      "tolerance_case": "strict",
+      "integrator_rtol": 1e-09,
+      "integrator_atol": 1e-15,
+      "gross_imep_bar": 1.787415024933613,
+      "peak_temperature_K": 929.9093298608452,
+      "max_fuel_consumed_fraction": 0.4463422432546761,
+      "max_pressure_rise_bar_per_deg": 7.258025656008101
+    },
+    {
+      "mechanism": "dme_llnl_2004",
+      "tolerance_case": "production",
+      "integrator_rtol": 1e-07,
+      "integrator_atol": 1e-14,
+      "gross_imep_bar": 0.6379089622436241,
+      "peak_temperature_K": 877.1016562808352,
+      "max_fuel_consumed_fraction": 0.32504406064727104,
+      "max_pressure_rise_bar_per_deg": 3.720342436870453
+    },
+    {
+      "mechanism": "dme_llnl_2004",
+      "tolerance_case": "strict",
+      "integrator_rtol": 1e-09,
+      "integrator_atol": 1e-15,
+      "gross_imep_bar": 0.6283490233692843,
+      "peak_temperature_K": 877.5651346910607,
+      "max_fuel_consumed_fraction": 0.32555642735949564,
+      "max_pressure_rise_bar_per_deg": 3.768156213537168
+    }
+  ],
+  "deltas": [
+    {
+      "mechanism": "dme_zhao_sk39",
+      "absolute_imep_shift_bar": 0.0038139621825441505,
+      "absolute_peak_temperature_shift_K": 0.3992526094129971,
+      "absolute_conversion_shift": 0.0007484345772829082
+    },
+    {
+      "mechanism": "dme_llnl_2004",
+      "absolute_imep_shift_bar": 0.009559938874339813,
+      "absolute_peak_temperature_shift_K": 0.46347841022554803,
+      "absolute_conversion_shift": 0.000512366712224599
+    }
+  ]
+}

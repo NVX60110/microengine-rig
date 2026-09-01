@@ -19,8 +19,10 @@ import cantera as ct
 
 from microengine_rig import (
     RigConfig,
+    blowby_area_m2,
     build_geometry,
     compressible_annular_mdot,
+    compressible_orifice_mdot,
     resolve_fuel_profile,
     validate_config,
 )
@@ -34,6 +36,14 @@ class TwoZoneOptions:
     interzone_heat_transfer_coeff_W_m2K: float = 100.0
     interface_area_factor: float = 1.0
     mixing_time_ms: float = 10.0  # 0 disables mass/species exchange
+    mixing_model: str = "constant"  # constant | diffusion-strain
+    mixing_length_mm: float = 1.0
+    molecular_diffusivity_m2_s: float = 3.0e-6
+    piston_strain_coefficient: float = 1.0
+    mixing_min_time_ms: float = 0.10
+    mixing_max_time_ms: float = 100.0
+    integrator_rtol: float = 1.0e-7
+    integrator_atol: float = 1.0e-14
     boundary_leak_bias: float = 0.0  # 0 proportional; 1 all leakage from boundary
 
 
@@ -43,8 +53,8 @@ def validate_two_zone(c: RigConfig, z: TwoZoneOptions) -> None:
         raise ValueError("The two-zone model requires ignition_mode=cantera-auto.")
     if c.wall_mode not in {"fixed", "adiabatic"}:
         raise ValueError("Beta 2.4 two-zone runs support fixed or adiabatic walls.")
-    if c.blowby_mode not in {"off", "annular"}:
-        raise ValueError("Beta 2.4 two-zone runs support off or annular blowby.")
+    if c.blowby_mode not in {"off", "orifice", "annular"}:
+        raise ValueError("Two-zone runs support off, orifice, or annular blowby.")
     if not 0.02 <= z.boundary_mass_fraction <= 0.60:
         raise ValueError("boundary_mass_fraction must be between 0.02 and 0.60.")
     area_fraction = (
@@ -59,6 +69,16 @@ def validate_two_zone(c: RigConfig, z: TwoZoneOptions) -> None:
         raise ValueError("Inter-zone heat transfer must be nonnegative and area positive.")
     if z.mixing_time_ms < 0:
         raise ValueError("mixing_time_ms cannot be negative.")
+    if z.mixing_model not in {"constant", "diffusion-strain"}:
+        raise ValueError("mixing_model must be constant or diffusion-strain.")
+    if z.mixing_length_mm <= 0 or z.molecular_diffusivity_m2_s < 0:
+        raise ValueError("Mixing length must be positive and diffusivity nonnegative.")
+    if z.piston_strain_coefficient < 0:
+        raise ValueError("piston_strain_coefficient cannot be negative.")
+    if not 0 < z.mixing_min_time_ms <= z.mixing_max_time_ms:
+        raise ValueError("Mixing time bounds must be positive and ordered.")
+    if z.integrator_rtol <= 0 or z.integrator_atol <= 0:
+        raise ValueError("Integrator tolerances must be positive.")
     if not 0.0 <= z.boundary_leak_bias <= 1.0:
         raise ValueError("boundary_leak_bias must be between 0 and 1.")
 
@@ -160,12 +180,34 @@ def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
         U=z.interzone_heat_transfer_coeff_W_m2K,
     )
 
-    mix_controllers: list[Any] = []
-    if z.mixing_time_ms > 0:
-        mixing_time_s = z.mixing_time_ms / 1000.0
+    def instantaneous_mixing_time_s(time_s: float) -> float:
+        """Return the current exchange time for the selected closure.
 
-        def exchange_rate(_time: float = 0.0) -> float:
-            return min(core.mass, boundary.mass) / mixing_time_s
+        The diffusion-strain closure adds a first-eigenmode radial diffusion
+        rate to a piston-strain rate. It is an uncertainty model to be
+        calibrated by cold-flow CFD, not a turbulence correlation.
+        """
+        if z.mixing_model == "constant":
+            return math.inf if z.mixing_time_ms <= 0 else z.mixing_time_ms / 1000.0
+        angle = -math.pi + geometry.omega_rad_s * time_s
+        length_m = z.mixing_length_mm / 1000.0
+        diffusion_rate = math.pi**2 * z.molecular_diffusivity_m2_s / length_m**2
+        strain_rate = (
+            z.piston_strain_coefficient
+            * abs(geometry.piston_velocity(angle))
+            / max(c.bore_mm / 1000.0, 1e-12)
+        )
+        raw_time = 1.0 / max(diffusion_rate + strain_rate, 1e-30)
+        return min(
+            z.mixing_max_time_ms / 1000.0,
+            max(z.mixing_min_time_ms / 1000.0, raw_time),
+        )
+
+    mix_controllers: list[Any] = []
+    mixing_enabled = z.mixing_model == "diffusion-strain" or z.mixing_time_ms > 0
+    if mixing_enabled:
+        def exchange_rate(time_s: float = 0.0) -> float:
+            return min(core.mass, boundary.mass) / instantaneous_mixing_time_s(time_s)
 
         mix_controllers.extend([
             ct.MassFlowController(core, boundary, mdot=exchange_rate),
@@ -174,7 +216,7 @@ def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
 
     crankcase = None
     leak_controllers: list[Any] = []
-    if c.blowby_mode == "annular":
+    if c.blowby_mode in {"orifice", "annular"}:
         crank_gas = ct.Solution(mechanism, profile.phase) if profile.phase else ct.Solution(mechanism)
         crank_gas.TPX = (
             c.crankcase_temperature_K,
@@ -192,8 +234,20 @@ def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
             )
             return 1.0 - boundary_weight, boundary_weight
 
-        def annular_rate(upstream, downstream) -> float:
+        leak_area = blowby_area_m2(c)
+
+        def leakage_rate(upstream, downstream) -> float:
             phase = upstream.phase
+            if c.blowby_mode == "orifice":
+                return compressible_orifice_mdot(
+                    phase.P,
+                    phase.T,
+                    downstream.phase.P,
+                    leak_area,
+                    phase.cp_mass / phase.cv_mass,
+                    ct.gas_constant / phase.mean_molecular_weight,
+                    c.blowby_discharge_coefficient,
+                )[0]
             viscosity = c.annular_dynamic_viscosity_Pa_s or phase.viscosity
             return compressible_annular_mdot(
                 phase.P, phase.T, downstream.phase.P,
@@ -206,10 +260,10 @@ def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
             )
 
         def core_out(_time: float = 0.0) -> float:
-            return weights()[0] * annular_rate(core, crankcase)
+            return weights()[0] * leakage_rate(core, crankcase)
 
         def boundary_out(_time: float = 0.0) -> float:
-            return weights()[1] * annular_rate(boundary, crankcase)
+            return weights()[1] * leakage_rate(boundary, crankcase)
 
         leak_controllers.extend([
             ct.MassFlowController(core, crankcase, mdot=core_out),
@@ -217,10 +271,10 @@ def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
         ])
         if c.blowby_allow_reverse:
             def core_in(_time: float = 0.0) -> float:
-                return weights()[0] * annular_rate(crankcase, core)
+                return weights()[0] * leakage_rate(crankcase, core)
 
             def boundary_in(_time: float = 0.0) -> float:
-                return weights()[1] * annular_rate(crankcase, boundary)
+                return weights()[1] * leakage_rate(crankcase, boundary)
 
             leak_controllers.extend([
                 ct.MassFlowController(crankcase, core, mdot=core_in),
@@ -236,7 +290,10 @@ def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
     step_rad = math.radians(c.step_deg)
     dt = step_rad / geometry.omega_rad_s
     network.max_time_step = dt / 4.0
+    network.max_steps = 100000
     network.max_err_test_fails = 30
+    network.rtol = z.integrator_rtol
+    network.atol = z.integrator_atol
 
     fuel_names = list(profile.fuel_species)
     initial_component_mass = {
@@ -347,6 +404,10 @@ def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
             "coreMass_mg": core.mass * 1e6,
             "boundaryMass_mg": boundary.mass * 1e6,
             "massRetentionFraction": (core.mass + boundary.mass) / initial_mass,
+            "instantaneousMixingTime_ms": (
+                instantaneous_mixing_time_s(network.time) * 1000.0
+                if mixing_enabled else float("inf")
+            ),
             "fuelConsumedFraction": fuel_consumed,
             "coreFuelReactionExtent_fraction_initial_total": (
                 sum(component_core_reacted.values()) / max(initial_fuel_mass, 1e-30)
@@ -449,6 +510,13 @@ def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
         "boundary_mass_fraction_initial": boundary_fraction,
         "boundary_piston_area_fraction": area_fraction,
         "mixing_time_ms": z.mixing_time_ms,
+        "mixing_model": z.mixing_model,
+        "mixing_time_min_observed_ms": min(
+            row["instantaneousMixingTime_ms"] for row in rows
+        ),
+        "mixing_time_max_observed_ms": max(
+            row["instantaneousMixingTime_ms"] for row in rows
+        ),
         "interzone_heat_transfer_coeff_W_m2K": z.interzone_heat_transfer_coeff_W_m2K,
         "pressure_equalization_coeff_m_s_Pa": z.pressure_equalization_coeff_m_s_Pa,
         "boundary_leak_bias": z.boundary_leak_bias,

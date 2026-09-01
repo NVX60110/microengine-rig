@@ -1,4 +1,4 @@
-# Microengine Rig — Beta 2.5
+# Microengine Rig — Beta 2.6
 
 Headless Cantera screening rig for an 8.5 x 7.0 mm miniature compression-
 ignition display engine. The working architecture is motor-driven: combustion
@@ -17,6 +17,9 @@ Read [`FINDINGS.md`](FINDINGS.md) before using a result. The project rule is:
 - `mechanism_gate.py` — parent-retention and ChemKED experimental gates.
 - `operability_sensitivity.py` — correct max-dP/dt temperature-sensitivity map.
 - `two_zone_temperature_stability.py` — three-mechanism CR transition campaign.
+- `sealing_prior.py` — public-data evidence ledger and explicit sealing brackets.
+- `uncertainty_campaign.py` — mechanism x mixing x sealing robustness runner.
+- `two_zone_tolerance_check.py` — production/strict CVODE comparison.
 - `physics/annulus.py` — standalone pressure-aware leakage diagnostic.
 
 The former `model/microengine_v3.py` is retired. It remains in Git history but
@@ -74,17 +77,28 @@ git clone --depth 1 https://github.com/jiweiqi/CollectionOfMechanisms.git mechs
 A parent match means the reduction retained its source behavior. It does not
 mean the parent matches experiment.
 
-## Beta 2.5 result
+## Run the Beta 2.6 uncertainty pilot
 
-The handoff's alleged nearly flat ignition-delay sensitivity was a numerical
-artifact: it used temperature increment per adaptive solver step instead of a
-time derivative. Correct max-dP/dt slopes are not flat.
+```bash
+.venv/bin/python uncertainty_campaign.py --scope pilot --jobs 4
+.venv/bin/python plot_beta26.py
+```
 
-The cool two-zone branch nevertheless survives above 1000 K, then transitions
-abruptly over roughly 0.25 CR in the sampled maps. At 3.0 bar all three DME
-lineages are bounded at CR 7.75 and hot at CR 8.0 under the default 20% boundary
-mass / 10 ms mixing closure. See [`BETA25_REPORT.md`](BETA25_REPORT.md) and the
-versioned files under `results/`.
+Use `--scope full` only after the pilot is reviewed; it expands the CR, boost,
+mixing, sealing and mechanism grid.
+
+## Beta 2.6 result
+
+The mixing closure is not monotonic. In the 72-case 3-bar pilot, fast 2.4-3.2 ms
+exchange produced no accepted cases; 100 ms exchange often lost useful work.
+With a 3 micrometre/e=.5 annular bracket and central 12-34 ms exchange, CR 7.75
+and 8.0 passed the conservative screen across all three mechanisms. This is a
+conditional model result, not hardware validation.
+
+Public automotive blow-by data now constrains model structure and broad
+degradation trends, but does not set an absolute 8.5 mm leak area. Direct
+DME/methane ignition data at 600-1600 K, 7-41 atm and phi .3-2.0 has been
+identified for the next chemistry gate. See [`BETA26_REPORT.md`](BETA26_REPORT.md).
 
 ## Limits
 
@@ -92,4 +106,5 @@ This is a screening model, not CFD or a calibrated engine. The two-zone mixing
 time, inter-zone heat transfer, and boundary mass are prescribed. There is no
 validated quench closure, valve train, 720-degree friction model, oil film,
 piston rock dynamics, or brake-power prediction. Direct DME experimental
-validation and hot leak-down hardware remain open.
+point-data ingestion, CFD calibration of radial exchange, a multi-volume ring
+labyrinth, and eventual hot leak-down hardware remain open.

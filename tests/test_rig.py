@@ -158,7 +158,7 @@ class RigTests(unittest.TestCase):
             wall_mode="fixed", wall_temperature_K=560.0,
             effective_h_W_m2K=300.0, blowby_mode="annular",
             annular_radial_clearance_um=3.0,
-            annular_skirt_length_mm=8.0, step_deg=1.0,
+            annular_skirt_length_mm=8.0, step_deg=0.5,
             bore_mm=8.5, stroke_mm=7.0, compression_ratio=7.0, rpm=1200.0,
         )
         _, summary = simulate_two_zone(config, TwoZoneOptions())
@@ -171,6 +171,29 @@ class RigTests(unittest.TestCase):
             abs(summary["peak_core_temperature_K"] - summary["peak_boundary_temperature_K"]),
             20.0,
         )
+
+    def test_two_zone_diffusion_strain_mixing_and_orifice_leakage(self):
+        config = RigConfig(
+            fuel_profile="dme_zhao_sk39", fuel_blend_partner="CH4",
+            fuel_primary_mole_fraction=0.25, equivalence_ratio=0.40,
+            intake_pressure_bar=1.5, intake_temperature_K=300.0,
+            wall_mode="fixed", wall_temperature_K=560.0,
+            effective_h_W_m2K=300.0, blowby_mode="orifice",
+            blowby_effective_area_mm2=0.002, step_deg=1.0,
+            bore_mm=8.5, stroke_mm=7.0, compression_ratio=7.0, rpm=1200.0,
+        )
+        options = TwoZoneOptions(
+            mixing_model="diffusion-strain", mixing_length_mm=1.0,
+            molecular_diffusivity_m2_s=3e-6, piston_strain_coefficient=1.0,
+        )
+        _, summary = simulate_two_zone(config, options)
+        self.assertEqual(summary["mixing_model"], "diffusion-strain")
+        self.assertLess(
+            summary["mixing_time_min_observed_ms"],
+            summary["mixing_time_max_observed_ms"],
+        )
+        self.assertGreater(summary["blowby_mass_out_mg"], 0.0)
+        self.assertLess(abs(summary["mass_balance_residual_mg"]), 1e-3)
 
     def test_repeated_wall_cycles_preserve_fractional_temperature(self):
         base = RigConfig(

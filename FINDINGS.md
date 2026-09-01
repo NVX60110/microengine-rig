@@ -20,6 +20,7 @@ mass, 10 ms mixing.
 | C4 | The 39-species mechanism previously called Luo/Lu is Zhao 2008 sk39 | Fresh CHEMKIN conversion: identical 39 species, 175 equations, and forward rate constants at 900 K/40 bar | CONFIRMED metadata correction | `mechanisms/README.md` |
 | C5 | Zhao-full is not ground truth at engine pressure until its decomposition-rate selection is audited | Distributed source activates 1-atm DME decomposition rate and instructs selection by pressure; rig operates 25-90 bar in-cylinder | OPEN | mechanism header, `mechanisms/README.md` |
 | C6 | A universal +/-50% IMEP error bar is justified by the n-heptane regression | Cross-fuel inference only | RETRACTED | Report mechanism envelope and boundary intervals instead |
+| C7 | Direct experimental DME/methane validation data exists at project-relevant composition and pressure | Burke et al. measured pure fuels plus 80/20 and 60/40 CH4/DME, 600-1600 K, 7-41 atm, phi .3-2.0 using shock tubes and an RCM | CONFIRMED source identified; point data not yet ingested | DOI `10.1016/j.combustflame.2014.08.014`; `BETA26_REPORT.md` |
 
 ## Operability and two-zone behavior
 
@@ -31,6 +32,9 @@ mass, 10 ms mixing.
 | O4 | A nearby hot transition remains and is mechanism-dependent | 2.3 bar: first hotter samples sk39 CR8.5, full CR8.25, LLNL CR8.25; 3.0 bar: all hot at CR8.0 | SCREENING | `two_zone_transition_*.csv` |
 | O5 | Localizing wall heat suppresses the Beta2.3 homogeneous runaway at the shared CR7 anchor | 2.3 bar, baseline closure: sk39 1.04 bar/36.6%/901 K; LLNL .66 bar/29.1%/867 K | CONFIRMED across two lineages within model | `two_zone_campaign.csv`, `BETA24_REPORT.md` |
 | O6 | Radial mixing closure is the dominant model-form uncertainty | Boundary mass 10-30%, mixing 0-20 ms; branches span no reaction to runaway | SCREENING | `two_zone_campaign.csv` |
+| O7 | A bounded mixing window appears between extinction and rapid heat release | 72-case pilot, 3 bar, CR 7.75/8.0, three mechanisms; slow=100 ms, central=12-34 ms, fast=2.4-3.2 ms | SCREENING closure ensemble | Fast mixing: 0/24 acceptable; central: 10/24; slow: 10/24, `beta26_uncertainty.json` |
+| O8 | CR 7.75 and 8.0 are mechanism-robust under the 3 micrometre/e=.5 annulus plus central mixing closure | 3 bar, 25/75 DME/CH4, phi .40, 560 K wall; all three mechanisms pass the conservative display-engine screen | SCREENING, conditional on uncalibrated sealing/mixing | `beta26_uncertainty.csv`, `beta26_uncertainty_audit.png` |
+| O9 | Retention is necessary but not sufficient | Every acceptable pilot case retained at least .874 of end-cycle cylinder mass; sealed fast-mixing cases still ran away | SCREENING | `beta26_uncertainty.json` |
 
 ## Sealing and mechanics
 
@@ -43,6 +47,8 @@ mass, 10 ms mixing.
 | M5 | Low piston speed is favorable for friction | Mean piston speed .28 m/s at 7 mm/1200 rpm | SCREENING, not a complete FMEP result | geometry |
 | M6 | Mach index .0149 indicates large valve-flow-area headroom at 1200 rpm | 3.5 mm valve, .8 mm lift, Ci=.35 | SCREENING | Do not extrapolate linearly to a 48,000 rpm valve-train limit |
 | M7 | Axial thermal zoning solves lubrication | Hot head/top liner with cooler lower liner | RETRACTED as solved; retain as concept | Requires conjugate thermal/oil-film model and hardware |
+| M8 | Public full-size blow-by data constrains model structure, not the target's absolute leakage | 84 x 90 mm three-ring engine model matched measured flow within 15%; wear raised flow 56-60%. Ring-pack literature reports side passages can exceed end-gap area by >10x | CONFIRMED source interpretation | `sealing_prior.py`, Koszalka 2004/2022 |
+| M9 | A single-orifice ring-pack proxy is a pessimistic upper-flow bracket, not a calibrated ring pack | 0.006 mm2 single-stage area retained only .19-.21 in the pilot and never made positive work | SCREENING model-class warning | Multi-stage inter-ring volumes and ring motion are absent; `beta26_uncertainty.json` |
 
 ## Numerics and method
 
@@ -52,6 +58,7 @@ mass, 10 ms mixing.
 | N2 | Primary two-zone conversion must use global fuel inventory | Initial + inflow - outflow - remaining | CONFIRMED bookkeeping correction | `two_zone_model.py` |
 | N3 | Source-term integration is retained only for reaction localization | Stiff hot branches can accumulate outer-step quadrature error | CONFIRMED safeguard | component residuals + inventory metric |
 | N4 | Accepted Beta2.4 shared-anchor results are crank-step converged | .25 to .03125 degree: sk39 IMEP 1.0446 to 1.0418; LLNL .6580 to .6537 | CONFIRMED numerical convergence | `two_zone_convergence.csv` |
+| N5 | Relaxed two-zone CVODE tolerances remove LLNL trace-radical stalls without material solution drift | rtol/atol 1e-7/1e-14 vs 1e-9/1e-15 at CR7.75, 3 bar, annular 3um/e=.5, central mixing: IMEP shifts .004 bar Zhao and .010 bar LLNL; Tmax <.5 K | CONFIRMED two-point numerical check | `BETA26_REPORT.md` |
 
 ## Architecture decision
 
@@ -62,9 +69,10 @@ mass, 10 ms mixing.
 
 ## Open work, in priority order
 
-1. Replace prescribed mixing time with thermal/molecular/piston-motion transport closures.
-2. Direct DME experimental regression using a citable dataset and matching criterion.
-3. Audit/select Zhao parent pressure-dependent decomposition rates.
-4. Hot leak-down/crankcase-flow fixture across piston temperature and position.
-5. Correct 720-degree friction/gas-exchange model and measure motoring torque.
-6. Multi-cycle residual-gas chemistry in the two-zone model.
+1. Digitize or obtain Burke et al. DME/methane point data and run the direct gate.
+2. Calibrate the diffusion-strain closure with nonreacting moving-piston CFD.
+3. Replace the single-orifice ring-pack bracket with a multi-volume labyrinth model.
+4. Audit/select Zhao parent pressure-dependent decomposition rates.
+5. Hot leak-down/crankcase-flow fixture when target hardware exists.
+6. Correct 720-degree friction/gas-exchange model and measure motoring torque.
+7. Multi-cycle residual-gas chemistry in the two-zone model.
