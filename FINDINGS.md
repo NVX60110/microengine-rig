@@ -80,8 +80,9 @@ cylinder, passive tracer, flat piston, OpenFOAM 14, three meshes
 | F8 | Outer-shell zone definition is stable at approximately 0.1984 of cylinder volume | moving cycle | CONFIRMED numerical check | scalar histories |
 | F9 | Slider-crank volume closure is approximately 0.1407% across meshes | all meshes | CONFIRMED | `cfd/results/cfd01_mesh_convergence.csv` |
 | F10 | Closed-domain mass drift is 5.986e-7 relative on the fine stored run; legacy fields were evaluated with perfect-gas `rho=p/(RT)` fallback | moving mesh, v8 stored fields | CONFIRMED numerical gate | `cfd/results/cfd01_mesh_convergence.csv`, `CFD01_REPORT.md` |
-| F11 | `correctPhi` / moving-mesh flux consistency must be resolved before CFD-02 | moving mesh | OPEN numerics | `GATES.md` |
+| F11 | `correctPhi=no` is acceptable for the validated CFD-01 baseline; reopen only if a new timestep, mesh, or geometry fails continuity/mass gates | moving mesh, stored v8 fields | CONFIRMED baseline decision; conditional reopen | `GATES.md`, `CFD01_REPORT.md` |
 | F12 | Preserve/interpolate the measured `tau(theta)` schedule before fitting a lower-order closure | full cycle | METHOD NOTE | `findings/CFD01_ADDENDUM.md` |
+| F13 | maxDeltaT=0.25 CAD passes the 5% answer gate but is not faster in the measured coarse run; 0.35/0.45 CAD fail max Co (0.740/0.854) | coarse mesh, maxCo target 0.15 | CONFIRMED numerical sweep; retain 0.15 CAD recommendation | `cfd/results/cfd01_timestep_sweep.csv`, `CFD01_REPORT.md` |
 
 ## Architecture decision
 
@@ -92,7 +93,7 @@ cylinder, passive tracer, flat piston, OpenFOAM 14, three meshes
 
 ## Open work, in priority order
 
-1. Close the +45 CAD mesh-convergence hole and run the `maxDeltaT` answer-convergence sweep.
+1. Close the +45 CAD mesh-convergence hole; retain the 0.15-CAD cap for now.
 2. Run squish CFD and replace the provisional transport closure with measured `tau(theta)` if robust.
 3. Digitize or obtain Burke et al. DME/methane point data and run the direct gate.
 4. Audit/select Zhao parent pressure-dependent decomposition rates.

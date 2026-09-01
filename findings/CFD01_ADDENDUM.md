@@ -25,7 +25,8 @@ cylinder volume.
 | CFD11 | Very large fitted maximum mixing times in the flat late-cycle region are closure blow-up, not measured physical times | late expansion | OPEN method issue |
 | CFD12 | A fixed-length pure-diffusion closure cannot reproduce the measured crank-angle schedule. Preserve and interpolate measured `tau(theta)` before attempting a lower-order fit | full cycle | METHOD NOTE |
 | CFD13 | Closed-domain mass conservation passes on the stored v8 fields: maximum fine-mesh drift is 5.986e-7 relative (5.986e-05%), using the perfect-gas `rho=p/(RT)` fallback because legacy snapshots lack `rho` | moving mesh, stored v8 fields | CONFIRMED numerical gate; repeat with native `rho` snapshots in future runs |
-| CFD14 | `correctPhi` should be re-evaluated before CFD-02; timestep reduction is not a substitute for demonstrating flux/mass consistency | moving mesh | OPEN numerics |
+| CFD14 | `correctPhi=no` is acceptable for the validated CFD-01 baseline because stored-run mass drift passes; reopen only for a new continuity/mass failure | moving mesh, stored v8 fields | CONFIRMED baseline decision; conditional reopen |
+| CFD15 | maxDeltaT=0.25 CAD passes the 5% answer gate but is not faster in the measured run; 0.35/0.45 CAD fail max Co | coarse mesh, maxCo target 0.15 | CONFIRMED numerical sweep; retain 0.15 CAD |
 
 ## Diffusion-scale cross-check
 

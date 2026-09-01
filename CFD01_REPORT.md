@@ -68,7 +68,28 @@ state was recovered as `rho = p/(R T)`. Maximum relative mass drift was
 relative gate. Tracer values stayed in `[0, 1]` (global sampled range `0` to
 `1`). Mass and tracer gates therefore pass for CFD-01. This does not close the
 separate `correctPhi` review: the existing case leaves it off because the
-auxiliary pressure-correction solve became nearly singular.
+auxiliary pressure-correction solve became nearly singular. For this validated
+CFD-01 baseline, `correctPhi=no` is accepted; reopen it only if a new timestep,
+mesh, or geometry shows mass drift or another continuity failure.
+
+## maxDeltaT answer-convergence sweep
+
+The coarse-mesh sweep held `maxCo=0.15` fixed and changed only the adaptive
+`maxDeltaT` cap. Output cadence was adjusted to remain at or below 0.5 CAD.
+The 0.15-CAD case is the answer reference; the answer gate compares both
+`DeltaC` and finite `tau_mix` at -20, 0, +20, and +45 CAD.
+
+| maxDeltaT (CAD) | accepted steps | runtime (s) | max Co | max mass drift (%) | max answer change | numerical/answer gate |
+|---:|---:|---:|---:|---:|---:|---|
+| 0.15 (reference) | 2,580 | 176.05 | 0.2073 | 5.982e-05 | 0.00% | pass |
+| 0.25 | 2,366 | 185.92 | 0.3093 | 5.983e-05 | 0.45% | pass |
+| 0.35 | 2,324 | 254.98 | 0.7397 | 5.982e-05 | withheld | fail: max Co > 0.5 |
+| 0.45 | 2,332 | 254.79 | 0.8541 | 5.982e-05 | withheld | fail: max Co > 0.5 |
+
+Although 0.25 CAD is answer-consistent, it was not faster in this measured
+run. The automated recommendation therefore remains the 0.15-CAD cap for the
+next refinement. The 0.35/0.45 cases are retained as explicit failed rows;
+their close scalar values do not override the Courant gate.
 
 ## Fine-mesh mixing result
 

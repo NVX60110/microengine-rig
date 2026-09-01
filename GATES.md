@@ -50,8 +50,11 @@ nonreacting transport run without a reason.
 - Mass conservation: **pass** from the stored v8 fields; maximum fine-mesh
   drift is `5.986e-7` relative (`5.986e-05%`) using the documented perfect-gas
   `p/(R T)` fallback. Tracer bounds also pass (`0` to `1`).
-- `correctPhi`: revisit before CFD-02 rather than treating smaller timestep as
-  the permanent fix.
+- `correctPhi=no`: accepted for the validated CFD-01 baseline because its
+  closed-domain mass gate passes; reopen only if a new timestep, mesh, or
+  geometry produces mass drift or another continuity failure.
+- maxDeltaT sweep: 0.15 CAD is the recommended cap; 0.25 CAD passes the 5%
+  answer gate but was not faster, while 0.35/0.45 CAD fail max Co.
 
 ## CFD performance gate
 

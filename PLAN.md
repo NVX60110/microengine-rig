@@ -108,9 +108,11 @@ is no longer a project blocker.
 2. Rerun +45 CAD on at least one finer mesh.
 3. Add closed-domain mass-conservation accounting over the moving-mesh cycle
    (**complete for stored v8 fields**; maximum fine drift 5.986e-7 relative).
-4. Revisit `correctPhi` rather than relying only on a reduced timestep.
+4. Keep `correctPhi=no` for the validated baseline; reopen only if a new case
+   fails continuity or mass closure.
 5. Sweep `maxDeltaT` on the coarse case and choose the largest value that leaves
-   the measured transport answer inside the gate.
+   the measured transport answer inside the gate (**complete**: 0.25 passes
+   answer gates but is not faster; retain 0.15 because 0.35/0.45 fail max Co).
 6. Replace the fixed closure fit with a `tau(theta)` table/interpolant, or fit a
    geometry-aware closure only after the direct table is preserved.
 
@@ -224,10 +226,9 @@ model for checkable quantities:
 
 ## Immediate order
 
-1. Run the cheap CFD `maxDeltaT` answer-convergence sweep.
-2. Close the +45 CAD mesh-convergence hole.
-3. Run B1 squish.
-4. In parallel, digitize/obtain Burke DME/CH4 data and run the direct mechanism gate.
-5. Start C1 only with calibrated/convertible leakage data.
-6. Audit Zhao pressure-dependent decomposition before treating a chemistry
+1. Close the +45 CAD mesh-convergence hole using the retained 0.15-CAD cap.
+2. Run B1 squish.
+3. In parallel, digitize/obtain Burke DME/CH4 data and run the direct mechanism gate.
+4. Start C1 only with calibrated/convertible leakage data.
+5. Audit Zhao pressure-dependent decomposition before treating a chemistry
   transition as final.

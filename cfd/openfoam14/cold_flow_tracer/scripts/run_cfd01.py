@@ -165,9 +165,9 @@ boundaryField
     piston {{ type zeroGradient; }}
     liner {{ type zeroGradient; }}
     cylinderHead {{ type zeroGradient; }}
-    axisCore {{ type zeroGradient; }}
-    symmetryMinus {{ type zeroGradient; }}
-    symmetryPlus {{ type zeroGradient; }}
+    axisCore {{ type symmetry; }}
+    symmetryMinus {{ type symmetryPlane; }}
+    symmetryPlus {{ type symmetryPlane; }}
 }}
 ''')
 
