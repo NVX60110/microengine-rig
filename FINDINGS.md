@@ -49,6 +49,8 @@ mass, 10 ms mixing.
 | M7 | Axial thermal zoning solves lubrication | Hot head/top liner with cooler lower liner | RETRACTED as solved; retain as concept | Requires conjugate thermal/oil-film model and hardware |
 | M8 | Public full-size blow-by data constrains model structure, not the target's absolute leakage | 84 x 90 mm three-ring engine model matched measured flow within 15%; wear raised flow 56-60%. Ring-pack literature reports side passages can exceed end-gap area by >10x | CONFIRMED source interpretation | `sealing_prior.py`, Koszalka 2004/2022 |
 | M9 | A single-orifice ring-pack proxy is a pessimistic upper-flow bracket, not a calibrated ring pack | 0.006 mm2 single-stage area retained only .19-.21 in the pilot and never made positive work | SCREENING model-class warning | Multi-stage inter-ring volumes and ring motion are absent; `beta26_uncertainty.json` |
+| M10 | Uncalibrated leak-down percentages cannot be converted to absolute leak area from test pressure alone | Differential leak-down percentage depends on the tester/reference restriction | CONFIRMED measurement-method constraint | `PLAN.md`, `GATES.md`; use documented reference-orifice/calibration or direct flow |
+| M11 | Static leak-down and dynamic blow-by must remain separate scaling datasets | Different flow histories and measurement definitions | CONFIRMED method constraint | `PLAN.md`, `GATES.md` |
 
 ## Numerics and method
 
@@ -60,6 +62,27 @@ mass, 10 ms mixing.
 | N4 | Accepted Beta2.4 shared-anchor results are crank-step converged | .25 to .03125 degree: sk39 IMEP 1.0446 to 1.0418; LLNL .6580 to .6537 | CONFIRMED numerical convergence | `two_zone_convergence.csv` |
 | N5 | Relaxed two-zone CVODE tolerances remove LLNL trace-radical stalls without material solution drift | rtol/atol 1e-7/1e-14 vs 1e-9/1e-15 at CR7.75, 3 bar, annular 3um/e=.5, central mixing: IMEP shifts .004 bar Zhao and .010 bar LLNL; Tmax <.5 K | CONFIRMED two-point numerical check | `BETA26_REPORT.md` |
 
+## CFD-01 in-cylinder transport
+
+Conditions for this section: 8.5 x 7.0 mm, CR 7.75, 1200 rpm, cold closed
+cylinder, passive tracer, flat piston, OpenFOAM 14, three meshes
+(2706 / 5289 / 10455 cells).
+
+| ID | Finding | Conditions | Status | Evidence |
+|---|---|---|---|---|
+| F1 | Flat-piston TDC transport is consistent with molecular diffusion; fitted piston-strain coefficient is 0.0 | Fine mesh closure fit | CONFIRMED within CFD-01 model | `CFD01_REPORT.md`, `cfd/results/cfd01_two_zone_options.json` |
+| F2 | Fine-mesh `tau_mix` at TDC is 10.655 ms | sampled +0.042 CAD | CONFIRMED numerical result | `cfd/results/cfd01_mixing_time.csv` |
+| F3 | TDC `tau_mix` is approximately mesh-converged: coarse 10.27 / medium 10.35 / fine 10.65 ms | requested 0 CAD | CONFIRMED numerical convergence | per-mesh scalar histories; `findings/CFD01_ADDENDUM.md` |
+| F4 | Beta 2.4's 10 ms prescribed mixing time was close to the measured flat-piston value near the combustion window | roughly +/-20 CAD | SCREENING model implication | `cfd/results/cfd01_mixing_time.csv` |
+| F5 | A single scalar mixing time is not an adequate full-cycle closure | fine history spans ~10.65 ms near TDC to >=39 ms by +45 CAD | CONFIRMED within CFD-01 | scalar history + addendum |
+| F6 | The +90 CAD negative local derivative is not evidence of physical un-mixing; the direct concentration difference remains positive and late-cycle differentiation is noise-sensitive | +90 CAD onward | CORRECTED interpretation | per-mesh scalar histories; `findings/CFD01_ADDENDUM.md` |
+| F7 | +45 CAD is not mesh-converged: coarse 24.67 / medium 32.11 / fine 39.07 ms | requested +45 CAD | OPEN; fine value is a lower bound | per-mesh scalar histories |
+| F8 | Outer-shell zone definition is stable at approximately 0.1984 of cylinder volume | moving cycle | CONFIRMED numerical check | scalar histories |
+| F9 | Slider-crank volume closure is approximately 0.1407% across meshes | all meshes | CONFIRMED | `cfd/results/cfd01_mesh_convergence.csv` |
+| F10 | Closed-domain mass conservation has not yet been promoted for CFD-01 | moving mesh | OPEN | `GATES.md` |
+| F11 | `correctPhi` / moving-mesh flux consistency must be resolved before CFD-02 | moving mesh | OPEN numerics | `GATES.md` |
+| F12 | Preserve/interpolate the measured `tau(theta)` schedule before fitting a lower-order closure | full cycle | METHOD NOTE | `findings/CFD01_ADDENDUM.md` |
+
 ## Architecture decision
 
 | ID | Finding | Conditions | Status | Evidence |
@@ -69,10 +92,13 @@ mass, 10 ms mixing.
 
 ## Open work, in priority order
 
-1. Digitize or obtain Burke et al. DME/methane point data and run the direct gate.
-2. Calibrate the diffusion-strain closure with nonreacting moving-piston CFD.
-3. Replace the single-orifice ring-pack bracket with a multi-volume labyrinth model.
-4. Audit/select Zhao parent pressure-dependent decomposition rates.
-5. Hot leak-down/crankcase-flow fixture when target hardware exists.
-6. Correct 720-degree friction/gas-exchange model and measure motoring torque.
-7. Multi-cycle residual-gas chemistry in the two-zone model.
+1. Merge/audit CFD-01, add explicit mass-conservation and answer-convergence gates.
+2. Close the +45 CAD mesh-convergence hole and run the `maxDeltaT` answer-convergence sweep.
+3. Run squish CFD and replace the provisional transport closure with measured `tau(theta)` if robust.
+4. Digitize or obtain Burke et al. DME/methane point data and run the direct gate.
+5. Audit/select Zhao parent pressure-dependent decomposition rates.
+6. Build a calibrated leakage scaling dataset; exclude uncalibrated leak-down percentages from quantitative regression.
+7. Replace the single-orifice ring-pack bracket with a multi-volume labyrinth model.
+8. Hot leak-down/crankcase-flow fixture when target hardware exists.
+9. Correct 720-degree friction/gas-exchange model and measure motoring torque.
+10. Multi-cycle residual-gas chemistry in the two-zone model.

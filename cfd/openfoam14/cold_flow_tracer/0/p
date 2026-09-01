@@ -1,0 +1,17 @@
+FoamFile
+{
+    format ascii;
+    class volScalarField;
+    location "0";
+    object p;
+}
+
+dimensions [pressure];
+internalField uniform 300000;
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+    piston { type zeroGradient; }
+    liner { type zeroGradient; }
+    cylinderHead { type zeroGradient; }
+}

@@ -1,0 +1,57 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    location "system";
+    object fvSolution;
+}
+
+solvers
+{
+    p
+    {
+        solver PBiCGStab;
+        preconditioner DIC;
+        tolerance 1e-8;
+        relTol 0.01;
+        maxIter 200;
+    }
+    pFinal
+    {
+        $p;
+        relTol 0;
+    }
+    pcorr
+    {
+        solver PCG;
+        preconditioner DIC;
+        tolerance 1e-2;
+        relTol 0;
+        maxIter 100;
+    }
+    "(U|e|tracer).*"
+    {
+        solver PBiCGStab;
+        preconditioner DILU;
+        tolerance 1e-8;
+        relTol 0.01;
+        maxIter 200;
+    }
+    "rho.*"
+    {
+        solver diagonal;
+    }
+}
+
+PIMPLE
+{
+    momentumPredictor yes;
+    nOuterCorrectors 2;
+    nCorrectors 2;
+    nNonOrthogonalCorrectors 0;
+    // The closed cylinder has no external flux to correct.  Disabling the
+    // auxiliary pcorr solve avoids a near-singular fine-mesh iteration while
+    // retaining the moving-mesh continuity equation in the main PIMPLE loop.
+    correctPhi no;
+    transonic no;
+}

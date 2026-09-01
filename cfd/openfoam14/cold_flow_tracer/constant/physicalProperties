@@ -1,0 +1,31 @@
+FoamFile
+{
+    format ascii;
+    class dictionary;
+    location "constant";
+    object physicalProperties;
+}
+
+thermoType
+{
+    type hePsiThermo;
+    mixture pureMixture;
+    transport const;
+    thermo hConst;
+    equationOfState perfectGas;
+    specie specie;
+    energy sensibleInternalEnergy;
+}
+
+mixture
+{
+    specie { molWeight 28.965; }
+    thermodynamics { Cp 1005; hf 0; }
+    transport
+    {
+        // Air at 300 K. Walls are adiabatic; viscosity is retained for the
+        // laminar momentum and passive-scalar transport equations.
+        mu 1.846e-05;
+        Pr 0.71;
+    }
+}

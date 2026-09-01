@@ -1,0 +1,18 @@
+FoamFile
+{
+    format ascii;
+    class volScalarField;
+    location "0";
+    object T;
+}
+
+dimensions [temperature];
+internalField uniform 300;
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+    // Adiabatic, impermeable walls for CFD-01.
+    piston { type zeroGradient; }
+    liner { type zeroGradient; }
+    cylinderHead { type zeroGradient; }
+}
