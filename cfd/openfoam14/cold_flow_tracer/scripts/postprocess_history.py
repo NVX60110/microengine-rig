@@ -22,24 +22,41 @@ ROD_M = ROD_STROKE_RATIO * STROKE_M
 CRANK_M = STROKE_M / 2.0
 OMEGA = 2.0 * math.pi * RPM / 60.0
 WEDGE_SCALE = 360.0 / WEDGE_DEG
+AIR_MOL_WEIGHT_KG_PER_KMOL = 28.965
+R_UNIVERSAL_J_PER_KMOL_K = 8314.46261815324
+R_AIR = R_UNIVERSAL_J_PER_KMOL_K / AIR_MOL_WEIGHT_KG_PER_KMOL
 
 
-def values(path: Path, vector: bool = False) -> list[float] | list[tuple[float, float, float]]:
+def values(
+    path: Path,
+    vector: bool = False,
+    expected_count: int | None = None,
+) -> list[float] | list[tuple[float, float, float]]:
+    """Read an OpenFOAM internal field, including uniform legacy fields."""
     text = path.read_text()
     match = re.search(
         r"internalField\s+nonuniform\s+List<[^>]+>\s+\d+\s*\(\s*(.*?)\s*\)\s*;",
         text,
         flags=re.S,
     )
-    if not match:
-        uniform = re.search(r"internalField\s+uniform\s+([^;]+);", text)
-        if not uniform:
-            raise ValueError(f"Cannot parse internalField in {path}")
-        raise ValueError(f"{path} has a uniform field, which is not usable for integration")
-    lines = [line.strip() for line in match.group(1).splitlines() if line.strip()]
+    if match:
+        lines = [line.strip() for line in match.group(1).splitlines() if line.strip()]
+        if vector:
+            return [tuple(float(value) for value in line.strip("()").split()) for line in lines]
+        return [float(line) for line in lines]
+
+    uniform = re.search(r"internalField\s+uniform\s+([^;]+);", text)
+    if not uniform:
+        raise ValueError(f"Cannot parse internalField in {path}")
+    if expected_count is None:
+        raise ValueError(f"{path} is uniform but expected_count was not supplied")
+    token = uniform.group(1).strip()
     if vector:
-        return [tuple(float(value) for value in line.strip("()").split()) for line in lines]
-    return [float(line) for line in lines]
+        item = tuple(float(value) for value in token.strip("()").split())
+        if len(item) != 3:
+            raise ValueError(f"Cannot parse uniform vector in {path}")
+        return [item] * expected_count
+    return [float(token)] * expected_count
 
 
 def piston_position(theta: float) -> float:
@@ -66,16 +83,40 @@ def times(case: Path) -> list[tuple[float, Path]]:
     return sorted(result)
 
 
+def density(directory: Path, count: int) -> list[float]:
+    """Use solver rho when available; otherwise derive perfect-gas rho from p,T."""
+    rho_path = directory / "rho"
+    if rho_path.exists():
+        return list(values(rho_path, expected_count=count))
+    p_path, t_path = directory / "p", directory / "T"
+    if not p_path.exists() or not t_path.exists():
+        raise ValueError(
+            f"{directory} has neither rho nor both p/T; mass conservation cannot be evaluated"
+        )
+    pressure = list(values(p_path, expected_count=count))
+    temperature = list(values(t_path, expected_count=count))
+    result = []
+    for p_value, t_value in zip(pressure, temperature):
+        if t_value <= 0:
+            raise ValueError(f"nonpositive temperature in {directory}")
+        result.append(p_value / (R_AIR * t_value))
+    return result
+
+
 def process(case: Path, output: Path) -> list[dict[str, float]]:
     rows: list[dict[str, float]] = []
     for angle, directory in times(case):
-        tracer = values(directory / "tracer")
-        volume = values(directory / "Vc")
-        centres = values(directory / "C", vector=True)
-        if not (len(tracer) == len(volume) == len(centres)):
+        volume = list(values(directory / "Vc"))
+        count = len(volume)
+        tracer = list(values(directory / "tracer", expected_count=count))
+        centres = list(values(directory / "C", vector=True, expected_count=count))
+        rho = density(directory, count)
+        if not (len(tracer) == len(volume) == len(centres) == len(rho)):
             raise ValueError(f"Field lengths differ at {directory}")
+
         core_v = shell_v = core_cv = shell_cv = 0.0
-        for scalar, cell_volume, centre in zip(tracer, volume, centres):
+        wedge_mass = 0.0
+        for scalar, cell_volume, centre, density_value in zip(tracer, volume, centres, rho):
             radius = math.hypot(centre[0], centre[1])
             if radius <= CORE_RADIUS_M:
                 core_v += cell_volume
@@ -83,6 +124,8 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
             else:
                 shell_v += cell_volume
                 shell_cv += scalar * cell_volume
+            wedge_mass += density_value * cell_volume
+
         total_wedge = core_v + shell_v
         core_mean = core_cv / core_v
         wall_mean = shell_cv / shell_v
@@ -93,6 +136,8 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
             "core_mean": core_mean,
             "wall_shell_mean": wall_mean,
             "delta_c": delta,
+            "tracer_min": min(tracer),
+            "tracer_max": max(tracer),
             "core_volume_mm3": core_v * WEDGE_SCALE * 1e9,
             "wall_shell_volume_mm3": shell_v * WEDGE_SCALE * 1e9,
             "total_volume_mm3": total_wedge * WEDGE_SCALE * 1e9,
@@ -100,7 +145,17 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
             "volume_error_percent": 100.0 * (
                 total_wedge * WEDGE_SCALE / expected_volume(angle) - 1.0
             ),
+            "mass_mg": wedge_mass * WEDGE_SCALE * 1e6,
         })
+
+    if not rows:
+        raise ValueError(f"No usable CFD output times found in {case}")
+    initial_mass = rows[0]["mass_mg"]
+    if initial_mass <= 0:
+        raise ValueError("Initial integrated mass is not positive")
+    for row in rows:
+        row["mass_error_percent"] = 100.0 * (row["mass_mg"] / initial_mass - 1.0)
+
     for index, row in enumerate(rows):
         left, right = rows[max(0, index - 1)], rows[min(len(rows) - 1, index + 1)]
         if index == 0 or index == len(rows) - 1 or abs(left["delta_c"]) <= 1e-14 or abs(right["delta_c"]) <= 1e-14:
@@ -111,6 +166,7 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
             ) / (right["time_s"] - left["time_s"])
         row["k_mix_1_s"] = rate
         row["tau_mix_ms"] = 1000.0 / rate if math.isfinite(rate) and rate > 0 else float("nan")
+
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
@@ -125,7 +181,13 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     rows = process(args.case.resolve(), args.output.resolve())
-    print(f"wrote {len(rows)} rows to {args.output}")
+    max_mass = max(abs(row["mass_error_percent"]) for row in rows)
+    tracer_min = min(row["tracer_min"] for row in rows)
+    tracer_max = max(row["tracer_max"] for row in rows)
+    print(
+        f"wrote {len(rows)} rows to {args.output}; "
+        f"max mass drift={max_mass:.6g}%, tracer=[{tracer_min:.6g}, {tracer_max:.6g}]"
+    )
 
 
 if __name__ == "__main__":

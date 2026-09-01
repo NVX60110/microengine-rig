@@ -78,7 +78,10 @@ functions
     {
         type writeObjects;
         libs ("libutilityFunctionObjects.so");
-        objects (p T U tracer);
+        // rho is written explicitly so closed-domain mass can be integrated
+        // directly.  The postprocessor can fall back to p/(R*T) for legacy
+        // CFD-01 runs that predate this snapshot field.
+        objects (p T rho U tracer);
         writeControl timeStep;
         writeInterval 3;
     }
