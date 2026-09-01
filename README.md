@@ -35,6 +35,19 @@ python -m venv .venv
 
 Tested with CPython 3.12 and Cantera 3.2 on Linux x86-64.
 
+For the smallest Cantera-backed setup (core model, mechanism gates, and
+tests), install only the minimal dependency set:
+
+```bash
+python -m venv .venv
+.venv/bin/python -m pip install -r requirements-cantera.txt
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+The full `requirements.txt` additionally installs campaign, plotting,
+uncertainty, and property-library dependencies. Cantera wheels are fetched
+from PyPI; mechanism files remain versioned under `mechanisms/`.
+
 ## Run a headless engine case
 
 ```bash
