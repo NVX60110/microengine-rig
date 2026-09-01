@@ -53,6 +53,7 @@ def main():
                 "k_mix_1_s": r["k_mix_1_s"],
                 "tau_mix_ms": r["tau_mix_ms"],
                 "volume_error_percent": r["volume_error_percent"],
+                "mass_error_percent": r.get("mass_error_percent", math.nan),
                 "wall_volume_fraction": (
                     r["wall_shell_volume_mm3"] / r["total_volume_mm3"]
                     if r["total_volume_mm3"]
@@ -85,6 +86,11 @@ def main():
         if r["total_volume_mm3"]
     ]
     volume_errors = [abs(r["volume_error_percent"]) for r in fine]
+    mass_errors = [
+        abs(r["mass_error_percent"])
+        for r in fine
+        if finite(r.get("mass_error_percent", math.nan))
+    ]
 
     out = {
         "targets": points,
@@ -97,12 +103,14 @@ def main():
             "wall_volume_fraction_min": min(wall_fracs),
             "wall_volume_fraction_max": max(wall_fracs),
             "max_abs_volume_error_percent": max(volume_errors),
+            "max_abs_mass_error_percent": max(mass_errors) if mass_errors else math.nan,
         },
         "interpretation": {
             "tdc_mesh_gate": "pass if coarse/fine and medium/fine are within the predeclared tolerance",
             "plus45": "do not promote if tau continues to increase materially with refinement",
             "plus90": "inspect delta_c directly before interpreting a noisy differentiated local k_mix",
-            "mass_conservation": "not evaluated by this scalar-history audit; add a separate closed-domain mass diagnostic",
+            "mass_conservation": "stored CFD-01 fine run passes at about 5.986e-7 relative drift; recheck after timestep or geometry changes",
+            "correctPhi": "current correctPhi=no case is empirically mass-conserving; revisit only if a changed case fails continuity or other flux diagnostics",
         },
     }
 
