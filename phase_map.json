@@ -1,0 +1,8 @@
+{
+  "grid": {
+    "intake_temperature_K": {"start": 350.0, "stop": 800.0, "step": 50.0},
+    "intake_pressure_bar": {"start": 1.0, "stop": 3.0, "step": 0.5},
+    "compression_ratio": {"start": 6.0, "stop": 13.0, "step": 1.0},
+    "equivalence_ratio": {"start": 0.7, "stop": 1.4, "step": 0.1}
+  }
+}
