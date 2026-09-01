@@ -82,8 +82,9 @@ The representative ParaView image is rendered at -90 CAD with the piston patch
 overlaid on the scalar slice: `cfd/results/cfd01_piston_tracer.png`.
 
 Required result files are in `cfd/results/`; the runnable template and exact
-WSL commands are in `cfd/openfoam14/README.md`. Existing Python tests were
-run with `python -m unittest discover -s tests -v`; both test modules stop at
-import because the environment has no `cantera` package. No Cantera wheel was
-installed, consistent with the CFD-01 scope, and no canonical model files were
-changed.
+WSL commands are in `cfd/openfoam14/README.md`. After the CFD run, Cantera
+3.2.0 was installed in WSL and the quick existing test suite was rerun with
+`python -m unittest discover -s tests -v`: 19 tests passed and one pre-existing
+two-zone adiabatic-collapse tolerance check differed by 0.117 in its reported
+metric. No CFD or uncertainty campaign was rerun, and no canonical model files
+were changed.
