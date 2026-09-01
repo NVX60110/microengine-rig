@@ -44,7 +44,26 @@ at `maxDeltaT 0.15` CAD and `maxCo 0.15`. The largest logged Courant number is
 0.3732, below the required 0.5 limit. Scalar, cell-volume, and cell-centre
 fields are written every three accepted steps. The fine history contains 1,866
 rows from -180 to +179.989 CAD; its largest crank-angle gap is 0.45 degree,
-meeting the 0.5-degree sampling requirement.
+meeting the 0.5-degree sampling requirement used for local derivative work.
+
+The table above establishes mesh quality/runtime and volume closure, not
+convergence of the transport answer. Post-run comparison of the per-mesh scalar
+histories gives:
+
+| requested CAD | coarse tau (ms) | medium tau (ms) | fine tau (ms) | interpretation |
+|---:|---:|---:|---:|---|
+| -90 | 25.48 | 30.35 | 28.34 | screening |
+| -20 | 10.21 | 10.64 | 10.88 | converged enough for current use |
+| 0 | 10.27 | 10.35 | 10.65 | ~4% coarse/fine spread; promoted |
+| +20 | 13.48 | 13.01 | 14.10 | converged enough for current use |
+| +45 | 24.67 | 32.11 | 39.07 | **not converged; fine value is a lower bound** |
+
+A finer +45 CAD run is therefore required before that late-expansion value is
+quoted as a measurement.
+
+Closed-domain mass conservation was not promoted as a CFD-01 result. It is a
+required gate before CFD-02, together with a review of moving-mesh flux
+consistency / `correctPhi`.
 
 ## Fine-mesh mixing result
 
@@ -65,9 +84,18 @@ time. `tau_mix = 1/k_mix` is reported only when the local rate is positive.
 The compression-side and early-expansion values fall in or close to Beta 2.6's
 central 11.9-33.8 ms bracket (with the TDC point at 10.7 ms just below it).
 They do not reproduce the provisional fast 2.4-3.2 ms bracket or the 100 ms
-slow bracket as a sustained interval. The +90-degree negative derivative is a
-local DeltaC sign reversal, so a positive exchange time is not defined there;
-it is retained in the CSV rather than silently converted into a result.
+slow bracket as a sustained interval.
+
+At +90 CAD the local differentiated rate becomes slightly negative, but the
+direct concentration difference remains positive and nearly flat. The correct
+interpretation is a late-expansion plateau/noise-sensitive derivative, not
+physical un-mixing or a sign reversal of `DeltaC`.
+
+The first-mode diffusion scale also cross-checks the TDC result:
+`tau ~ L^2/(pi^2 D)` gives about 10.8 ms for the CFD-01 length/diffusivity
+scale, close to the measured 10.655 ms. Together with the zero fitted
+piston-strain coefficient, this supports molecular-diffusion-dominated
+flat-piston transport near TDC.
 
 ## Reusable closure and artifacts
 
@@ -75,16 +103,29 @@ it is retained in the CSV rather than silently converted into a result.
 `k_mix = pi^2 D/L^2 + C_s |u_p|/B` and writes a `TwoZoneOptions`-shaped JSON
 payload. The bounded fit enforces the model's nonnegative strain coefficient;
 for this baseline the fitted strain term is zero and the fitted diffusivity is
-`3.588e-6 m^2/s`. This is a CFD-01 closure parameterization, not a universal
-sealing requirement.
+`3.588e-6 m^2/s`.
+
+The single fitted fixed-length closure should not replace the directly measured
+crank-angle schedule. Preserve/interpolate `tau(theta)` first; only use a lower-
+order closure if it reproduces that schedule over the region of interest.
 
 The representative ParaView image is rendered at -90 CAD with the piston patch
 overlaid on the scalar slice: `cfd/results/cfd01_piston_tracer.png`.
 
 Required result files are in `cfd/results/`; the runnable template and exact
-WSL commands are in `cfd/openfoam14/README.md`. After the CFD run, Cantera
-3.2.0 was installed in WSL and the quick existing test suite was rerun with
-`python -m unittest discover -s tests -v`: 19 tests passed and one pre-existing
-two-zone adiabatic-collapse tolerance check differed by 0.117 in its reported
-metric. No CFD or uncertainty campaign was rerun, and no canonical model files
-were changed.
+WSL commands are in `cfd/openfoam14/README.md`. `cfd/audit_cfd01.py`
+recomputes answer-level mesh/plateau diagnostics from the stored histories.
+
+After the CFD run, Cantera 3.2.0 was installed in WSL and the quick existing
+test suite was rerun with `python -m unittest discover -s tests -v`: 19 tests
+passed and one pre-existing two-zone adiabatic-collapse tolerance check differed
+by 0.117 in its reported metric. No CFD or uncertainty campaign was rerun, and
+no canonical model files were changed.
+
+## Next CFD question
+
+The flat-piston baseline found no useful hidden convective transport. CFD-02
+should therefore be the squish experiment: determine whether intentional squish
+can reduce the TDC/near-TDC exchange time enough to change the two-zone
+chemistry branch while passing mass, volume, timestep, and answer-convergence
+gates.
