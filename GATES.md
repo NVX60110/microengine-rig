@@ -47,7 +47,9 @@ nonreacting transport run without a reason.
 - +45 CAD `tau_mix`: fail; 24.67 / 32.11 / 39.07 ms and still increasing.
 - +90 CAD: do not report a physical negative mixing rate; direct `DeltaC`
   history is nearly flat and local differentiation is noise-sensitive.
-- Mass conservation: not yet promoted; add the explicit closed-domain check.
+- Mass conservation: **pass** from the stored v8 fields; maximum fine-mesh
+  drift is `5.986e-7` relative (`5.986e-05%`) using the documented perfect-gas
+  `p/(R T)` fallback. Tracer bounds also pass (`0` to `1`).
 - `correctPhi`: revisit before CFD-02 rather than treating smaller timestep as
   the permanent fix.
 

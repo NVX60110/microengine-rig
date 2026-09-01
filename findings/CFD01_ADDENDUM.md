@@ -24,7 +24,7 @@ cylinder volume.
 | CFD10 | Slider-crank volume closure is approximately 0.1407% with no material drift across meshes | all meshes | CONFIRMED |
 | CFD11 | Very large fitted maximum mixing times in the flat late-cycle region are closure blow-up, not measured physical times | late expansion | OPEN method issue |
 | CFD12 | A fixed-length pure-diffusion closure cannot reproduce the measured crank-angle schedule. Preserve and interpolate measured `tau(theta)` before attempting a lower-order fit | full cycle | METHOD NOTE |
-| CFD13 | Closed-domain mass conservation has not yet been promoted as a CFD-01 result | moving mesh | OPEN; mandatory before CFD-02 |
+| CFD13 | Closed-domain mass conservation passes on the stored v8 fields: maximum fine-mesh drift is 5.986e-7 relative (5.986e-05%), using the perfect-gas `rho=p/(RT)` fallback because legacy snapshots lack `rho` | moving mesh, stored v8 fields | CONFIRMED numerical gate; repeat with native `rho` snapshots in future runs |
 | CFD14 | `correctPhi` should be re-evaluated before CFD-02; timestep reduction is not a substitute for demonstrating flux/mass consistency | moving mesh | OPEN numerics |
 
 ## Diffusion-scale cross-check

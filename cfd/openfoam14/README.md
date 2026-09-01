@@ -48,9 +48,11 @@ The runner writes `checkMesh` logs at BDC (`-180` CAD), TDC (`0` CAD), and
 post-motion (`+180` CAD). It uses one processor with a configured `maxCo`
 target of 0.15; the collector requires every measured maximum to remain at or
 below the 0.5 validation limit.
-`collect_results.py` refuses to promote a history when the fine run, Courant
-limit, or 0.2% volume agreement gate has failed; all failures remain explicit
-in `cfd/results/cfd01_mesh_convergence.csv`.
+`collect_results.py` refuses to promote a history when the fine run, Courant,
+0.2% volume, closed-cylinder mass (`1e-4` relative), or tracer-boundedness gate
+has failed; all failures remain explicit in
+`cfd/results/cfd01_mesh_convergence.csv`. Legacy runs without a saved `rho`
+field use the documented perfect-gas `p/(R T)` fallback.
 
 `cfd_mixing_closure.py` fits
 `k_mix = pi^2 D/L^2 + C_s |u_p|/B` and writes a `TwoZoneOptions`-compatible

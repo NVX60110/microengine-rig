@@ -1,4 +1,4 @@
-axial_cells_bdc,azimuthal_cells,cell_count,error,max_courant,max_volume_error_percent,mesh_level,nominal_spacing_mm,processors,radial_cells,runtime_s,status
-41,3,2706,,0.207300278286,0.1406988744427129,coarse,0.2,1,22,161.82566314099859,ok
-41,3,5289,,0.322889379893,0.14069887448041607,medium,0.1,1,43,472.37156543700075,ok
-41,3,10455,,0.37317021746,0.140698874406453,fine,0.05,1,85,1536.1015489790007,ok
+axial_cells_bdc,azimuthal_cells,cell_count,error,max_courant,max_mass_error_percent,max_volume_error_percent,mesh_level,nominal_spacing_mm,processors,radial_cells,runtime_s,status,tracer_max,tracer_min
+41,3,2706,,0.207300278286,5.982231574552799e-05,0.1406988744427129,coarse,0.2,1,22,161.82566314099859,ok,1.0,0.0
+41,3,5289,,0.322889379893,5.9819868369892504e-05,0.14069887448041607,medium,0.1,1,43,472.37156543700075,ok,1.0,0.0
+41,3,10455,,0.37317021746,5.986374792543714e-05,0.140698874406453,fine,0.05,1,85,1536.1015489790007,ok,1.0,0.0

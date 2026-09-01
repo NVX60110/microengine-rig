@@ -79,7 +79,7 @@ cylinder, passive tracer, flat piston, OpenFOAM 14, three meshes
 | F7 | +45 CAD is not mesh-converged: coarse 24.67 / medium 32.11 / fine 39.07 ms | requested +45 CAD | OPEN; fine value is a lower bound | per-mesh scalar histories |
 | F8 | Outer-shell zone definition is stable at approximately 0.1984 of cylinder volume | moving cycle | CONFIRMED numerical check | scalar histories |
 | F9 | Slider-crank volume closure is approximately 0.1407% across meshes | all meshes | CONFIRMED | `cfd/results/cfd01_mesh_convergence.csv` |
-| F10 | Closed-domain mass conservation has not yet been promoted for CFD-01 | moving mesh | OPEN | `GATES.md` |
+| F10 | Closed-domain mass drift is 5.986e-7 relative on the fine stored run; legacy fields were evaluated with perfect-gas `rho=p/(RT)` fallback | moving mesh, v8 stored fields | CONFIRMED numerical gate | `cfd/results/cfd01_mesh_convergence.csv`, `CFD01_REPORT.md` |
 | F11 | `correctPhi` / moving-mesh flux consistency must be resolved before CFD-02 | moving mesh | OPEN numerics | `GATES.md` |
 | F12 | Preserve/interpolate the measured `tau(theta)` schedule before fitting a lower-order closure | full cycle | METHOD NOTE | `findings/CFD01_ADDENDUM.md` |
 
@@ -92,12 +92,11 @@ cylinder, passive tracer, flat piston, OpenFOAM 14, three meshes
 
 ## Open work, in priority order
 
-1. Merge/audit CFD-01, add explicit mass-conservation and answer-convergence gates.
-2. Close the +45 CAD mesh-convergence hole and run the `maxDeltaT` answer-convergence sweep.
-3. Run squish CFD and replace the provisional transport closure with measured `tau(theta)` if robust.
-4. Digitize or obtain Burke et al. DME/methane point data and run the direct gate.
-5. Audit/select Zhao parent pressure-dependent decomposition rates.
-6. Build a calibrated leakage scaling dataset; exclude uncalibrated leak-down percentages from quantitative regression.
+1. Close the +45 CAD mesh-convergence hole and run the `maxDeltaT` answer-convergence sweep.
+2. Run squish CFD and replace the provisional transport closure with measured `tau(theta)` if robust.
+3. Digitize or obtain Burke et al. DME/methane point data and run the direct gate.
+4. Audit/select Zhao parent pressure-dependent decomposition rates.
+5. Build a calibrated leakage scaling dataset; exclude uncalibrated leak-down percentages from quantitative regression.
 7. Replace the single-orifice ring-pack bracket with a multi-volume labyrinth model.
 8. Hot leak-down/crankcase-flow fixture when target hardware exists.
 9. Correct 720-degree friction/gas-exchange model and measure motoring torque.

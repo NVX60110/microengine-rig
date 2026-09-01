@@ -106,7 +106,8 @@ is no longer a project blocker.
 
 1. Recompute/report mesh convergence **on tau_mix at requested crank angles**.
 2. Rerun +45 CAD on at least one finer mesh.
-3. Add closed-domain mass-conservation accounting over the moving-mesh cycle.
+3. Add closed-domain mass-conservation accounting over the moving-mesh cycle
+   (**complete for stored v8 fields**; maximum fine drift 5.986e-7 relative).
 4. Revisit `correctPhi` rather than relying only on a reduced timestep.
 5. Sweep `maxDeltaT` on the coarse case and choose the largest value that leaves
    the measured transport answer inside the gate.
@@ -223,12 +224,10 @@ model for checkable quantities:
 
 ## Immediate order
 
-1. Merge CFD-01 artifacts and corrected addendum into main.
-2. Add `GATES.md`, mass-balance requirement, and CFD audit script.
-3. Run the cheap CFD `maxDeltaT` answer-convergence sweep.
-4. Close the +45 CAD mesh-convergence hole.
-5. Run B1 squish.
-6. In parallel, digitize/obtain Burke DME/CH4 data and run the direct mechanism gate.
-7. Start C1 only with calibrated/convertible leakage data.
-8. Audit Zhao pressure-dependent decomposition before treating a chemistry
-   transition as final.
+1. Run the cheap CFD `maxDeltaT` answer-convergence sweep.
+2. Close the +45 CAD mesh-convergence hole.
+3. Run B1 squish.
+4. In parallel, digitize/obtain Burke DME/CH4 data and run the direct mechanism gate.
+5. Start C1 only with calibrated/convertible leakage data.
+6. Audit Zhao pressure-dependent decomposition before treating a chemistry
+  transition as final.
