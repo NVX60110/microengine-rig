@@ -57,3 +57,29 @@ field use the documented perfect-gas `p/(R T)` fallback.
 `cfd_mixing_closure.py` fits
 `k_mix = pi^2 D/L^2 + C_s |u_p|/B` and writes a `TwoZoneOptions`-compatible
 JSON payload. It does not alter `two_zone_model.py`.
+
+## maxDeltaT answer-convergence sweep
+
+Issue #5 step 2 uses the coarse mesh to determine whether the 0.15 CAD
+`maxDeltaT` cap is unnecessarily expensive. Run:
+
+```bash
+source /opt/openfoam14/etc/bashrc
+export CFD01_TIMESTEP_ROOT="$HOME/OpenFOAM/cfd01-timestep-sweep"
+
+python3 cfd/openfoam14/cold_flow_tracer/scripts/run_timestep_sweep.py \
+  --caps 0.15 0.25 0.35 0.45 --overwrite \
+  --sweep-root "$CFD01_TIMESTEP_ROOT"
+```
+
+The sweep holds `maxCo=0.15` fixed and changes only `maxDeltaT`. Output cadence
+is adjusted automatically so the maximum nominal sampling gap stays at or
+below 0.5 CAD. Each run records runtime, accepted steps, maximum Courant,
+volume error, closed-cylinder mass drift, tracer bounds, and `DeltaC/k_mix/tau`
+at -20, 0, +20, and +45 CAD.
+
+The 0.15 CAD run is the answer reference. A faster setting is accepted only if
+all numerical gates pass and the largest relative change in both `DeltaC` and
+finite `tau_mix` across those requested angles is <=5%. The summary is written
+to `cfd/results/cfd01_timestep_sweep.csv`; individual transient histories stay
+in the WSL-local sweep directory.
