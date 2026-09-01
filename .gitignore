@@ -1,13 +1,14 @@
-# external clones - see mechanisms/PROVENANCE.md
+# external validation clones
+external/
 mechs/
 ckdb/
-pyked/
 
-# regenerable mechanism files
-dme_sk39.yaml
-dme_zhao_full.yaml
-
+# Python/runtime
 __pycache__/
 .venv/
 *.pyc
 *.yaml.bak
+
+# local bulk campaign outputs not selected for version control
+microengine_*.csv
+microengine_*.json

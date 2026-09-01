@@ -1,0 +1,101 @@
+{
+  "metrics": {
+    "skeleton": "mechanisms/dme_zhao_sk39.yaml",
+    "parent": "mechanisms/dme_zhao_full.yaml",
+    "fuel": "CH3OCH3:1",
+    "oxidizer": "O2:1,N2:3.76",
+    "pressure_bar": 40.0,
+    "equivalence_ratio": 1.0,
+    "common_ignitions": 10,
+    "median_skeleton_to_parent": 1.061983492381733,
+    "minimum_skeleton_to_parent": 1.0073380527159526,
+    "maximum_skeleton_to_parent": 1.1625259951556153,
+    "skeleton_ntc_strength": 1.5223777589152783,
+    "parent_ntc_strength": 1.4653915380476197,
+    "ntc_strength_ratio": 1.0388880510007468,
+    "retention_pass": true,
+    "scope": "reduction retention only; not experimental validation"
+  },
+  "rows": [
+    {
+      "temperature_K": 650,
+      "pressure_bar": 40.0,
+      "equivalence_ratio": 1.0,
+      "skeleton_delay_dPdt_s": 0.012229524080344457,
+      "parent_delay_dPdt_s": 0.012140436914272827,
+      "skeleton_to_parent_ratio": 1.0073380527159526
+    },
+    {
+      "temperature_K": 700,
+      "pressure_bar": 40.0,
+      "equivalence_ratio": 1.0,
+      "skeleton_delay_dPdt_s": 0.002570859186193622,
+      "parent_delay_dPdt_s": 0.002551863236191633,
+      "skeleton_to_parent_ratio": 1.0074439530036643
+    },
+    {
+      "temperature_K": 750,
+      "pressure_bar": 40.0,
+      "equivalence_ratio": 1.0,
+      "skeleton_delay_dPdt_s": 0.0007975636500034994,
+      "parent_delay_dPdt_s": 0.0007889654965951093,
+      "skeleton_to_parent_ratio": 1.010898009412955
+    },
+    {
+      "temperature_K": 800,
+      "pressure_bar": 40.0,
+      "equivalence_ratio": 1.0,
+      "skeleton_delay_dPdt_s": 0.00040800170597757383,
+      "parent_delay_dPdt_s": 0.00038941002165956523,
+      "skeleton_to_parent_ratio": 1.0477432096862214
+    },
+    {
+      "temperature_K": 850,
+      "pressure_bar": 40.0,
+      "equivalence_ratio": 1.0,
+      "skeleton_delay_dPdt_s": 0.0003038400060319162,
+      "parent_delay_dPdt_s": 0.00027667802683669973,
+      "skeleton_to_parent_ratio": 1.098171797398454
+    },
+    {
+      "temperature_K": 900,
+      "pressure_bar": 40.0,
+      "equivalence_ratio": 1.0,
+      "skeleton_delay_dPdt_s": 0.00032341502189360094,
+      "parent_delay_dPdt_s": 0.0002816711452224632,
+      "skeleton_to_parent_ratio": 1.1482007560205305
+    },
+    {
+      "temperature_K": 950,
+      "pressure_bar": 40.0,
+      "equivalence_ratio": 1.0,
+      "skeleton_delay_dPdt_s": 0.00039990854278760694,
+      "parent_delay_dPdt_s": 0.00034399965631226625,
+      "skeleton_to_parent_ratio": 1.1625259951556153
+    },
+    {
+      "temperature_K": 1000,
+      "pressure_bar": 40.0,
+      "equivalence_ratio": 1.0,
+      "skeleton_delay_dPdt_s": 0.00046255926745167325,
+      "parent_delay_dPdt_s": 0.000405441639290212,
+      "skeleton_to_parent_ratio": 1.1408775582632669
+    },
+    {
+      "temperature_K": 1050,
+      "pressure_bar": 40.0,
+      "equivalence_ratio": 1.0,
+      "skeleton_delay_dPdt_s": 0.0003917659042809506,
+      "parent_delay_dPdt_s": 0.0003640190017664607,
+      "skeleton_to_parent_ratio": 1.0762237750772448
+    },
+    {
+      "temperature_K": 1100,
+      "pressure_bar": 40.0,
+      "equivalence_ratio": 1.0,
+      "skeleton_delay_dPdt_s": 0.00024798508236571895,
+      "parent_delay_dPdt_s": 0.0002411660907819649,
+      "skeleton_to_parent_ratio": 1.0282750844517317
+    }
+  ]
+}

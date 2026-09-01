@@ -1,67 +1,85 @@
 # Mechanism provenance
 
-Mechanism files are **not committed** — they are large, and regenerating them from the released sources preserves provenance. Do not substitute a newer mechanism without updating this file.
+Mechanisms are versioned model inputs, not interchangeable libraries. Preserve
+source, conversion command, active pressure-rate choices, validation range, and
+license information with every result.
 
-## Sources
+## Zhao 2008 DME skeleton and parent
 
-All obtained from `jiweiqi/CollectionOfMechanisms` (public GitHub, ~90 MB):
+Public mirror used: `jiweiqi/CollectionOfMechanisms`, commit current at the
+2026-09-01 retrieval. Repository license: MIT. Original mechanism citation:
+
+Zhao Z, Chaos M, Kazakov A, Dryer FL. *Thermal decomposition reaction and a
+comprehensive kinetic model of dimethyl ether.* International Journal of
+Chemical Kinetics 2008;40:1-18. DOI `10.1002/kin.20285`.
 
 ```bash
 git clone --depth 1 https://github.com/jiweiqi/CollectionOfMechanisms.git mechs
+
+python -m cantera.ck2yaml \
+  --input=mechs/ethers/methoxymethane_DME/zhao2008/sk39/chem.inp \
+  --thermo=mechs/ethers/methoxymethane_DME/zhao2008/sk39/therm.dat \
+  --transport=mechs/ethers/methoxymethane_DME/zhao2008/sk39/tran.dat \
+  --output=mechanisms/dme_zhao_sk39.yaml --permissive
+
+python -m cantera.ck2yaml \
+  --input=mechs/ethers/methoxymethane_DME/zhao2008/kin20285-chem.inp \
+  --transport=mechs/ethers/methoxymethane_DME/zhao2008/kin20285-tran.dat \
+  --output=mechanisms/dme_zhao_full.yaml --permissive
 ```
 
-## DME — Zhao et al. 2008 (Princeton), skeletal 39 species
+Both conversions use
+`explicit-third-body-duplicates: mark-duplicate` in the phase entry to preserve
+the source reactions Cantera identifies as overlapping third-body forms.
 
-Path: `mechs/ethers/methoxymethane_DME/zhao2008/sk39/`
+- sk39: 39 species, 175 reactions.
+- full: 55 species, 290 reactions.
+
+The full source warns that DME and ethanol decomposition rates are
+pressure-dependent and requires choosing a pressure-appropriate Arrhenius fit.
+The distributed source activates the 1-atm DME decomposition rate. That choice
+has not been audited for 25-90 bar engine states. Do not call the full file a
+truth mechanism until it is.
+
+`dme_zhao_sk39.yaml` is identical in species/equations/rates to the Beta2.2-2.4
+file formerly named `dme_luo_sk39.yaml`; that earlier attribution was wrong.
+
+## LLNL DME 2004
+
+Official source: <https://combustion.llnl.gov/mechanisms/dimethyl-ether>
 
 ```bash
-python -m cantera.ck2yaml --input=chem.inp --thermo=therm.dat \
-    --transport=tran.dat --output=dme_sk39.yaml --permissive
+python -m cantera.ck2yaml --input=dme_24_mech.txt \
+  --thermo=dme_24_therm.txt --transport=dme_24_tran_dat.txt \
+  --output=llnl_dme_2004.yaml --permissive
 ```
 
-Then add to the phase entry to suppress the HCOOH third-body duplicate warning:
+Result: 79 species, 660 reactions. The phase uses
+`explicit-third-body-duplicates: mark-duplicate` for two source overlaps.
+Verify LLNL redistribution terms before republishing beyond this private study.
 
-```yaml
-  explicit-third-body-duplicates: mark-duplicate
-```
+## n-heptane acceptance controls
 
-Result: **39 species, 175 reactions.** Contains CH3OCH3, CH4, H2 and C2 species, so DME/methane and DME/hydrogen blends are testable within one consistent kinetic model. Does **not** contain CH3OH.
+From `jiweiqi/CollectionOfMechanisms/n-Heptane_C7H16/`:
 
-> Caveat carried from Beta 2.2: this skeleton's YAML cites a turbulent DME jet-flame paper. Treat as a trend model. However, FINDINGS §2.2 establishes that it reproduces its parent's NTC to within 1%.
+- Nordin 41 species / 168 reactions: experimental positive control.
+- Peters 21 species: LTC negative control.
 
-## DME — Zhao et al. 2008, full parent, 55 species
-
-Path: `mechs/ethers/methoxymethane_DME/zhao2008/`
-
-```bash
-python -m cantera.ck2yaml --input=kin20285-chem.inp \
-    --transport=kin20285-tran.dat --output=dme_zhao_full.yaml --permissive
-```
-
-Same duplicate-flag edit required. Result: **55 species, 290 reactions.**
-
-> The source header warns that several DME and ethanol decomposition reactions are pressure-dependent and that the user must select rates appropriate to the applied pressure range. Not yet audited for our 25–90 bar range.
-
-## n-heptane — validation reference
-
-Path: `mechs/n-Heptane_C7H16/`
-
-- `Nordin_42s_168r_1998/mech_41s168r.yaml` — **41 sp, 168 rxn. Validated: median 1.53× vs experiment, 85% within 2×.** Fuel species `C7H16`.
-- `Peters2002/Peters30/chem_peters.yaml` — 21 sp. **Fails LTC by 154×.** Retained only as a negative control for the acceptance gate.
-- `llnl_v3.1/nc7_ver3.1_mech.yaml` — 631 sp, reference, slow (~6 s load).
-
-## Experimental data
+Experimental data:
 
 ```bash
 git clone --depth 1 https://github.com/pr-omethe-us/ChemKED-database.git ckdb
 ```
 
-ChemKED/ReSpecTh format. Contains n-heptane (Ciezki 1993, Fieweger 1997, and 14 other sets), n-pentane, butanols, toluene, methyl esters. **No DME.**
+Beta2.5 uses the Ciezki/Adomeit 1993 and Fieweger 1997 n-heptane shock-tube
+sets because they declare pressure maximum-dP/dt ignition. The public ChemKED
+database contained no DME dataset at retrieval time.
 
-Direct DME data requires ReSpecTh registration: https://respecth.elte.hu — free, manual verification, JS-gated so not scriptable.
+## Acceptance sequence
 
-## Gotchas
-
-- `nDodecane_Reitz.yaml` (bundled with Cantera) uses a **Redlich-Kwong** equation of state and must be rebuilt as ideal-gas before `IdealGasReactor` accepts it. Handled in `model/microengine_v3.py`.
-- The two DME mechanisms use different capitalisation for the methane partner: `CH4` with the Zhao lineage, `ch4` with LLNL.
-- ChemKED `equivalence-ratio` is a **scalar**, while `temperature`, `pressure` and `ignition-delay` are **lists**. Parsing it as a list throws, and a bare `except` will silently discard the entire dataset.
+1. Load and verify phase/species/reaction count.
+2. Run `mechanism_gate.py parent` when a parent exists.
+3. Run `mechanism_gate.py chemked` wherever criterion-compatible data exists.
+4. Record all rejected/failed datapoints; zero loaded is a hard failure.
+5. Run the same engine points across independent lineages and report the
+   envelope and transition interval—not a single preferred number.

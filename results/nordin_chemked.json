@@ -1,0 +1,1706 @@
+{
+  "metrics": {
+    "mechanism": "external/mechs/n-Heptane_C7H16/Nordin_42s_168r_1998/mech_41s168r.yaml",
+    "fuel_species": "C7H16",
+    "experimental_points": 99,
+    "usable_ratios": 99,
+    "nonignitions_or_failures": 0,
+    "median_sim_to_exp": 1.5267788583326463,
+    "geometric_mean_sim_to_exp": 1.4854199589242938,
+    "within_factor_2_fraction": 0.8484848484848485,
+    "within_factor_3_fraction": 0.98989898989899,
+    "minimum_ratio": 0.8483051395427466,
+    "maximum_ratio": 3.365582090537016,
+    "ignition_criterion": "maximum dP/dt",
+    "constant_volume_adiabatic": true,
+    "failures": [],
+    "low_temperature_below_900K_count": 41,
+    "low_temperature_median_sim_to_exp": 1.3514673639862933,
+    "parser_rejections": []
+  },
+  "rows": [
+    {
+      "temperature_K": 1186.5,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.000336,
+      "equivalence_ratio": 0.5,
+      "composition": {
+        "nC7H16": 0.009458,
+        "O2": 0.2081,
+        "N2": 0.782442
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-1.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0004793831712259815,
+      "simulated_to_experiment_ratio": 1.4267356286487545,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1055.3,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0015739999999999999,
+      "equivalence_ratio": 0.5,
+      "composition": {
+        "nC7H16": 0.009458,
+        "O2": 0.2081,
+        "N2": 0.782442
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-1.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.002659241049752865,
+      "simulated_to_experiment_ratio": 1.6894797012407023,
+      "ignited": true
+    },
+    {
+      "temperature_K": 997.94,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0034219999999999997,
+      "equivalence_ratio": 0.5,
+      "composition": {
+        "nC7H16": 0.009458,
+        "O2": 0.2081,
+        "N2": 0.782442
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-1.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.006484358235597497,
+      "simulated_to_experiment_ratio": 1.8949030495609287,
+      "ignited": true
+    },
+    {
+      "temperature_K": 788.0,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.005546,
+      "equivalence_ratio": 0.5,
+      "composition": {
+        "nC7H16": 0.009458,
+        "O2": 0.2081,
+        "N2": 0.782442
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-1.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.008173475521323116,
+      "simulated_to_experiment_ratio": 1.4737604618325129,
+      "ignited": true
+    },
+    {
+      "temperature_K": 771.83,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0052759999999999994,
+      "equivalence_ratio": 0.5,
+      "composition": {
+        "nC7H16": 0.009458,
+        "O2": 0.2081,
+        "N2": 0.782442
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-1.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.008210699907864308,
+      "simulated_to_experiment_ratio": 1.5562357672221965,
+      "ignited": true
+    },
+    {
+      "temperature_K": 748.15,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.00569,
+      "equivalence_ratio": 0.5,
+      "composition": {
+        "nC7H16": 0.009458,
+        "O2": 0.2081,
+        "N2": 0.782442
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-1.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.008902252850048782,
+      "simulated_to_experiment_ratio": 1.564543558883793,
+      "ignited": true
+    },
+    {
+      "temperature_K": 696.24,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.008335,
+      "equivalence_ratio": 0.5,
+      "composition": {
+        "nC7H16": 0.009458,
+        "O2": 0.2081,
+        "N2": 0.782442
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-1.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.015142779857090073,
+      "simulated_to_experiment_ratio": 1.8167702288050476,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1354.3,
+      "pressure_bar": 3.2,
+      "ignition_delay_s": 0.000108,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-2.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00036348286577799773,
+      "simulated_to_experiment_ratio": 3.365582090537016,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1324.6,
+      "pressure_bar": 3.2,
+      "ignition_delay_s": 0.00017099999999999998,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-2.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0004504262774851457,
+      "simulated_to_experiment_ratio": 2.6340717981587467,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1259.3,
+      "pressure_bar": 3.2,
+      "ignition_delay_s": 0.00036399999999999996,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-2.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0007590020955678523,
+      "simulated_to_experiment_ratio": 2.0851705922193746,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1245.0,
+      "pressure_bar": 3.2,
+      "ignition_delay_s": 0.00048499999999999997,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-2.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.000860843066688979,
+      "simulated_to_experiment_ratio": 1.7749341581216063,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1177.5,
+      "pressure_bar": 3.2,
+      "ignition_delay_s": 0.001178,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-2.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0016792673761004382,
+      "simulated_to_experiment_ratio": 1.425524088370491,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1131.6,
+      "pressure_bar": 3.2,
+      "ignition_delay_s": 0.001749,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-2.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0028783732548567005,
+      "simulated_to_experiment_ratio": 1.6457251314217842,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1325.7,
+      "pressure_bar": 6.5,
+      "ignition_delay_s": 0.00010899999999999999,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-3.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00022272243739640906,
+      "simulated_to_experiment_ratio": 2.0433251137285238,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1268.7,
+      "pressure_bar": 6.5,
+      "ignition_delay_s": 0.000178,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-3.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00034707445946220245,
+      "simulated_to_experiment_ratio": 1.949856513832598,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1273.2,
+      "pressure_bar": 6.5,
+      "ignition_delay_s": 0.000196,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-3.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00033434882323331896,
+      "simulated_to_experiment_ratio": 1.7058613430271377,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1215.2,
+      "pressure_bar": 6.5,
+      "ignition_delay_s": 0.00042699999999999997,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-3.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0005618178099329521,
+      "simulated_to_experiment_ratio": 1.3157325759553915,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1172.4,
+      "pressure_bar": 6.5,
+      "ignition_delay_s": 0.000649,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-3.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0008758839922834842,
+      "simulated_to_experiment_ratio": 1.3495901267850297,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1157.9,
+      "pressure_bar": 6.5,
+      "ignition_delay_s": 0.000592,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-3.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0010322728114471502,
+      "simulated_to_experiment_ratio": 1.7437040733904565,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1088.0,
+      "pressure_bar": 6.5,
+      "ignition_delay_s": 0.0016979999999999999,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-3.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0025539083954107564,
+      "simulated_to_experiment_ratio": 1.5040685485340144,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1047.8,
+      "pressure_bar": 6.5,
+      "ignition_delay_s": 0.00309,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-3.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0047256337873167395,
+      "simulated_to_experiment_ratio": 1.5293313227562264,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1273.5,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.000129,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00016106305262918462,
+      "simulated_to_experiment_ratio": 1.2485507955750748,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1186.4,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.000283,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00036230295885871373,
+      "simulated_to_experiment_ratio": 1.2802224694654196,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1176.3,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.00029099999999999997,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.000403854257856021,
+      "simulated_to_experiment_ratio": 1.387815319092856,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1132.5,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.00041999999999999996,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0006739944787838945,
+      "simulated_to_experiment_ratio": 1.6047487590092728,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1131.3,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0005239999999999999,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.000684191621489791,
+      "simulated_to_experiment_ratio": 1.3057092013163951,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1101.4,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.000794,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0010124149420770983,
+      "simulated_to_experiment_ratio": 1.275081791029091,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1066.8,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.000954,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.001660039832222316,
+      "simulated_to_experiment_ratio": 1.740083681574755,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1025.7,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.001483,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.003118708369846778,
+      "simulated_to_experiment_ratio": 2.1029726027287783,
+      "ignited": true
+    },
+    {
+      "temperature_K": 944.66,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0034779999999999998,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.009147748175057301,
+      "simulated_to_experiment_ratio": 2.6301748634437323,
+      "ignited": true
+    },
+    {
+      "temperature_K": 944.6,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.005215,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.009151998171904381,
+      "simulated_to_experiment_ratio": 1.754937329224234,
+      "ignited": true
+    },
+    {
+      "temperature_K": 940.14,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.004340999999999999,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.009449997529431431,
+      "simulated_to_experiment_ratio": 2.176917191760293,
+      "ignited": true
+    },
+    {
+      "temperature_K": 934.85,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0033539999999999998,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00975045915023087,
+      "simulated_to_experiment_ratio": 2.9071136404981726,
+      "ignited": true
+    },
+    {
+      "temperature_K": 930.19,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.003763,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.009957776791537375,
+      "simulated_to_experiment_ratio": 2.646233534822582,
+      "ignited": true
+    },
+    {
+      "temperature_K": 906.46,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.006402,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.009922321714361025,
+      "simulated_to_experiment_ratio": 1.5498784308592666,
+      "ignited": true
+    },
+    {
+      "temperature_K": 885.85,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.006588,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.008470380426246793,
+      "simulated_to_experiment_ratio": 1.2857286621503936,
+      "ignited": true
+    },
+    {
+      "temperature_K": 841.09,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0033399999999999997,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.005833025351914052,
+      "simulated_to_experiment_ratio": 1.7464147760221715,
+      "ignited": true
+    },
+    {
+      "temperature_K": 830.34,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0031539999999999997,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.005374340581512093,
+      "simulated_to_experiment_ratio": 1.7039760879873473,
+      "ignited": true
+    },
+    {
+      "temperature_K": 784.31,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.002888,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.004165559433666575,
+      "simulated_to_experiment_ratio": 1.4423682249538001,
+      "ignited": true
+    },
+    {
+      "temperature_K": 746.81,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0032749999999999997,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00442605561705511,
+      "simulated_to_experiment_ratio": 1.3514673639862933,
+      "ignited": true
+    },
+    {
+      "temperature_K": 737.8,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.003093,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.004722327008822875,
+      "simulated_to_experiment_ratio": 1.5267788583326463,
+      "ignited": true
+    },
+    {
+      "temperature_K": 731.23,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.003022,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.005016554351474423,
+      "simulated_to_experiment_ratio": 1.6600113671325025,
+      "ignited": true
+    },
+    {
+      "temperature_K": 699.42,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.004804,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.007853202693437372,
+      "simulated_to_experiment_ratio": 1.6347216264440823,
+      "ignited": true
+    },
+    {
+      "temperature_K": 698.67,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0040479999999999995,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.007960333885294366,
+      "simulated_to_experiment_ratio": 1.966485643600387,
+      "ignited": true
+    },
+    {
+      "temperature_K": 695.45,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.00524,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.008449706839710946,
+      "simulated_to_experiment_ratio": 1.6125394732272798,
+      "ignited": true
+    },
+    {
+      "temperature_K": 676.9,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.011264999999999999,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.012456590001613877,
+      "simulated_to_experiment_ratio": 1.1057780738228034,
+      "ignited": true
+    },
+    {
+      "temperature_K": 664.19,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.013068,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-4.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.016923272685360584,
+      "simulated_to_experiment_ratio": 1.2950162752801182,
+      "ignited": true
+    },
+    {
+      "temperature_K": 999.45,
+      "pressure_bar": 19.3,
+      "ignition_delay_s": 0.0013109999999999999,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-5.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0028753467456643653,
+      "simulated_to_experiment_ratio": 2.193246945586854,
+      "ignited": true
+    },
+    {
+      "temperature_K": 929.5,
+      "pressure_bar": 19.3,
+      "ignition_delay_s": 0.00258,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-5.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.004264711960455406,
+      "simulated_to_experiment_ratio": 1.6529891319594598,
+      "ignited": true
+    },
+    {
+      "temperature_K": 882.31,
+      "pressure_bar": 19.3,
+      "ignition_delay_s": 0.001903,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-5.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0029297405086321886,
+      "simulated_to_experiment_ratio": 1.5395378395334676,
+      "ignited": true
+    },
+    {
+      "temperature_K": 823.2,
+      "pressure_bar": 19.3,
+      "ignition_delay_s": 0.0016569999999999998,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-5.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.002005361065137698,
+      "simulated_to_experiment_ratio": 1.2102360079286048,
+      "ignited": true
+    },
+    {
+      "temperature_K": 789.57,
+      "pressure_bar": 19.3,
+      "ignition_delay_s": 0.0014739999999999998,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-5.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0019174771231034024,
+      "simulated_to_experiment_ratio": 1.300866433584398,
+      "ignited": true
+    },
+    {
+      "temperature_K": 744.24,
+      "pressure_bar": 19.3,
+      "ignition_delay_s": 0.0017009999999999998,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-5.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0026182910226456085,
+      "simulated_to_experiment_ratio": 1.539265739356619,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1062.2,
+      "pressure_bar": 30.0,
+      "ignition_delay_s": 0.00048699999999999997,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-6.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0007277150510839219,
+      "simulated_to_experiment_ratio": 1.4942814190634948,
+      "ignited": true
+    },
+    {
+      "temperature_K": 952.74,
+      "pressure_bar": 30.0,
+      "ignition_delay_s": 0.001045,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-6.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0015064626467363815,
+      "simulated_to_experiment_ratio": 1.4415910495084991,
+      "ignited": true
+    },
+    {
+      "temperature_K": 845.72,
+      "pressure_bar": 30.0,
+      "ignition_delay_s": 0.0007369999999999999,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-6.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0007668261218842973,
+      "simulated_to_experiment_ratio": 1.040469636206645,
+      "ignited": true
+    },
+    {
+      "temperature_K": 735.76,
+      "pressure_bar": 30.0,
+      "ignition_delay_s": 0.0017419999999999998,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-6.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0018349107927051452,
+      "simulated_to_experiment_ratio": 1.053335701897328,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1064.7,
+      "pressure_bar": 42.0,
+      "ignition_delay_s": 0.00026399999999999997,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-7.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00045878593072097996,
+      "simulated_to_experiment_ratio": 1.7378254951552274,
+      "ignited": true
+    },
+    {
+      "temperature_K": 981.26,
+      "pressure_bar": 42.0,
+      "ignition_delay_s": 0.00056,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-7.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0007253422934755939,
+      "simulated_to_experiment_ratio": 1.295254095492132,
+      "ignited": true
+    },
+    {
+      "temperature_K": 942.63,
+      "pressure_bar": 42.0,
+      "ignition_delay_s": 0.0005639999999999999,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-7.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0005588167147044839,
+      "simulated_to_experiment_ratio": 0.9908097778448297,
+      "ignited": true
+    },
+    {
+      "temperature_K": 916.58,
+      "pressure_bar": 42.0,
+      "ignition_delay_s": 0.000552,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-7.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00046826443702759605,
+      "simulated_to_experiment_ratio": 0.8483051395427466,
+      "ignited": true
+    },
+    {
+      "temperature_K": 866.68,
+      "pressure_bar": 42.0,
+      "ignition_delay_s": 0.000395,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-7.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0003841780572822831,
+      "simulated_to_experiment_ratio": 0.9726026766640078,
+      "ignited": true
+    },
+    {
+      "temperature_K": 813.4,
+      "pressure_bar": 42.0,
+      "ignition_delay_s": 0.000455,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-7.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00045756429487289676,
+      "simulated_to_experiment_ratio": 1.0056358129074654,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1228.0,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.000185,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00018603649655928503,
+      "simulated_to_experiment_ratio": 1.0056026841042434,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1210.7,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.00022899999999999998,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0002185548015759533,
+      "simulated_to_experiment_ratio": 0.9543877798076564,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1193.5,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.000245,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0002590062247123058,
+      "simulated_to_experiment_ratio": 1.0571682641318603,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1117.4,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.000576,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0006246166473810947,
+      "simulated_to_experiment_ratio": 1.0844039017032894,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1007.8,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.001926,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0031284867377145823,
+      "simulated_to_experiment_ratio": 1.6243441005787032,
+      "ignited": true
+    },
+    {
+      "temperature_K": 970.71,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.003032,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.005197675353337168,
+      "simulated_to_experiment_ratio": 1.7142728737919422,
+      "ignited": true
+    },
+    {
+      "temperature_K": 968.59,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0034639999999999996,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.005325824645566837,
+      "simulated_to_experiment_ratio": 1.53747824641075,
+      "ignited": true
+    },
+    {
+      "temperature_K": 913.18,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.003861,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.007036747925907547,
+      "simulated_to_experiment_ratio": 1.8225195353295902,
+      "ignited": true
+    },
+    {
+      "temperature_K": 893.31,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0038339999999999997,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.006248024361178649,
+      "simulated_to_experiment_ratio": 1.6296359836146712,
+      "ignited": true
+    },
+    {
+      "temperature_K": 831.21,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0022559999999999998,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.003657553809208095,
+      "simulated_to_experiment_ratio": 1.621256121102879,
+      "ignited": true
+    },
+    {
+      "temperature_K": 808.27,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.00216,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.003099654219949395,
+      "simulated_to_experiment_ratio": 1.4350251018284235,
+      "ignited": true
+    },
+    {
+      "temperature_K": 786.14,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.001815,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0028262745720595167,
+      "simulated_to_experiment_ratio": 1.5571760727600643,
+      "ignited": true
+    },
+    {
+      "temperature_K": 748.03,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.002535,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.003129136728131434,
+      "simulated_to_experiment_ratio": 1.2343734627737413,
+      "ignited": true
+    },
+    {
+      "temperature_K": 716.18,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.00505,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.004602000734957827,
+      "simulated_to_experiment_ratio": 0.9112872742490747,
+      "ignited": true
+    },
+    {
+      "temperature_K": 693.45,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.006967999999999999,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.007061679226339081,
+      "simulated_to_experiment_ratio": 1.013444205846596,
+      "ignited": true
+    },
+    {
+      "temperature_K": 691.19,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.006559,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0074132930287026605,
+      "simulated_to_experiment_ratio": 1.1302474506331242,
+      "ignited": true
+    },
+    {
+      "temperature_K": 686.84,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.007483,
+      "equivalence_ratio": 2.0,
+      "composition": {
+        "nC7H16": 0.036792,
+        "O2": 0.202354,
+        "N2": 0.760854
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-8.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0081630631619907,
+      "simulated_to_experiment_ratio": 1.0908810853923159,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1280.3,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.000104,
+      "equivalence_ratio": 3.0,
+      "composition": {
+        "nC7H16": 0.054191,
+        "O2": 0.198699,
+        "N2": 0.74711
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-9.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0001063156390005215,
+      "simulated_to_experiment_ratio": 1.022265759620399,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1178.1,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.00027299999999999997,
+      "equivalence_ratio": 3.0,
+      "composition": {
+        "nC7H16": 0.054191,
+        "O2": 0.198699,
+        "N2": 0.74711
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-9.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0002652189954125142,
+      "simulated_to_experiment_ratio": 0.9714981516941913,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1093.1,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0006309999999999999,
+      "equivalence_ratio": 3.0,
+      "composition": {
+        "nC7H16": 0.054191,
+        "O2": 0.198699,
+        "N2": 0.74711
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-9.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0007548387545613262,
+      "simulated_to_experiment_ratio": 1.1962579311589956,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1011.3,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.001517,
+      "equivalence_ratio": 3.0,
+      "composition": {
+        "nC7H16": 0.054191,
+        "O2": 0.198699,
+        "N2": 0.74711
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-9.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0025760877228229576,
+      "simulated_to_experiment_ratio": 1.6981461587494777,
+      "ignited": true
+    },
+    {
+      "temperature_K": 942.79,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.002722,
+      "equivalence_ratio": 3.0,
+      "composition": {
+        "nC7H16": 0.054191,
+        "O2": 0.198699,
+        "N2": 0.74711
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-9.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00563942052297912,
+      "simulated_to_experiment_ratio": 2.07179299154266,
+      "ignited": true
+    },
+    {
+      "temperature_K": 903.53,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.00197,
+      "equivalence_ratio": 3.0,
+      "composition": {
+        "nC7H16": 0.054191,
+        "O2": 0.198699,
+        "N2": 0.74711
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-9.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.005581508573741845,
+      "simulated_to_experiment_ratio": 2.833253083117688,
+      "ignited": true
+    },
+    {
+      "temperature_K": 868.83,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.0017109999999999998,
+      "equivalence_ratio": 3.0,
+      "composition": {
+        "nC7H16": 0.054191,
+        "O2": 0.198699,
+        "N2": 0.74711
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-9.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.004206933719187789,
+      "simulated_to_experiment_ratio": 2.4587572876608936,
+      "ignited": true
+    },
+    {
+      "temperature_K": 833.31,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.001302,
+      "equivalence_ratio": 3.0,
+      "composition": {
+        "nC7H16": 0.054191,
+        "O2": 0.198699,
+        "N2": 0.74711
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-9.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0031669219301920216,
+      "simulated_to_experiment_ratio": 2.432351712897098,
+      "ignited": true
+    },
+    {
+      "temperature_K": 738.34,
+      "pressure_bar": 13.5,
+      "ignition_delay_s": 0.002683,
+      "equivalence_ratio": 3.0,
+      "composition": {
+        "nC7H16": 0.054191,
+        "O2": 0.198699,
+        "N2": 0.74711
+      },
+      "source_file": "external/ckdb/n-heptane/Ciezki 1993/st_ciezki_1993-9.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0030551299074431802,
+      "simulated_to_experiment_ratio": 1.1386991827965636,
+      "ignited": true
+    },
+    {
+      "temperature_K": 752.0,
+      "pressure_bar": 40.0,
+      "ignition_delay_s": 0.001,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Fieweger 1997/st_fieweger_1997.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0010612122159863336,
+      "simulated_to_experiment_ratio": 1.0612122159863335,
+      "ignited": true
+    },
+    {
+      "temperature_K": 787.0,
+      "pressure_bar": 40.0,
+      "ignition_delay_s": 0.00058,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Fieweger 1997/st_fieweger_1997.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0006331423737381528,
+      "simulated_to_experiment_ratio": 1.0916247823071599,
+      "ignited": true
+    },
+    {
+      "temperature_K": 813.0,
+      "pressure_bar": 40.0,
+      "ignition_delay_s": 0.00047999999999999996,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Fieweger 1997/st_fieweger_1997.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0004921019172166708,
+      "simulated_to_experiment_ratio": 1.025212327534731,
+      "ignited": true
+    },
+    {
+      "temperature_K": 870.0,
+      "pressure_bar": 40.0,
+      "ignition_delay_s": 0.00039999999999999996,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Fieweger 1997/st_fieweger_1997.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.000428621560671035,
+      "simulated_to_experiment_ratio": 1.0715539016775877,
+      "ignited": true
+    },
+    {
+      "temperature_K": 881.0,
+      "pressure_bar": 40.0,
+      "ignition_delay_s": 0.000495,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Fieweger 1997/st_fieweger_1997.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0004423480275887839,
+      "simulated_to_experiment_ratio": 0.8936323789672402,
+      "ignited": true
+    },
+    {
+      "temperature_K": 917.0,
+      "pressure_bar": 40.0,
+      "ignition_delay_s": 0.000535,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Fieweger 1997/st_fieweger_1997.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0005314165945878705,
+      "simulated_to_experiment_ratio": 0.9933020459586365,
+      "ignited": true
+    },
+    {
+      "temperature_K": 947.0,
+      "pressure_bar": 40.0,
+      "ignition_delay_s": 0.0005499999999999999,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Fieweger 1997/st_fieweger_1997.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0006609114231260184,
+      "simulated_to_experiment_ratio": 1.2016571329563972,
+      "ignited": true
+    },
+    {
+      "temperature_K": 984.0,
+      "pressure_bar": 40.0,
+      "ignition_delay_s": 0.0005499999999999999,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Fieweger 1997/st_fieweger_1997.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0008183714997358375,
+      "simulated_to_experiment_ratio": 1.4879481813378865,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1064.0,
+      "pressure_bar": 40.0,
+      "ignition_delay_s": 0.000288,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Fieweger 1997/st_fieweger_1997.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.0004935841849355614,
+      "simulated_to_experiment_ratio": 1.713833975470699,
+      "ignited": true
+    },
+    {
+      "temperature_K": 1143.0,
+      "pressure_bar": 40.0,
+      "ignition_delay_s": 8.999999999999999e-05,
+      "equivalence_ratio": 1.0,
+      "composition": {
+        "nC7H16": 0.01874,
+        "O2": 0.20615,
+        "N2": 0.77511
+      },
+      "source_file": "external/ckdb/n-heptane/Fieweger 1997/st_fieweger_1997.yaml",
+      "ignition_target": "pressure",
+      "ignition_type": "d/dt max",
+      "simulated_delay_s": 0.00019511598549047635,
+      "simulated_to_experiment_ratio": 2.1679553943386263,
+      "ignited": true
+    }
+  ]
+}
