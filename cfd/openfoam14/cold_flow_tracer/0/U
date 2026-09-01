@@ -1,0 +1,17 @@
+FoamFile
+{
+    format ascii;
+    class volVectorField;
+    location "0";
+    object U;
+}
+
+dimensions [velocity];
+internalField uniform (0 0 0);
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+    piston { type movingWallVelocity; value uniform (0 0 0); }
+    liner { type noSlip; }
+    cylinderHead { type noSlip; }
+}

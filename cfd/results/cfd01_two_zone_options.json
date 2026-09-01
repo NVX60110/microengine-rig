@@ -1,0 +1,18 @@
+{
+  "fit_model": "k_mix = pi^2 D/L^2 + C_s abs(u_p)/B",
+  "source": "CFD-01 fine passive-tracer history",
+  "sample_count": 1645,
+  "mixing_length_mm": 1.0,
+  "molecular_diffusivity_m2_s": 3.5877505836809927e-06,
+  "piston_strain_coefficient": 0.0,
+  "mixing_min_time_ms": 3.4708070042964994,
+  "mixing_max_time_ms": 167649.27523359668,
+  "TwoZoneOptions": {
+    "mixing_model": "diffusion-strain",
+    "mixing_length_mm": 1.0,
+    "molecular_diffusivity_m2_s": 3.5877505836809927e-06,
+    "piston_strain_coefficient": 0.0,
+    "mixing_min_time_ms": 3.4708070042964994,
+    "mixing_max_time_ms": 167649.27523359668
+  }
+}
