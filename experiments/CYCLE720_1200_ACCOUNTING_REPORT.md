@@ -29,19 +29,21 @@ bookkeeping diagnostics, not measurements or a calibrated open-system energy
 model.
 
 The intake-only energy accounting closes to about `1e-9 J` in cycle 1, which
-checks the lumped valve step. The reacting kernel's internal-energy residual is
-about `0.100 J` in that cycle and the exhaust transition residual is about
-`-0.068 J`; these do not pass an energy gate. They are retained as a specific
-state/energy-mapping defect to resolve before friction or crank dynamics are
-enabled, rather than being hidden inside a periodicity failure.
+checks the lumped valve step. With the gas-to-wall sign handled correctly, the
+reacting kernel's internal-energy residual is about `0.0013 J` in that cycle,
+while the exhaust transition residual is about `-0.068 J`; the latter does not
+pass an energy gate. It is retained as a specific state/energy-mapping defect
+to resolve before friction or crank dynamics are enabled, rather than being
+hidden inside a periodicity failure.
 
 ## Result
 
 The run covered 12 consecutive cycles at 1,200 rpm and 5 CAD step. The mass
 balance residual was approximately -0.00074 to -0.00089 mg per cycle. Relative
-to the reacting kernel's 1.63 mg initial mass this is about 4.5–5.5e-4, so it
-does **not** meet the strict 1e-6 periodic mass gate. It is a small, repeatable
-rate-integration/quadrature residual, not the 3–50% homologous-state drift.
+to the reacting kernel's 1.63 mg initial mass this is about 4.5–5.5e-4, and
+relative to the cycle-start mass it is about 3.5–4.4e-3, so it does **not** meet
+the strict 1e-6 periodic mass gate. It is consistent with a rate-integration /
+quadrature residual, not the 3–50% homologous-state drift.
 
 Representative cycle 1 accounting was:
 
@@ -83,23 +85,35 @@ aggregated two-zone end state and valve transitions.
 ## Quadrature refinement
 
 Fresh one-cycle runs were repeated at 5, 2, 1 and 0.5 CAD. The mass residual
-decreases strongly with step size, while the energy residual approaches a
-nonzero plateau:
+decreases strongly with step size. The energy residual also decreases strongly,
+but is not yet zero or converged; the exhaust transition residual remains
+nonzero:
 
-| step | mass residual (mg) | mass residual / kernel start | total energy residual (J) | closed-kernel energy residual (J) |
-|---:|---:|---:|---:|---:|
-| 5.0 CAD | -8.94e-4 | -5.48e-4 | 3.20e-2 | 1.00e-1 |
-| 2.0 CAD | -9.01e-5 | -5.73e-5 | 6.58e-2 | 8.47e-2 |
-| 1.0 CAD | -2.80e-5 | -1.78e-5 | 6.91e-2 | 7.75e-2 |
-| 0.5 CAD | -1.63e-6 | -1.04e-6 | 7.32e-2 | 7.72e-2 |
+| step | mass residual (mg) | mass residual / cycle start | mass residual / kernel start | total energy residual (J) | closed-kernel energy residual (J) |
+|---:|---:|---:|---:|---:|---:|
+| 5.0 CAD | -8.94e-4 | -4.41e-3 | -5.48e-4 | -6.69e-2 | 1.32e-3 |
+| 2.0 CAD | -9.01e-5 | -4.44e-4 | -5.73e-5 | -1.82e-2 | 6.19e-4 |
+| 1.0 CAD | -2.80e-5 | -1.38e-4 | -1.78e-5 | -8.15e-3 | 2.89e-4 |
+| 0.5 CAD | -1.63e-6 | -8.04e-6 | -1.04e-6 | -3.74e-3 | 2.77e-4 |
 
-Thus the 5-CAD mass residual is primarily trapezoidal rate-integration error,
-not an unexplained 3.19% state drift. At 0.5 CAD it is approximately at, but
-still just above, the existing 1e-6 relative gate; it must not be reported as
-closed without either a still finer run or a justified numerical tolerance.
-The energy residual does not converge to zero in this check. The open-system
-state/energy mapping remains an explicit blocker before friction, crank
-dynamics or motor control are enabled.
+Thus the mass trend is consistent with trapezoidal rate-integration error, not
+an unexplained 3.19% state drift. However, even at 0.5 CAD the residual is
+`8.04e-6` relative to the cycle-start mass, above the existing `1e-6` gate; it
+must not be reported as closed without finer resolution or a justified
+numerical tolerance. The closed-kernel energy residual is small after the wall
+sign correction, but the exhaust transition energy residual remains nonzero.
+The open-system state/energy mapping remains an explicit blocker before
+friction, crank dynamics or motor control are enabled.
+
+## Diagnostic limitations
+
+The valve implementation is a one-way compressible-orifice screen: the
+current case does not model reverse valve flow, valve dynamics, or a resolved
+manifold. Intake/exhaust accounting therefore cannot establish physical valve
+timing or volumetric efficiency. Flow-rate clipping at a fraction of the lumped
+mass and the two-zone-to-lump end-state reconstruction are additional numerical
+approximations. These limitations are why the diagnostic distinguishes
+accounting residuals from a converged engine-cycle claim.
 
 ## Reproduction
 

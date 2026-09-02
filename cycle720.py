@@ -481,8 +481,10 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
     closed_wall_heat = closed_summary.get("wall_energy_gas_to_wall_mJ", 0.0) * 1e-3
     closed_u0 = closed_summary.get("initial_internal_energy_J", total_internal_energy(intake_close_state))
     closed_u1 = closed_summary.get("final_internal_energy_J", total_internal_energy(state))
+    # ``wall_energy_gas_to_wall`` is positive for heat leaving the gas.  It is
+    # therefore subtracted from the gas internal-energy balance.
     closed_energy_residual = closed_u1 - (closed_u0 + closed_h_in - closed_h_out
-                                          - closed_work + closed_wall_heat)
+                                          - closed_work - closed_wall_heat)
     cycle_initial_mass = float(cycle_initial_state["mass_kg"])
     cycle_final_mass = float(out["mass_kg"])
     cycle_mass_residual = (cycle_initial_mass + total_in + closed_in_kg
@@ -491,7 +493,7 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
     cycle_u1 = total_internal_energy(out)
     cycle_energy_residual = cycle_u1 - (
         cycle_u0 + valve_enthalpy_in - valve_enthalpy_out + closed_h_in - closed_h_out
-        - valve_work - closed_work + closed_wall_heat
+        - valve_work - closed_work - closed_wall_heat
     )
     intake_energy_residual = (
         total_internal_energy(intake_close_state) - total_internal_energy(cycle_initial_state)

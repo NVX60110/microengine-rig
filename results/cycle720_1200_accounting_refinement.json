@@ -8,50 +8,54 @@
   },
   "records": [
     {
-      "closed_energy_balance_residual_J": 0.10024746957665187,
+      "closed_energy_balance_residual_J": 0.0013190026618959405,
       "closed_kernel_mass_balance_residual_mg": -0.0008937391837719117,
-      "energy_balance_residual_J": 0.03203177069720852,
+      "energy_balance_residual_J": -0.06689669621754737,
       "exhaust_energy_balance_residual_J": -0.06821569980459191,
       "intake_energy_balance_residual_J": 7.398572310357565e-10,
       "mass_balance_residual_mg": -0.0008937391837711309,
       "mass_balance_residual_rel_closed_kernel": -0.000547816623831248,
-      "runtime_s": 7.636842800071463,
+      "mass_balance_residual_rel_cycle_start": -0.004406007611313845,
+      "runtime_s": 7.510701199993491,
       "step_deg": 5.0
     },
     {
-      "closed_energy_balance_residual_J": 0.08466007450370389,
+      "closed_energy_balance_residual_J": 0.0006190719829923252,
       "closed_kernel_mass_balance_residual_mg": -9.012005228708709e-05,
-      "energy_balance_residual_J": 0.06579242795113377,
+      "energy_balance_residual_J": -0.018248574569577836,
       "exhaust_energy_balance_residual_J": -0.018867646762264934,
       "intake_energy_balance_residual_J": 8.007006169208353e-11,
       "mass_balance_residual_mg": -9.012005228744443e-05,
       "mass_balance_residual_rel_closed_kernel": -5.728995077650081e-05,
-      "runtime_s": 13.259193599922583,
+      "mass_balance_residual_rel_cycle_start": -0.00044427909564739827,
+      "runtime_s": 15.420268799876794,
       "step_deg": 2.0
     },
     {
-      "closed_energy_balance_residual_J": 0.07750069834405776,
+      "closed_energy_balance_residual_J": 0.0002892262730304629,
       "closed_kernel_mass_balance_residual_mg": -2.8010285535668638e-05,
-      "energy_balance_residual_J": 0.06905687838055902,
+      "energy_balance_residual_J": -0.00815459369046826,
       "exhaust_energy_balance_residual_J": -0.00844382100056379,
       "intake_energy_balance_residual_J": 9.315705984391798e-10,
       "mass_balance_residual_mg": -2.8010285534689254e-05,
       "mass_balance_residual_rel_closed_kernel": -1.7819650453127446e-05,
-      "runtime_s": 24.883541700197384,
+      "mass_balance_residual_rel_cycle_start": -0.00013808674107827721,
+      "runtime_s": 23.003606599988416,
       "step_deg": 1.0
     },
     {
-      "closed_energy_balance_residual_J": 0.07721863085339459,
+      "closed_energy_balance_residual_J": 0.0002765634535664696,
       "closed_kernel_mass_balance_residual_mg": -1.6314677997138982e-06,
-      "energy_balance_residual_J": 0.07319762860181965,
+      "energy_balance_residual_J": -0.003744438798008419,
       "exhaust_energy_balance_residual_J": -0.0040210029763445565,
       "intake_energy_balance_residual_J": 6.201181235176989e-10,
       "mass_balance_residual_mg": -1.631467800335938e-06,
       "mass_balance_residual_rel_closed_kernel": -1.0388901668665116e-06,
-      "runtime_s": 43.680515999905765,
+      "mass_balance_residual_rel_cycle_start": -8.042905219353538e-06,
+      "runtime_s": 44.199555499944836,
       "step_deg": 0.5
     }
   ],
-  "runtime_s": 89.46010729996487,
+  "runtime_s": 90.13414560002275,
   "status": "diagnostic_only"
 }
