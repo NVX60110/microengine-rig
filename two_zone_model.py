@@ -366,12 +366,17 @@ def simulate_two_zone(
     }
     initial_fuel_mass = sum(initial_component_mass.values())
     initial_mass = core.mass + boundary.mass
+    initial_internal_energy = (
+        core.mass * core.phase.int_energy_mass
+        + boundary.mass * boundary.phase.int_energy_mass
+    )
     component_core_reacted = {name: 0.0 for name in fuel_names}
     component_boundary_reacted = {name: 0.0 for name in fuel_names}
     component_out = {name: 0.0 for name in fuel_names}
     component_in = {name: 0.0 for name in fuel_names}
     chemical_energy = wall_energy = work = 0.0
     mass_out = mass_in = 0.0
+    blowby_enthalpy_out = blowby_enthalpy_in = 0.0
     rows: list[dict[str, Any]] = []
     max_pressure_difference = max_volume_error = 0.0
 
@@ -404,6 +409,10 @@ def simulate_two_zone(
             "wall_heat": boundary_heat.heat_rate,
             "out": core_out_rate + boundary_out_rate,
             "in": core_in_rate + boundary_in_rate,
+            "out_enthalpy": (core_out_rate * core.phase.enthalpy_mass
+                              + boundary_out_rate * boundary.phase.enthalpy_mass),
+            "in_enthalpy": ((core_in_rate + boundary_in_rate) * crank_phase.enthalpy_mass
+                            if crank_phase is not None else 0.0),
             "component_out": {
                 name: (
                     core_out_rate * core.phase[name].Y[0]
@@ -538,6 +547,8 @@ def simulate_two_zone(
         wall_energy += 0.5 * (rate0["wall_heat"] + rate1["wall_heat"]) * dt
         mass_out += 0.5 * (rate0["out"] + rate1["out"]) * dt
         mass_in += 0.5 * (rate0["in"] + rate1["in"]) * dt
+        blowby_enthalpy_out += 0.5 * (rate0["out_enthalpy"] + rate1["out_enthalpy"]) * dt
+        blowby_enthalpy_in += 0.5 * (rate0["in_enthalpy"] + rate1["in_enthalpy"]) * dt
         for name in fuel_names:
             component_out[name] += 0.5 * (
                 rate0["component_out"][name] + rate1["component_out"][name]
@@ -613,9 +624,16 @@ def simulate_two_zone(
         "wall_energy_gas_to_wall_mJ": wall_energy * 1000.0,
         "cumulative_chemical_heat_release_mJ": chemical_energy * 1000.0,
         "initial_trapped_mass_mg": initial_mass * 1e6,
+        "initial_internal_energy_J": initial_internal_energy,
+        "final_internal_energy_J": (
+            core.mass * core.phase.int_energy_mass
+            + boundary.mass * boundary.phase.int_energy_mass
+        ),
         "mass_retained_end_fraction": (core.mass + boundary.mass) / initial_mass,
         "blowby_mass_out_mg": mass_out * 1e6,
         "blowby_mass_in_mg": mass_in * 1e6,
+        "blowby_enthalpy_out_J": blowby_enthalpy_out,
+        "blowby_enthalpy_in_J": blowby_enthalpy_in,
         "mass_balance_residual_mg": (
             initial_mass + mass_in - mass_out - core.mass - boundary.mass
         ) * 1e6,
