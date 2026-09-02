@@ -58,6 +58,22 @@ nonreacting transport run without a reason.
   geometry produces mass drift or another continuity failure.
 - maxDeltaT sweep: 0.15 CAD is the recommended cap; 0.25 CAD passes the 5%
   answer gate but was not faster, while 0.35/0.45 CAD fail max Co.
+- Axis-core artifact (F26): every run carries a spurious axial jet in the
+  innermost axis-core ring (5.5 m/s fine, 1.5-2.3 m/s coarse at -140 CAD
+  against a 0.21 m/s piston) that sets the Courant-limited step; the
+  physical mean Courant number is 0.002. The tracer is exactly zero inside
+  r = 1 mm at every output, so promoted transport answers are unaffected, but
+  diagnostics that sample the axis or whole-field velocity statistics must
+  exclude the innermost rings. Do not raise `maxCo` to buy speed: the
+  artifact grows to fill the allowance (17.6 m/s at 0.45). The speed lever is
+  the axis treatment itself (`CFD01_TIMESTEP_FINE_REPORT.md`).
+- Fine-mesh Courant candidates (F27): `maxCo 0.30` and `0.45` with
+  `maxDeltaT 0.25` take 5,228 and 5,063 steps against 5,595, no wall-time
+  gain, and both fail the run gate on a start-up Courant spike (1.58 and
+  2.89 in the first six steps at the cap). The reference's reported maximum
+  Courant 0.373 is the same start-up spike at the 0.15 cap, not a mid-cycle
+  value. Keep `maxCo 0.15 / maxDeltaT 0.15`; a small initial `deltaT`
+  belongs with the axis fix.
 
 ### CFD-02 S1 metric warning
 

@@ -52,6 +52,12 @@ functions
         diffusivity viscosity;
         alphal 1.408;
         alphat 0;
+        // scalarTransport::write() writes the field unconditionally and the
+        // function-object default is every time step; the fine mesh therefore
+        // wrote 5,596 tracer directories (Issue #10 follow-up).  Write at the
+        // same cadence as the snapshot function objects instead.
+        writeControl timeStep;
+        writeInterval 3;
     }
 
     cellVolumes
