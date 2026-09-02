@@ -40,6 +40,15 @@ figures remain usable as qualitative evidence and as a possible future
 digitization target, but any digitized points must be placed in a separately
 named dataset with figure/page coordinates and explicit uncertainty.
 
+The Galway validation graphics themselves are cataloged in
+[`validation_plots.json`](validation_plots.json), with direct URLs, retrieved
+snapshot hashes, panel conditions, and axis transforms. The recovery memo
+[`VALIDATION_PLOT_RECOVERY.md`](VALIDATION_PLOT_RECOVERY.md) explains why the
+plots are not treated as point data. The empty
+[`digitized_points_template.csv`](digitized_points_template.csv) is a future
+scaffold only; it is not an input to `burke2015_gate.py` and contains no
+unreviewed values.
+
 ## CSV schema
 
 Use `template.csv` as the header. Required columns:
