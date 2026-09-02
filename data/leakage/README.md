@@ -99,3 +99,20 @@ The script reports:
 - the existing 8.5 mm 2/3/5 um annular brackets evaluated at a stated room-temperature leak-down comparison condition.
 
 The 8.5 mm extrapolation remains a screening comparison until small-engine hardware data exists.
+
+## Thermal-fit linkage (C1)
+
+`THERMAL_CLEARANCE_REPORT.md` and `data/sealing/` contain a separate
+analytical screen that converts cold radial fit plus independent piston/liner
+temperatures and material strain profiles into signed hot radial clearance.
+Positive hot clearance is passed to `physics/annulus.py` for a sensitivity-only
+flow estimate; negative clearance is retained as an interference warning and
+has no annulus flow value.  These calculated rows are not measured leakage and
+must not be merged into `records.csv` or the calibrated static/dynamic
+regressions.
+
+The screen reinforces the fixture requirement: record axial bore/piston
+dimensions, taper, piston and liner temperature, pressure, gas state, and
+lubricant condition together with direct flow.  A warm fit measurement is the
+missing link between the existing engineering clearance brackets and a
+credible hot blow-by datum.

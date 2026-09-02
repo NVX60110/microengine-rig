@@ -48,6 +48,15 @@ The next highest-value acquisition target is the full SAE 2010-32-0018 paper or 
 
 If the full paper still lacks recoverable point values, the practical path should shift toward our own same-fixture direct-flow measurements on a 10-20 mm ABC/model-engine cylinder rather than force a literature regression.
 
+## C1 thermal-clearance consequence
+
+The new analytical screen in `THERMAL_CLEARANCE_REPORT.md` uses the AP/Hornet
+12.5 mm scale only as a geometry bridge.  It does not treat the qualitative
+ABC taper/reaming observations as a calibrated leak rate.  The bridge shows
+that differential expansion scales with bore, so a larger mule is useful for
+instrument access but does not remove the need to measure piston and liner
+temperatures, axial taper, and direct flow simultaneously.
+
 ## Sources
 
 - SAE 2010-32-0018: https://saemobilus.sae.org/papers/experimental-tests-simulations-a-15-cc-miniature-glow-ignition-two-stroke-engine-2010-32-0018

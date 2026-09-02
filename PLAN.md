@@ -184,6 +184,23 @@ decision is closed.
 
 ### C1 - Calibrated leakage scaling study
 
+#### C1 thermal-clearance feasibility screen (completed screening step)
+
+The analytical thermal-fit screen is now implemented in
+`physics/thermal_clearance.py` and `scripts/thermal_clearance_sweep.py`.
+It covers 8.5 mm and 12.5 mm bridges, independent piston/liner temperatures,
+screened material pairs, signed hot clearance, annulus leakage sensitivity,
+and an explicitly assumed tolerance Monte Carlo.  Results and the limitation
+statement are in `THERMAL_CLEARANCE_REPORT.md` and `data/sealing/`.
+
+This does **not** close calibrated C1.  It establishes that the prior 2/3/5 µm
+values are engineering brackets, not universal hot fits: for the representative
+Al 4032/4140 pair, approximately 10.7–14.1 µm cold radial clearance is needed
+for a 3–5 µm hot target at 500/450 K, and the answer remains highly sensitive
+to independent temperature error.  The next C1 step is a warm, direct-flow
+fixture on a 10–15 mm reference cylinder with axial fit/taper and independent
+piston/liner temperature measurements.
+
 Hypothesis: if manufactured radial clearance is roughly independent of bore,
 then annular leak area scales approximately with `B*c` while displacement
 scales with `B^2*S`, so leakage-per-displacement can deteriorate rapidly as
