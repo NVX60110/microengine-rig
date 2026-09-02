@@ -89,3 +89,22 @@ Highest-value missing evidence remains a **small-bore calibrated leak fixture** 
 - any published fixture reporting actual leakage flow at known pressure and temperature.
 
 One trustworthy 10-30 mm direct-flow dataset is more valuable to the 8.5 mm extrapolation than many additional automotive service-manual percentages.
+
+## C1 thermal-property sources
+
+These sources support the separate calculated thermal-clearance screen. They
+are property inputs, not leakage measurements; designation, temperature range,
+and limitations are copied into `data/materials/thermal_properties.json`.
+
+- EN AW-4032 aluminum datasheet: https://www.aluminiumbozen.com/images/pdf/schede_leghe/Datasheet_alloy_4032.pdf
+- AA 2618 / 2618A datasheet: https://www.aluminiumbozen.com/images/pdf/schede_leghe/Datasheet_alloy_2618A.pdf
+- NIST wrought aluminum properties: https://materialsdata.nist.gov/bitstream/handle/11115/179/Properties%20of%20Wrought%20Aluminum.pdf
+- 6061-T6 data sheet (20–300 °C high-end estimate explicitly marked): https://www.clintonaluminum.com/wp-content/uploads/2014/08/Grade-6061-T6-T651-Text-Data.pdf
+- 42CrMo4 / 1.7227 material data: https://einsal.com/en/materials/material-database/material/pdf/1.7227
+- Gray cast iron EN-GJL-250 property sheet: https://castingquality.com/wp-content/uploads/2009/08/din-1691-1985-e7810b0e993b0e99381-flake-graphite-cast-iron-grey-cast-iron-properties.pdf
+- Kyocera SN201B silicon-nitride data sheet: https://www.kyocera-fineceramics.de/fileadmin/user_upload/Download/werkstoffdatenblaetter/siliziumnitrid/Kyocera_Fineceramics_Europe_SN201B.pdf
+
+C1 source classification: material values are literature/datasheet-derived;
+temperature grids, tolerance distributions, viscosity approximation and
+pressure states are engineering assumptions; hot clearances and annulus flows
+are calculated; no new AP .09/Hornet absolute-flow row was recovered.

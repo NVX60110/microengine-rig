@@ -1,0 +1,102 @@
+{
+  "schema": "thermal_clearance_material_v1",
+  "temperature_unit": "K",
+  "cte_unit": "1/K",
+  "conductivity_unit": "W/(m K)",
+  "notes": [
+    "strain_points are cumulative linear strain relative to the first point",
+    "where a source reports mean CTE over a range, the endpoint strain is CTE_mean times delta-T",
+    "endpoint extrapolation in the campaign is an engineering sensitivity assumption, not measured data"
+  ],
+  "materials": [
+    {
+      "id": "al_4032_t6",
+      "designation": "EN AW-4032 / AA 4032-T6 (representative piston alloy)",
+      "family": "aluminum-silicon piston alloy",
+      "thermal_conductivity_W_mK": 154.0,
+      "thermal_conductivity_temperature_K": 293.15,
+      "strain_points": [[293.15, 0.0], [373.15, 0.001552], [473.15, 0.003636]],
+      "cte_source_range": "20-100 C; 20-200 C",
+      "source": "Aluminium Bozen EN AW-4032 datasheet",
+      "source_url": "https://www.aluminiumbozen.com/images/pdf/schede_leghe/Datasheet_alloy_4032.pdf",
+      "source_notes": "19.4e-6/K mean CTE and 154 W/(m K) conductivity at 20 C; 20-200 C endpoint supplemented by NIST/AA data.",
+      "uncertainty_note": "Temperature-dependent values above 200 C are endpoint extrapolation; exact piston temper and casting/forging form are not specified."
+    },
+    {
+      "id": "al_2618_t61",
+      "designation": "AA 2618-T61/2618A (representative forged piston alloy)",
+      "family": "aluminum-copper piston alloy",
+      "thermal_conductivity_W_mK": 147.0,
+      "thermal_conductivity_temperature_K": 293.15,
+      "strain_points": [[293.15, 0.0], [373.15, 0.001784], [473.15, 0.004176], [573.15, 0.006724]],
+      "cte_source_range": "20-100 C; 20-200 C; 20-300 C",
+      "source": "NIST Properties of Wrought Aluminum and Aluminum Alloys; Aluminium Bozen 2618A datasheet",
+      "source_url": "https://materialsdata.nist.gov/bitstream/handle/11115/179/Properties%20of%20Wrought%20Aluminum.pdf",
+      "secondary_source_url": "https://www.aluminiumbozen.com/images/pdf/schede_leghe/Datasheet_alloy_2618A.pdf",
+      "source_notes": "NIST gives mean CTE 22.3, 23.2, 24.1e-6/K over the listed ranges; Aluminium Bozen gives 147 W/(m K) at 20 C.",
+      "uncertainty_note": "Profile uses mean-CTE ranges converted to cumulative strain; high-temperature property and temper scatter are not measured here."
+    },
+    {
+      "id": "al_6061_t6",
+      "designation": "AA 6061-T6/T651 (representative aluminum liner)",
+      "family": "aluminum alloy",
+      "thermal_conductivity_W_mK": 167.0,
+      "thermal_conductivity_temperature_K": 293.15,
+      "strain_points": [[293.15, 0.0], [373.15, 0.001888], [573.15, 0.007056]],
+      "cte_source_range": "20-100 C; 20-300 C",
+      "source": "Clinton Aluminum / Aluminum Association typical data",
+      "source_url": "https://www.clintonaluminum.com/wp-content/uploads/2014/08/Grade-6061-T6-T651-Text-Data.pdf",
+      "source_notes": "23.6e-6/K mean CTE over 20-100 C, 25.2e-6/K estimated over 20-300 C, and 167 W/(m K) conductivity at 20 C.",
+      "uncertainty_note": "20-300 C CTE is identified by the supplier as estimated; an aluminum liner also raises wear, galling and surface-finish questions outside this CTE model."
+    },
+    {
+      "id": "steel_4140",
+      "designation": "AISI 4140 / 42CrMoS4 (representative steel piston or liner)",
+      "family": "low-alloy steel",
+      "thermal_conductivity_W_mK": 42.6,
+      "thermal_conductivity_temperature_K": 293.15,
+      "strain_points": [[293.15, 0.0], [373.15, 0.000968], [673.15, 0.005168]],
+      "cte_source_range": "20-100 C; 20-400 C",
+      "source": "Walzwerke Einsal 42CrMoS4/AISI 4140 material data",
+      "source_url": "https://einsal.com/en/materials/material-database/material/pdf/1.7227",
+      "source_notes": "12.1e-6/K mean CTE over 20-100 C, 13.6e-6/K over 20-400 C, and 42.6 W/(m K) conductivity at 20 C.",
+      "uncertainty_note": "CTE and conductivity vary with heat treatment, alloy and temperature; this is a representative steel screen, not a procurement specification."
+    },
+    {
+      "id": "gray_iron_gjl250",
+      "designation": "EN-GJL-250 gray cast iron (representative liner)",
+      "family": "lamellar graphite cast iron",
+      "thermal_conductivity_W_mK": 48.5,
+      "thermal_conductivity_temperature_K": 373.15,
+      "strain_points": [[293.15, 0.0], [473.15, 0.002106], [673.15, 0.004940]],
+      "cte_source_range": "20-200 C; 20-400 C",
+      "source": "Grey cast iron EN 1561 property sheet",
+      "source_url": "https://castingquality.com/wp-content/uploads/2009/08/din-1691-1985-e781b0e993b0e99381-flake-graphite-cast-iron-grey-cast-iron-properties.pdf",
+      "source_notes": "11.7e-6/K mean CTE over 20-200 C and 13.0e-6/K over 20-400 C; conductivity is grade-dependent (representative 48.5 W/(m K) at 100 C for GJL-250 range).",
+      "uncertainty_note": "Graphite morphology and grade materially affect conductivity and expansion; the source table is a grade range, not a certified liner batch."
+    },
+    {
+      "id": "si3n4_sn201b",
+      "designation": "Silicon nitride SN201B (ceramic piston screening proxy)",
+      "family": "silicon-nitride ceramic",
+      "thermal_conductivity_W_mK": 25.0,
+      "thermal_conductivity_temperature_K": 293.15,
+      "strain_points": [[293.15, 0.0], [673.15, 0.000912], [1073.15, 0.002432]],
+      "cte_source_range": "40-400 C; 40-800 C",
+      "source": "Kyocera Fineceramics Europe SN201B datasheet",
+      "source_url": "https://www.kyocera-fineceramics.de/fileadmin/user_upload/Download/werkstoffdatenblaetter/siliziumnitrid/Kyocera_Fineceramics_Europe_SN201B.pdf",
+      "source_notes": "2.4e-6/K mean CTE over 40-400 C, 3.2e-6/K over 40-800 C, and 25 W/(m K) conductivity.",
+      "uncertainty_note": "Ceramic grade, porosity, surface finish, impact tolerance and tribology dominate feasibility questions not represented by scalar CTE."
+    }
+  ],
+  "screened_pairs": [
+    ["al_4032_t6", "steel_4140"],
+    ["al_2618_t61", "steel_4140"],
+    ["al_4032_t6", "gray_iron_gjl250"],
+    ["al_2618_t61", "gray_iron_gjl250"],
+    ["al_4032_t6", "al_6061_t6"],
+    ["steel_4140", "steel_4140"],
+    ["si3n4_sn201b", "steel_4140"],
+    ["si3n4_sn201b", "gray_iron_gjl250"]
+  ]
+}
