@@ -399,6 +399,7 @@ def main() -> None:
         "node_capacities_J_K": {node.name: node.capacity_J_K for node in scaled_nodes(1.0, 300.0, ThermalRCConfig())},
         "conductive_links_W_K_reference": [{"node_a": link.node_a, "node_b": link.node_b, "conductance_W_K": link.conductance_W_K} for link in default_links(ThermalRCConfig())],
         "conductivity_scaling": "piston and liner links scale linearly with selected k relative to the Al-4032/4140 reference pair; link geometry remains an engineering bracket",
+        "gas_area_assignment": "crown/head and liner TDC/lower bands receive direct chamber-side convection; conventional piston skirt receives zero direct gas area and heats through solid paths",
         "base_case_count": len(base_cases),
         "uncertainty_case_count": len(uncertainty),
         "base_cases": base_cases,

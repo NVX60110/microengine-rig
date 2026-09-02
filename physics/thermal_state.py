@@ -81,7 +81,10 @@ class ThermalRCConfig:
     velocity_ref_m_s: float = 0.28
     h_min_multiplier: float = 0.25
     h_max_multiplier: float = 4.0
-    piston_skirt_area_fraction: float = 0.15
+    # The conventional skirt is not a combustion-chamber surface.  Keep this
+    # field only as an explicit compatibility knob; the default is zero and
+    # gas-sidewall area is assigned to liner bands instead.
+    piston_skirt_area_fraction: float = 0.0
     liner_tdc_area_fraction: float = 0.425
     ambient_temperature_K: float = 300.0
     block_ambient_conductance_W_K: float = 0.15
@@ -234,7 +237,14 @@ def history_from_rows(rows: Sequence[Mapping[str, Any]], rpm: float = 1200.0) ->
 
 
 def gas_areas_m2(config: ThermalRCConfig, deg: float) -> dict[str, float]:
-    """Partition the existing engine-model gas area across solid nodes."""
+    """Partition gas-facing area without heating the conventional skirt.
+
+    Combustion gas directly sees the crown, head/deck and cylinder wall.  The
+    skirt temperature therefore comes from crown/body conduction, rod paths and
+    any explicitly supplied external sink.  The sidewall split is between the
+    TDC liner band and lower liner only; no area is silently assigned to the
+    piston skirt.
+    """
     rig = RigConfig(
         bore_mm=config.bore_mm,
         stroke_mm=config.stroke_mm,
@@ -249,12 +259,11 @@ def gas_areas_m2(config: ThermalRCConfig, deg: float) -> dict[str, float]:
     side_area = math.pi * (config.bore_mm / 1000.0) * (
         geometry.clearance_height_m + geometry.piston_position(theta)
     )
-    skirt = config.piston_skirt_area_fraction * side_area
     liner_tdc = config.liner_tdc_area_fraction * side_area
-    liner_lower = max(0.0, side_area - skirt - liner_tdc)
+    liner_lower = max(0.0, side_area - liner_tdc)
     return {
         "piston_crown": piston_area,
-        "piston_skirt": skirt,
+        "piston_skirt": 0.0,
         "liner_tdc": liner_tdc,
         "liner_lower": liner_lower,
         "head_deck": piston_area,

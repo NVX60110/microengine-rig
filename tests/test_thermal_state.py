@@ -7,6 +7,7 @@ from physics.thermal_state import (
     ThermalRCConfig,
     default_links,
     default_nodes,
+    gas_areas_m2,
     heat_transfer_coeff_W_m2K,
     run_thermal_rc,
 )
@@ -36,6 +37,12 @@ class ThermalStateTests(unittest.TestCase):
         ceramic = default_links(ThermalRCConfig(piston_conductivity_W_mK=25.0, liner_conductivity_W_mK=25.0))
         self.assertLess(ceramic[0].conductance_W_K, base[0].conductance_W_K)
         self.assertLess(ceramic[3].conductance_W_K, base[3].conductance_W_K)
+
+    def test_conventional_skirt_has_no_direct_chamber_gas_area(self):
+        areas = gas_areas_m2(ThermalRCConfig(), 0.0)
+        self.assertEqual(areas["piston_skirt"], 0.0)
+        self.assertGreater(areas["liner_tdc"], 0.0)
+        self.assertGreater(areas["liner_lower"], 0.0)
 
     def test_constant_h_does_not_heat_without_gas_delta(self):
         config = ThermalRCConfig(max_warmup_cycles=4, min_warmup_cycles=1, convergence_tolerance_K=1e-12)

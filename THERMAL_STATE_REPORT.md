@@ -51,23 +51,23 @@ reference, the periodic final-cycle RC envelope is:
 
 | gas-side case | piston skirt (K) | liner TDC band (K) | cold fit for 2–5 µm hot (µm radial) |
 |---|---:|---:|---:|
-| constant `h=600` | **441.22–441.28** | **395.49–396.22** | **9.53–12.11** |
-| angle sensitivity | **515.11–515.18** | **443.25–444.27** | **13.43–15.76** |
+| constant `h=600` | **435.53–435.54** | **397.86–398.57** | **8.90–11.46** |
+| angle sensitivity | **509.65–509.66** | **446.72–447.74** | **12.76–15.07** |
 
 These are still calculated screening temperatures, not a prediction of the
 actual engine thermal state.  The block sink and periodic solve expose why the
 old 60-cycle result was not converged: solid warm-up is much slower than a
 100 ms cycle.  The local paired gap matters too.  At a 3 µm cold fit the
-periodic minimum path clearance is approximately −4.55 to −4.53 µm (constant
-h) and −8.48 to −8.43 µm (angle sensitivity), i.e. contact; it is not assigned
+periodic minimum path clearance is approximately −3.92 to −3.89 µm (constant
+h) and −7.80 to −7.76 µm (angle sensitivity), i.e. contact; it is not assigned
 an annulus flow.
 
 The broader bounded sensitivity grid (54 cases around Al-4032/4140, with
 `h`×0.75/1/1.25, block cooling ×0.5/1/1.5, and gas-history offsets ±20 K)
 gives:
 
-* lower cold-fit bound for ≥2 µm hot: **8.30–14.69 µm** (5th–95th percentiles);
-* upper cold-fit bound for ≤5 µm hot: **10.94–16.99 µm** (5th–95th percentiles).
+* lower cold-fit bound for ≥2 µm hot: **7.65–14.15 µm** (5th–95th percentiles);
+* upper cold-fit bound for ≤5 µm hot: **10.26–16.38 µm** (5th–95th percentiles).
 
 Those are percentiles of an explicit engineering sensitivity grid, **not
 confidence or production probabilities**.  The complete rows are in
@@ -86,8 +86,8 @@ For a **3 µm cold** fit, the three-state view is:
 | state | constant h | angle sensitivity |
 |---|---:|---:|
 | cold startup (300 K nodes) | 2.79 µm | 2.79 µm |
-| warm-up trajectory, minimum path | 0.58 µm | −1.54 µm (contact) |
-| periodic trajectory, minimum path | −4.55 µm (contact) | −8.48 µm (contact) |
+| warm-up trajectory, minimum path | 1.32 µm | −0.47 µm (contact) |
+| periodic trajectory, minimum path | −3.92 µm (contact) | −7.80 µm (contact) |
 
 This is why the old 3 µm phrase cannot be a drawing value: even with the
 repaired solver, the fit can pass through sub-micrometre or contact conditions
@@ -110,14 +110,14 @@ below (constant h / angle sensitivity, in µm cold radial clearance):
 
 | piston / liner | constant h | angle sensitivity |
 |---|---:|---:|
-| Al-4032 / 4140 | 9.53–12.11 | 13.43–15.76 |
-| Al-2618 / 4140 | 11.53–14.03 | 16.77–18.93 |
-| Al-4032 / gray iron | 9.94–12.52 | 14.32–16.65 |
-| Al-2618 / gray iron | 11.93–14.44 | 17.66–19.82 |
-| Al-4032 / Al-6061 | 5.15–7.72 | 6.85–9.18 |
-| 4140 / 4140 | 6.94–9.12 | 9.34–11.10 |
-| Si₃N₄ / 4140 | −1.00–1.70 | −2.71–−0.10 |
-| Si₃N₄ / gray iron | −0.71–2.06 | −1.96–0.70 |
+| Al-4032 / 4140 | 8.90–11.46 | 12.76–15.07 |
+| Al-2618 / 4140 | 10.82–13.30 | 16.00–18.13 |
+| Al-4032 / gray iron | 9.33–11.90 | 13.69–16.00 |
+| Al-2618 / gray iron | 11.25–13.74 | 16.93–19.06 |
+| Al-4032 / Al-6061 | 4.44–7.01 | 6.06–8.37 |
+| 4140 / 4140 | 6.37–8.51 | 8.75–10.46 |
+| Si₃N₄ / 4140 | −1.30–1.41 | −3.08–−0.46 |
+| Si₃N₄ / gray iron | −0.95–1.81 | −2.25–0.39 |
 
 Negative lower bounds mean the mathematical target would prefer cold
 interference; a negative upper bound means no nonnegative cold fit meets the
@@ -169,10 +169,10 @@ The defensible answer tonight is therefore:
 
 > The repaired RC framework does **not** justify a new cold-fit target yet.
 > With the current proxy and explicit 0.15 W/K ambient sink, Al-4032/4140
-> requires about **9.5–12.1 µm cold** under constant h and **13.4–15.8 µm**
+> requires about **8.9–11.5 µm cold** under constant h and **12.8–15.1 µm**
 > under the unvalidated angle sensitivity for the local 2–5 µm hot window.
-> The 5th–95th bounded sensitivity envelope is 8.3–14.7 µm on the lower bound
-> and 10.9–17.0 µm on the upper bound.  These are calculated proxy ranges,
+> The 5th–95th bounded sensitivity envelope is 7.7–14.1 µm on the lower bound
+> and 10.3–16.4 µm on the upper bound.  These are calculated proxy ranges,
 > not a hardware drawing value; the controlling unknown remains the measured
 > local piston–liner temperature difference.
 
