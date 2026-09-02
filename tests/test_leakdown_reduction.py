@@ -71,7 +71,7 @@ class LeakdownReductionTests(unittest.TestCase):
         self.assertEqual(reduced["status"], "valid")
         self.assertAlmostEqual(reduced["hot_radial_clearance_um"], 4.0, places=6)
         self.assertAlmostEqual(reduced["measured_to_annulus_flow_ratio"], 1.0, places=6)
-        self.assertGreater(reduced["uncertainty_successful_samples"], 0)
+        self.assertGreater(reduced["uncertainty_successful_samples"], 95)
         self.assertIsNotNone(reduced["uncertainty_measured_cda_p50_mm2"])
         self.assertTrue(reduced["uncertainty"]["sensitivity_ranking"])
 
@@ -120,6 +120,24 @@ class LeakdownReductionTests(unittest.TestCase):
             row["upstream_pressure_bar_abs"] = str(pressure)
             rows.append(reduce_row(row, self.profiles, index=index, mc_samples=0, seed=7))
         self.assertEqual(fit_h3(rows), [])
+
+    def test_h3_groups_small_sensor_jitter(self):
+        rows = []
+        for index, (clearance, pressure) in enumerate(((2.0, 3.999), (3.0, 4.001), (4.0, 4.000))):
+            mdot = annulus_mdot(12.5, clearance, 8.0, 4.0, 1.0, T=293.15, mu=1.816e-5, eccentricity=0.0)
+            row = self.row(record_id=f"j{index}", clearance_um=clearance, mass_flow=mdot)
+            row["upstream_pressure_bar_abs"] = str(pressure)
+            rows.append(reduce_row(row, self.profiles, index=index, mc_samples=0, seed=7))
+        fits = fit_h3(rows)
+        self.assertEqual(len(fits), 1)
+        self.assertAlmostEqual(fits[0]["clearance_exponent"], 3.0, places=8)
+
+    def test_required_metadata_values_cannot_be_blank(self):
+        row = self.row(mass_flow=1e-8)
+        row["run_id"] = ""
+        reduced = reduce_row(row, self.profiles, index=0, mc_samples=0, seed=7)
+        self.assertEqual(reduced["status"], "invalid")
+        self.assertIn("missing required value run_id", reduced["errors"])
 
     def test_synthetic_rows_stay_out_of_canonical_records(self):
         # The CLI is intentionally not pointed at records.csv; this test also

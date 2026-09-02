@@ -27,6 +27,15 @@ from physics.thermal_clearance import ThermalStrainProfile, calculate_clearance
 
 MATERIALS_PATH = ROOT / "data" / "materials" / "thermal_properties.json"
 MODES = {"static_direct", "static_differential", "dynamic_blowby"}
+# These fields are marked required in measurement_schema.csv and are metadata,
+# not numeric channels that can be validated by _positive().
+REQUIRED_VALUE_FIELDS = (
+    "record_id", "run_id", "reference_cylinder_id", "timestamp_utc", "mode",
+    "repeat_number", "stabilization_criterion", "piston_material", "liner_material",
+    "lubricant", "lubricant_condition", "gas", "notes",
+)
+H3_PRESSURE_DECIMALS = 2
+H3_TEMPERATURE_DECIMALS = 1
 
 
 def _float(row: dict[str, str], key: str, *, required: bool = False) -> float | None:
@@ -154,13 +163,24 @@ def _normal(rng: random.Random, value: float, sigma: float | None) -> float:
     return value if not sigma else rng.gauss(value, sigma)
 
 
+def _condition_bucket(value: str, decimals: int) -> str:
+    """Canonicalize sensor jitter while retaining a readable grouping key."""
+    return f"{float(value):.{decimals}f}"
+
+
 def reduce_row(raw: dict[str, str], profiles: dict[str, ThermalStrainProfile], *, index: int, mc_samples: int, seed: int) -> dict[str, Any]:
     out: dict[str, Any] = dict(raw)
     errors: list[str] = []
     try:
         mode = raw.get("mode", "").strip()
+        for key in REQUIRED_VALUE_FIELDS:
+            if raw.get(key) is None or str(raw.get(key)).strip() == "":
+                raise ValueError(f"missing required value {key}")
         if mode not in MODES:
             raise ValueError(f"mode must be one of {sorted(MODES)}")
+        repeat = _float(raw, "repeat_number", required=True)
+        if repeat is None or repeat < 1 or repeat != math.floor(repeat):
+            raise ValueError("repeat_number must be a positive integer")
         for key in ("bore_diameter_cold_mm", "piston_diameter_cold_mm", "measurement_axial_position_mm", "piston_temperature_K", "liner_temperature_K", "chamber_gas_temperature_K", "upstream_pressure_bar_abs", "downstream_pressure_bar_abs", "ambient_pressure_bar_abs", "axial_flow_length_mm", "eccentricity"):
             _float(raw, key, required=True)
         bore = _positive(raw, "bore_diameter_cold_mm", required=True)
@@ -318,6 +338,8 @@ def propagate_uncertainty(raw: dict[str, str], profiles: dict[str, ThermalStrain
             }[channel]
             baseline = viscosity(row) if channel == "viscosity" and str(row.get(key, "")).strip() == "" else float(row[key])
             row[key] = str(_normal(rng, baseline, sigma))
+            if channel in {"bore_diameter", "piston_diameter"}:
+                row["cold_radial_clearance_um"] = ""
         try:
             sample = reduce_row(row, profiles, index=0, mc_samples=0, seed=seed)
             if sample.get("status") != "valid":
@@ -376,11 +398,16 @@ def fit_h3(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
             continue
         # Only compare like with like: pressure, gas temperature, geometry,
         # eccentricity and lubricant state are held fixed within a fit.
-        key = tuple(str(row.get(field, "")) for field in (
-            "reference_cylinder_id", "measurement_axial_position_mm", "lubricant_condition",
-            "upstream_pressure_bar_abs", "downstream_pressure_bar_abs", "chamber_gas_temperature_K",
-            "axial_flow_length_mm", "eccentricity",
-        ))
+        key = (
+            str(row.get("reference_cylinder_id", "")),
+            str(row.get("measurement_axial_position_mm", "")),
+            str(row.get("lubricant_condition", "")),
+            _condition_bucket(str(row.get("upstream_pressure_bar_abs", "")), H3_PRESSURE_DECIMALS),
+            _condition_bucket(str(row.get("downstream_pressure_bar_abs", "")), H3_PRESSURE_DECIMALS),
+            _condition_bucket(str(row.get("chamber_gas_temperature_K", "")), H3_TEMPERATURE_DECIMALS),
+            str(row.get("axial_flow_length_mm", "")),
+            str(row.get("eccentricity", "")),
+        )
         groups.setdefault(key, []).append(row)
     fits = []
     for key, group in groups.items():
