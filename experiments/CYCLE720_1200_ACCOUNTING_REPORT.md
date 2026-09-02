@@ -80,6 +80,27 @@ residual is not yet a passing closure gate; it identifies the next bookkeeping
 task as a more faithful open-system energy/state mapping, especially around the
 aggregated two-zone end state and valve transitions.
 
+## Quadrature refinement
+
+Fresh one-cycle runs were repeated at 5, 2, 1 and 0.5 CAD. The mass residual
+decreases strongly with step size, while the energy residual approaches a
+nonzero plateau:
+
+| step | mass residual (mg) | mass residual / kernel start | total energy residual (J) | closed-kernel energy residual (J) |
+|---:|---:|---:|---:|---:|
+| 5.0 CAD | -8.94e-4 | -5.48e-4 | 3.20e-2 | 1.00e-1 |
+| 2.0 CAD | -9.01e-5 | -5.73e-5 | 6.58e-2 | 8.47e-2 |
+| 1.0 CAD | -2.80e-5 | -1.78e-5 | 6.91e-2 | 7.75e-2 |
+| 0.5 CAD | -1.63e-6 | -1.04e-6 | 7.32e-2 | 7.72e-2 |
+
+Thus the 5-CAD mass residual is primarily trapezoidal rate-integration error,
+not an unexplained 3.19% state drift. At 0.5 CAD it is approximately at, but
+still just above, the existing 1e-6 relative gate; it must not be reported as
+closed without either a still finer run or a justified numerical tolerance.
+The energy residual does not converge to zero in this check. The open-system
+state/energy mapping remains an explicit blocker before friction, crank
+dynamics or motor control are enabled.
+
 ## Reproduction
 
 ```powershell
