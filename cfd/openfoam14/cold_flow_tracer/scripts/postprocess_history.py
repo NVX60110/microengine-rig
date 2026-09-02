@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Convert CFD-01 ASCII fields to volume-weighted core/wall tracer history."""
+"""Convert CFD scalar fields to transport histories.
+
+The original CFD-01 core/shell diagnostic is preserved for flat-piston
+regression.  Cross-geometry comparisons additionally use global tracer moments
+so a changing squish-land volume cannot masquerade as a change in mixing.
+"""
 from __future__ import annotations
 
 import argparse
@@ -20,7 +25,6 @@ AREA_M2 = math.pi * BORE_M**2 / 4.0
 CLEARANCE_M3 = AREA_M2 * STROKE_M / (CR - 1.0)
 ROD_M = ROD_STROKE_RATIO * STROKE_M
 CRANK_M = STROKE_M / 2.0
-OMEGA = 2.0 * math.pi * RPM / 60.0
 WEDGE_SCALE = 360.0 / WEDGE_DEG
 AIR_MOL_WEIGHT_KG_PER_KMOL = 28.965
 R_UNIVERSAL_J_PER_KMOL_K = 8314.46261815324
@@ -60,8 +64,8 @@ def values(
 
 
 def piston_position(theta: float) -> float:
-    root = math.sqrt(ROD_M**2 - CRANK_M**2 * math.sin(theta) ** 2)
-    return CRANK_M * (1.0 - math.cos(theta)) + ROD_M - root
+    root = math.sqrt(ROD_M**2 - (STROKE_M / 2.0) ** 2 * math.sin(theta) ** 2)
+    return (STROKE_M / 2.0) * (1.0 - math.cos(theta)) + ROD_M - root
 
 
 def expected_volume(angle_deg: float) -> float:
@@ -77,7 +81,6 @@ def times(case: Path) -> list[tuple[float, Path]]:
             angle = float(path.name)
         except ValueError:
             continue
-        # OpenFOAM 14's writeCellVolumes function writes Vc (cell volume).
         if (path / "tracer").exists() and (path / "Vc").exists() and (path / "C").exists():
             result.append((angle, path))
     return sorted(result)
@@ -103,6 +106,17 @@ def density(directory: Path, count: int) -> list[float]:
     return result
 
 
+def _log_decay_rate(rows: list[dict[str, float]], index: int, key: str) -> float:
+    """Centered local decay rate -d ln(quantity)/dt for a positive amplitude."""
+    if index == 0 or index == len(rows) - 1:
+        return float("nan")
+    left, right = rows[index - 1], rows[index + 1]
+    a, b = left[key], right[key]
+    if not (math.isfinite(a) and math.isfinite(b)) or a <= 1e-14 or b <= 1e-14:
+        return float("nan")
+    return -(math.log(b) - math.log(a)) / (right["time_s"] - left["time_s"])
+
+
 def process(case: Path, output: Path) -> list[dict[str, float]]:
     rows: list[dict[str, float]] = []
     for angle, directory in times(case):
@@ -115,21 +129,39 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
             raise ValueError(f"Field lengths differ at {directory}")
 
         core_v = shell_v = core_cv = shell_cv = 0.0
+        core_mass = shell_mass = 0.0
         wedge_mass = 0.0
+        tracer_mass_1 = tracer_mass_2 = 0.0
+        tracer_vol_1 = tracer_vol_2 = 0.0
+
         for scalar, cell_volume, centre, density_value in zip(tracer, volume, centres, rho):
             radius = math.hypot(centre[0], centre[1])
+            cell_mass = density_value * cell_volume
             if radius <= CORE_RADIUS_M:
                 core_v += cell_volume
                 core_cv += scalar * cell_volume
+                core_mass += cell_mass
             else:
                 shell_v += cell_volume
                 shell_cv += scalar * cell_volume
-            wedge_mass += density_value * cell_volume
+                shell_mass += cell_mass
+
+            wedge_mass += cell_mass
+            tracer_mass_1 += scalar * cell_mass
+            tracer_mass_2 += scalar * scalar * cell_mass
+            tracer_vol_1 += scalar * cell_volume
+            tracer_vol_2 += scalar * scalar * cell_volume
 
         total_wedge = core_v + shell_v
         core_mean = core_cv / core_v
         wall_mean = shell_cv / shell_v
         delta = wall_mean - core_mean
+
+        mass_mean = tracer_mass_1 / wedge_mass
+        mass_variance = max(0.0, tracer_mass_2 / wedge_mass - mass_mean**2)
+        volume_mean = tracer_vol_1 / total_wedge
+        volume_variance = max(0.0, tracer_vol_2 / total_wedge - volume_mean**2)
+
         rows.append({
             "crank_angle_deg_atdc": angle,
             "time_s": (angle + 180.0) / 360.0 / (RPM / 60.0),
@@ -140,32 +172,68 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
             "tracer_max": max(tracer),
             "core_volume_mm3": core_v * WEDGE_SCALE * 1e9,
             "wall_shell_volume_mm3": shell_v * WEDGE_SCALE * 1e9,
+            "wall_shell_volume_fraction": shell_v / total_wedge,
+            "wall_shell_mass_fraction": shell_mass / wedge_mass,
             "total_volume_mm3": total_wedge * WEDGE_SCALE * 1e9,
             "python_volume_mm3": expected_volume(angle) * 1e9,
             "volume_error_percent": 100.0 * (
                 total_wedge * WEDGE_SCALE / expected_volume(angle) - 1.0
             ),
             "mass_mg": wedge_mass * WEDGE_SCALE * 1e6,
+            "tracer_mass_mean": mass_mean,
+            "tracer_mass_variance": mass_variance,
+            "tracer_mass_rms": math.sqrt(mass_variance),
+            "tracer_volume_mean": volume_mean,
+            "tracer_volume_variance": volume_variance,
+            "tracer_volume_rms": math.sqrt(volume_variance),
         })
 
     if not rows:
         raise ValueError(f"No usable CFD output times found in {case}")
+
     initial_mass = rows[0]["mass_mg"]
+    initial_tracer_mass_mean = rows[0]["tracer_mass_mean"]
+    initial_mass_rms = rows[0]["tracer_mass_rms"]
+    initial_volume_rms = rows[0]["tracer_volume_rms"]
     if initial_mass <= 0:
         raise ValueError("Initial integrated mass is not positive")
+    if initial_mass_rms <= 0 or initial_volume_rms <= 0:
+        raise ValueError("Initial tracer variance is not positive")
+
     for row in rows:
         row["mass_error_percent"] = 100.0 * (row["mass_mg"] / initial_mass - 1.0)
+        row["tracer_inventory_error_percent"] = 100.0 * (
+            row["tracer_mass_mean"] / initial_tracer_mass_mean - 1.0
+        )
+        row["tracer_mass_rms_normalized"] = row["tracer_mass_rms"] / initial_mass_rms
+        row["tracer_volume_rms_normalized"] = row["tracer_volume_rms"] / initial_volume_rms
 
     for index, row in enumerate(rows):
-        left, right = rows[max(0, index - 1)], rows[min(len(rows) - 1, index + 1)]
-        if index == 0 or index == len(rows) - 1 or abs(left["delta_c"]) <= 1e-14 or abs(right["delta_c"]) <= 1e-14:
-            rate = float("nan")
+        # Legacy fixed-radius core/shell decay. Keep for CFD-01 regression, but
+        # do not use it alone for cross-geometry squish comparisons when the
+        # shell volume fraction changes strongly through the cycle.
+        if index == 0 or index == len(rows) - 1:
+            zone_rate = float("nan")
         else:
-            rate = -(
-                math.log(abs(right["delta_c"])) - math.log(abs(left["delta_c"]))
-            ) / (right["time_s"] - left["time_s"])
-        row["k_mix_1_s"] = rate
-        row["tau_mix_ms"] = 1000.0 / rate if math.isfinite(rate) and rate > 0 else float("nan")
+            left, right = rows[index - 1], rows[index + 1]
+            if abs(left["delta_c"]) <= 1e-14 or abs(right["delta_c"]) <= 1e-14:
+                zone_rate = float("nan")
+            else:
+                zone_rate = -(
+                    math.log(abs(right["delta_c"])) - math.log(abs(left["delta_c"]))
+                ) / (right["time_s"] - left["time_s"])
+        row["k_mix_1_s"] = zone_rate
+        row["tau_mix_ms"] = (
+            1000.0 / zone_rate if math.isfinite(zone_rate) and zone_rate > 0 else float("nan")
+        )
+
+        global_rate = _log_decay_rate(rows, index, "tracer_mass_rms")
+        row["k_global_mix_1_s"] = global_rate
+        row["tau_global_mix_ms"] = (
+            1000.0 / global_rate
+            if math.isfinite(global_rate) and global_rate > 0
+            else float("nan")
+        )
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as handle:
@@ -182,11 +250,15 @@ def main() -> None:
     args = parser.parse_args()
     rows = process(args.case.resolve(), args.output.resolve())
     max_mass = max(abs(row["mass_error_percent"]) for row in rows)
+    max_inventory = max(abs(row["tracer_inventory_error_percent"]) for row in rows)
     tracer_min = min(row["tracer_min"] for row in rows)
     tracer_max = max(row["tracer_max"] for row in rows)
+    shell_min = min(row["wall_shell_volume_fraction"] for row in rows)
+    shell_max = max(row["wall_shell_volume_fraction"] for row in rows)
     print(
         f"wrote {len(rows)} rows to {args.output}; "
-        f"max mass drift={max_mass:.6g}%, tracer=[{tracer_min:.6g}, {tracer_max:.6g}]"
+        f"max mass drift={max_mass:.6g}%, tracer=[{tracer_min:.6g}, {tracer_max:.6g}], "
+        f"tracer inventory drift={max_inventory:.6g}%, shell volume fraction=[{shell_min:.6g}, {shell_max:.6g}]"
     )
 
 
