@@ -6,16 +6,40 @@ Status: **hypothesis only**. Do not use as a design default until Issue #4 (dire
 
 A single-fuel DME architecture with controlled EGR/residual gas may provide a more stable autoignition-phasing lever than the current methane-retarded DME blend.
 
-The external Fable 5.1 handoff reported favorable local ignition-delay slopes for CO/H2O-rich EGR at one 0-D state. Those values are not yet reproduced in the repository and the reported stability slope `S` is not formally defined here.
+The external Fable 5.1 handoff reported favorable local ignition-delay slopes
+for CO/H2O-rich EGR at one 0-D state. The bounded reproduction now defines the
+signed diagnostic as
+
+`S = d ln(tau_ign) / d ln(T)`
+
+with ordinary ignition giving `S < 0`. `FUEL_TEMPERATURE_SENSITIVITY_REPORT.md`
+and its CSV/JSON preserve the 40-bar, 875-975 K curves with a common max-dP/dt
+criterion. No tested DME/CO+diluent recipe both reached the 2-5 ms target and
+retained a nonnegative/near-flat response across Zhao and LLNL. This is a
+negative architecture screen, not proof that EGR cannot be useful at an
+evolving engine state.
+
+The separate prescribed-residual adapter also shows why a frozen exhaust
+vector is insufficient. At the nominal OP-IDLE anchor both its 5% and 30%
+mass-residual maps remain unconverged at the bounded eight-iteration cap, even
+though deterministic reruns reproduce the cool-branch trends exactly and the
+independent numerical gates pass. Neither result is a valve-derived internal-
+residual prediction or a 720-CAD stable cycle.
 
 ## Required experiment
 
-1. Define stability metric explicitly, e.g. a signed derivative of ignition delay with temperature over a finite local interval. Record units and sign convention.
-2. Reproduce the external table at the exact reported state (`~925 K`, `~40 bar`) with versioned mechanism, composition, phi, integration criterion and tolerance.
-3. Cross-check at minimum Zhao sk39, Zhao full and LLNL; add Burke Mech_56.54 if conversion/validation succeeds.
+1. Retain the implemented signed ignition-delay diagnostic and its local curve;
+   do not rename it a system-stability metric.
+2. Extend beyond the completed 40-bar constant-volume reproduction only when
+   an actual evolving engine state or experimental target justifies it.
+3. Keep the completed Zhao sk39/full and LLNL comparison; Burke Mech_56.54
+   remains a compatibility diagnostic until point-level validation is available.
 4. Sweep EGR fraction and EGR constituent composition instead of using one frozen exhaust vector.
 5. Separate thermal dilution from chemical composition where practical (N2/CO2/H2O controls).
-6. Iterate exhaust composition -> EGR -> next-cycle chemistry until a periodic/fixed-point state is reached. A one-pass frozen exhaust composition is not enough to establish negative feedback.
+6. Extend the completed prescribed-residual adapter to a valve-derived 720-CAD
+   periodic state before treating residual fraction as an engine output. A
+   one-pass frozen exhaust composition is not enough to establish negative
+   feedback.
 7. Perturb wall temperature, residual fraction and EGR fraction and require the claimed stabilizing sign to persist over a finite neighborhood.
 8. Only after 1-7, test the surviving cases in the two-zone/repeated-cycle engine model.
 

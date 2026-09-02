@@ -400,12 +400,26 @@ model for checkable quantities:
 
 ## Immediate order
 
+The bounded preflight exposed two useful constraints before that larger model:
+
+- the 40-bar fuel-design hypothesis produced no DME/CO+diluent recipe that met
+  both the 2-5 ms delay band and a nonnegative/near-flat temperature response
+  across Zhao and LLNL;
+- a prescribed mass-residual map changes the nominal 1200-rpm branch
+  materially. Both the 5% and 30% endpoints remain unresolved at eight
+  iterations under the declared fixed-point tolerance, although deterministic
+  reruns reproduce their cool-branch trends exactly and pass the independent
+  numerical gates. This is a regression anchor for the future gas-exchange
+  model, not a residual-fraction calibration.
+
 1. Implement the minimal 720-CAD gas-exchange/residual/crank layer, preserving
-   the closed-pass reference when new terms are disabled.
+   the closed-pass reference when new terms are disabled and reproducing the
+   prescribed-residual adapter when its replacement fraction/state is imposed.
 2. Run 1,000/1,200/1,500/2,000 rpm at 2/3/5 µm hot-clearance brackets and all
    three mechanisms; require periodic mass/species/energy/speed convergence.
 3. In parallel, digitize/obtain Burke DME/CH4 data and run the direct mechanism
-   gate, then audit Zhao pressure-dependent decomposition.
+   gate, then audit Zhao pressure-dependent decomposition. Do not optimize a
+   new fuel recipe against the currently divergent constant-volume mechanisms.
 4. Prepare the Issue #13 10–15 mm warm direct-flow experiment to measure the
    current low-idle limiter: paired axial temperature/clearance and flow.
 5. Measure motoring torque versus crank angle/RPM when complete hardware exists.
