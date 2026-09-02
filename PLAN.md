@@ -263,6 +263,14 @@ temperature row and therefore supplies no empirical clearance prior. Missing
 AP .09/Tian, Kruggel 710578, Furuhama and SETC point tables remain recovery
 targets; graph values are not silently digitized or promoted.
 
+The evidence lane now also records the 11.25 mm ringless Shang engine's
+reported head-temperature/power context, the approximately 9 mm HCCI engine's
+controlled block-temperature setpoints, and the ringed Furuhama/Tada heat-path
+and leakage coefficients. Ringed values are kept out of the ringless thermal
+network. A manufacturer ABC reference supports intentional cold taper
+qualitatively, but no quantitative ringless skirt-to-liner conductance, oil-film
+resistance or taper profile has been recovered.
+
 Hypothesis: if manufactured radial clearance is roughly independent of bore,
 then annular leak area scales approximately with `B*c` while displacement
 scales with `B^2*S`, so leakage-per-displacement can deteriorate rapidly as

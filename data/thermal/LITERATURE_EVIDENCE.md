@@ -58,6 +58,48 @@ warning; it is not silently converted into an 8.5 mm prior.
   and temperature metadata was recovered.
   [CCEFP Year 6 report](https://www.ccefp.org/wp-content/uploads/2016/05/CCEFP_Y6_Volume_2.pdf)
 
+## Newly recovered near-scale and architecture evidence
+
+- **Shang et al., Science Progress (2020)** — the 0.99 cc test engine is
+  explicitly a no-piston-ring, air-cooled two-stroke with 11.25 mm bore and
+  10 mm stroke. The paper reports approximately 70 W maximum output, friction
+  power above 40 W and a highest-speed region near 18,000 rpm; its cylinder-head
+  temperature is reported over roughly 160–200 °C. These are useful near-scale
+  thermal-magnitude and operating-context observations, not a piston/liner
+  temperature pair or blow-by calibration.
+  [Open-access article](https://pmc.ncbi.nlm.nih.gov/articles/PMC10451914/)
+- **Shang et al., Applied Sciences (2024)** — a roughly 9.0 × 8.6 mm HCCI
+  engine was tested with the cylinder block controlled at 70, 90, 110 and
+  130 °C. The reported combustion and intake changes establish that wall
+  thermal state is first-order at this scale, but block temperature is not a
+  local liner-TDC or piston temperature and is not used as a clearance prior.
+  [Open PDF](https://pure.tue.nl/ws/portalfiles/portal/352894799/applsci-14-07359.pdf)
+- **Tada & Furuhama, JSME (1964)** — in a ringed farm-type gasoline engine,
+  the abstract reports as much as 81% of piston heat flowing through rings and
+  ring lands to the cylinder wall at 3500 rpm/full load, with a piston-back
+  heat-transfer coefficient of 35–60 kcal/(m² h °C), approximately 40.7–69.8
+  W/(m² K). This is deliberately retained as ringed-architecture evidence only;
+  it is not a ringless skirt-to-liner conductance.
+  [JSME abstract](https://doi.org/10.1299/kikai1938.30.350)
+- **Furuhama & Tada, JSME (1961)** — the ring-gap apparatus reports a leakage
+  discharge coefficient of 0.8–0.9 (mean about 0.86) near working-engine
+  states and leakage-gas temperature approximately equal to piston-surface gas
+  temperature. This is a ring-pack/orifice input, not a ringless annulus input.
+  [J-STAGE abstract](https://doi.org/10.1299/jsme1958.4.684)
+- **MECOA manufacturer FAQ (2022)** — the ABC description states that the
+  piston/liner set is intentionally tapered or choked when cold and becomes
+  effectively straight as the cylinder reaches operating temperature. It gives
+  no taper magnitude, local temperature pair or clearance table, so it remains
+  qualitative manufacturer evidence rather than a numeric fit datum.
+  [Manufacturer FAQ](https://www.mecoa.com/faq/abc/abc.htm)
+
+These additions still do **not** recover a quantitative ringless
+piston↔liner heat-transfer coefficient, oil-film thermal resistance, or ABC
+taper profile. They support separating ringed and ringless thermal topologies
+and support the plausibility of an order-of-10-µm cold-fit screen, but they do
+not narrow the existing calculated envelope or change the canonical leakage
+evidence dataset.
+
 ## What is deliberately not in the measurement CSV
 
 The often-cited 284–326 °C crown range and approximately 42 K circumferential
@@ -75,7 +117,7 @@ python scripts/analyze_thermal_literature.py
 python -m unittest tests/test_thermal_literature.py -v
 ```
 
-At the current revision the ledger contains eight sources and five reported
-method/sensitivity values, but zero paired piston/liner temperature rows. The
-analysis script therefore produces no empirical clearance prior and no change
-to the canonical leakage evidence dataset.
+At the current revision the ledger contains thirteen sources and twenty
+reported context/method/sensitivity values, but zero paired piston/liner
+temperature rows. The analysis script therefore produces no empirical
+clearance prior and no change to the canonical leakage evidence dataset.
