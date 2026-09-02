@@ -19,6 +19,7 @@ import math
 from pathlib import Path
 
 DEFAULT_TARGETS = (-20.0, 0.0, 20.0)
+MAX_TRACER_INVENTORY_DRIFT_REL = 1e-4
 
 
 def load(path: Path) -> list[dict[str, float]]:
@@ -108,6 +109,18 @@ def main() -> None:
     initial_rms_ratio = (
         cand_initial_rms / ref_initial_rms if ref_initial_rms > 0 else math.nan
     )
+    reference_max_inventory = max(
+        abs(r["tracer_inventory_error_percent"]) for r in reference
+    )
+    candidate_max_inventory = max(
+        abs(r["tracer_inventory_error_percent"]) for r in candidate
+    )
+    inventory_gate_percent = 100.0 * MAX_TRACER_INVENTORY_DRIFT_REL
+    gate_failures = []
+    if reference_max_inventory > inventory_gate_percent:
+        gate_failures.append("reference tracer inventory gate failed")
+    if candidate_max_inventory > inventory_gate_percent:
+        gate_failures.append("candidate tracer inventory gate failed")
 
     result: dict[str, object] = {
         "reference": str(args.reference),
@@ -119,6 +132,9 @@ def main() -> None:
             "a different chamber mass/volume fraction; normalize by each case's initial RMS before "
             "comparing the fraction of segregation remaining"
         ),
+        "status": "ok" if not gate_failures else "gate_failed",
+        "gate_failures": gate_failures,
+        "tracer_inventory_gate_relative": MAX_TRACER_INVENTORY_DRIFT_REL,
         "targets": {},
         "global": {
             "reference_initial_rms": ref_initial_rms,
@@ -128,8 +144,8 @@ def main() -> None:
             "reference_shell_fraction_max": max(r["wall_shell_volume_fraction"] for r in reference),
             "candidate_shell_fraction_min": min(r["wall_shell_volume_fraction"] for r in candidate),
             "candidate_shell_fraction_max": max(r["wall_shell_volume_fraction"] for r in candidate),
-            "reference_max_tracer_inventory_error_percent": max(abs(r["tracer_inventory_error_percent"]) for r in reference),
-            "candidate_max_tracer_inventory_error_percent": max(abs(r["tracer_inventory_error_percent"]) for r in candidate),
+            "reference_max_tracer_inventory_error_percent": reference_max_inventory,
+            "candidate_max_tracer_inventory_error_percent": candidate_max_inventory,
         },
     }
 

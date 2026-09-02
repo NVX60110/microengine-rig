@@ -65,6 +65,13 @@ inventory gate (`<=1e-4` relative): volume closure <=0.2%, mass drift <=1e-4
 relative, tracer in [0,1], max Courant <=0.5, output spacing <=0.5 CAD, and
 `checkMesh` at BDC/TDC/+180 CAD.
 
+The completed coarse run is retained as `gate_failed`: all mesh, volume,
+gas-mass, Courant, tracer-bounds, and output-cadence checks passed, but tracer
+inventory drift was `1.67264e-4` relative (`0.0167264%`), above the gate.
+Consequently its mixing history is diagnostic only and is not eligible for
+refinement or Cantera coupling. See `CFD02_S2_REPORT.md` for the comparison
+and decision record.
+
 ## Cross-geometry comparison
 
 Regenerate the current flat/S1 comparison if required:

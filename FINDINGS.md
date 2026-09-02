@@ -87,6 +87,9 @@ CFD-02 changes only the piston/head clearance shape unless stated.
 | F15 | Cross-geometry cumulative mixing must use each case's mass-weighted tracer RMS normalized by its own initial RMS when initial tracer amplitude differs. At TDC S1/flat normalized RMS is 0.8922, while the +/-5 CAD fitted tau is 43.33/39.51 ms | Flat initial raw RMS 0.39875866; S1 initial 0.37335030 (ratio 0.9363); tracer inventory drift <=6.83e-5 relative | SCREENING; S1 has ~10.8% less initial-normalized segregation remaining at TDC but no uniform local-rate improvement | `cfd/compare_tracer_mixing.py`, `cfd/results/cfd01_vs_cfd02_s1_tracer_mixing.json`, `CFD02_S1_REPORT.md` |
 | F16 | S1 changes the timing of mixing: its +/-5 CAD fitted tau is faster than flat through much of compression (e.g. -20 CAD: 35.15 vs 50.85 ms) but slower at TDC (43.33 vs 39.51 ms) and after | S1 coarse vs flat fine global normalized RMS fit | SCREENING history-shape result | `cfd/results/cfd01_vs_cfd02_s1_tracer_mixing.json` |
 
+| F17 | S2 medium squish coarse fails the closed-cylinder tracer-inventory gate despite passing mesh, gas-mass, volume, Courant, and tracer-bounds gates | 3.00 mm bowl, 1.25 mm squish, 0.35 mm gap, 2,823 cells; max tracer-inventory drift 0.0167264% = 1.67264e-4 relative | NUMERICAL FAILURE; do not promote transport or refine | `cfd/results/cfd02_s2_coarse_metadata.json`, `CFD02_S2_REPORT.md` |
+| F18 | S2 does not meet the predeclared ~5% additional normalized-RMS reduction versus S1 through -20 to TDC, even as a failed-run diagnostic | S2/S1 normalized RMS 1.0468 at -20 CAD and 0.9987 at TDC; S2/flat is 0.8910 at TDC | SCREENING diagnostic only; no S2 geometry promotion | `cfd/results/cfd01_vs_cfd02_s2_tracer_mixing.json`, `cfd/results/cfd02_s1_vs_s2_tracer_mixing.json`, `CFD02_S2_REPORT.md` |
+
 ## Architecture decision
 
 | ID | Finding | Conditions | Status | Evidence |
@@ -96,8 +99,8 @@ CFD-02 changes only the piston/head clearance shape unless stated.
 
 ## Open work, in priority order
 
-1. Run the single bounded CFD-02 S2 coarse screen and compare initial-normalized RMS history against both flat and S1.
-2. Refine only the better squish geometry if the S2 history shows a coherent benefit large enough to matter to the two-zone chemistry branch.
+1. Decide whether the S2 scalar-inventory failure merits an isolated numerical treatment check; do not run another squish geometry until that is resolved.
+2. Do not refine S2 or couple squish schedules into Cantera; S2 missed the predeclared S1 improvement threshold and failed a conservation gate.
 3. Digitize or obtain Burke et al. DME/methane point data and run the direct mechanism gate.
 4. Audit/select Zhao parent pressure-dependent decomposition rates.
 5. Build a calibrated leakage scaling dataset; exclude uncalibrated leak-down percentages from quantitative regression.

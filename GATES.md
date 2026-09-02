@@ -95,6 +95,17 @@ One bounded S2 coarse screen is authorized. Do not refine S1/S2 or feed either
 schedule into Cantera until S2 is compared against both flat and S1 with the
 same normalized-RMS and local-fit diagnostics.
 
+### CFD-02 S2 coarse status
+
+S2 completed the bounded solve with mesh, volume, gas-mass, Courant, tracer
+bounds, and output-cadence checks passing, but its mass-weighted tracer
+inventory drift was `0.0167264%` (`1.67264e-4` relative), above the `0.01%`
+(`1e-4` relative) gate. The S2 history is retained as an explicit
+`gate_failed` diagnostic only. It does not qualify for medium/fine refinement,
+Cantera coupling, or a geometry promotion. Its normalized-RMS comparison to S1
+also misses the predeclared ~5% improvement threshold through -20 to TDC
+(1.0468 at -20 CAD and 0.9987 at TDC).
+
 ## CFD performance gate
 
 A performance change is accepted only if the physical answer stays inside its

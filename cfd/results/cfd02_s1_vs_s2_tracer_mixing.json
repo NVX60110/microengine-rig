@@ -1,0 +1,228 @@
+{
+  "reference": "cfd/results/cfd02_s1_coarse_scalar_history.csv",
+  "candidate": "cfd/results/cfd02_s2_coarse_scalar_history.csv",
+  "window_half_width_cad": 5.0,
+  "primary_metric": "candidate_over_reference_normalized_rms",
+  "primary_metric_reason": "each case starts from a different raw tracer RMS when the fixed radial seed occupies a different chamber mass/volume fraction; normalize by each case's initial RMS before comparing the fraction of segregation remaining",
+  "status": "gate_failed",
+  "gate_failures": [
+    "candidate tracer inventory gate failed"
+  ],
+  "tracer_inventory_gate_relative": 0.0001,
+  "targets": {
+    "-90": {
+      "reference": {
+        "sampled_cad": -89.81444811105,
+        "rms": 0.23649905756509304,
+        "rms_normalized": 0.6334508375604401,
+        "global_tau_point_ms": 51.81115522635298,
+        "shell_volume_fraction": 0.16046941422149802,
+        "tracer_inventory_error_percent": -0.0014421349161186647,
+        "fit_n": 22,
+        "fit_k_1_s": 19.340380957702273,
+        "fit_tau_ms": 51.70528968312549,
+        "fit_r2": 0.9999640753597616
+      },
+      "candidate": {
+        "sampled_cad": -89.99959413625,
+        "rms": 0.26573074871446883,
+        "rms_normalized": 0.6731644491767789,
+        "global_tau_point_ms": 61.90718863960995,
+        "shell_volume_fraction": 0.18271669603217688,
+        "tracer_inventory_error_percent": -0.0024539015465729896,
+        "fit_n": 23,
+        "fit_k_1_s": 16.173185228497335,
+        "fit_tau_ms": 61.830739330060275,
+        "fit_r2": 0.9999578755430981
+      },
+      "candidate_over_reference_rms": 1.1236017236192588,
+      "candidate_over_reference_normalized_rms": 1.062694070733705,
+      "interpretation": "candidate has more initial-normalized segregation remaining"
+    },
+    "-45": {
+      "reference": {
+        "sampled_cad": -44.81444811105,
+        "rms": 0.20841472822537252,
+        "rms_normalized": 0.5582283731424889,
+        "global_tau_point_ms": 42.00611839763436,
+        "shell_volume_fraction": 0.13805365717921983,
+        "tracer_inventory_error_percent": -0.00215023349816601,
+        "fit_n": 22,
+        "fit_k_1_s": 23.74684718268043,
+        "fit_tau_ms": 42.11085338222675,
+        "fit_r2": 0.9998727799953553
+      },
+      "candidate": {
+        "sampled_cad": -44.99959413625,
+        "rms": 0.23730468014475495,
+        "rms_normalized": 0.6011538938173987,
+        "global_tau_point_ms": 39.57201697429341,
+        "shell_volume_fraction": 0.14915071523029844,
+        "tracer_inventory_error_percent": -0.003932831959851946,
+        "fit_n": 23,
+        "fit_k_1_s": 25.298129208951522,
+        "fit_tau_ms": 39.52861461574632,
+        "fit_r2": 0.9989924284969043
+      },
+      "candidate_over_reference_rms": 1.138617611938355,
+      "candidate_over_reference_normalized_rms": 1.0768959851203281,
+      "interpretation": "candidate has more initial-normalized segregation remaining"
+    },
+    "-20": {
+      "reference": {
+        "sampled_cad": -20.06444811105,
+        "rms": 0.19046646516138374,
+        "rms_normalized": 0.5101548527331758,
+        "global_tau_point_ms": 35.10261347425794,
+        "shell_volume_fraction": 0.10610205714225078,
+        "tracer_inventory_error_percent": -0.0029844221070995935,
+        "fit_n": 22,
+        "fit_k_1_s": 28.448510727261592,
+        "fit_tau_ms": 35.15122494766384,
+        "fit_r2": 0.9999791049448593
+      },
+      "candidate": {
+        "sampled_cad": -19.79959413625,
+        "rms": 0.2108123236192133,
+        "rms_normalized": 0.5340419292661166,
+        "global_tau_point_ms": 23.14740680871332,
+        "shell_volume_fraction": 0.10016400452473027,
+        "tracer_inventory_error_percent": -0.009677251507911322,
+        "fit_n": 22,
+        "fit_k_1_s": 42.9700109625511,
+        "fit_tau_ms": 23.27204433044042,
+        "fit_r2": 0.9995291211020981
+      },
+      "candidate_over_reference_rms": 1.1068212109706048,
+      "candidate_over_reference_normalized_rms": 1.046823187910425,
+      "interpretation": "candidate has more initial-normalized segregation remaining"
+    },
+    "+0": {
+      "reference": {
+        "sampled_cad": -0.1246702781561,
+        "rms": 0.1768028880904553,
+        "rms_normalized": 0.47355764837742903,
+        "global_tau_point_ms": 43.42091532265991,
+        "shell_volume_fraction": 0.08652057893702715,
+        "tracer_inventory_error_percent": -0.005545916879134971,
+        "fit_n": 33,
+        "fit_k_1_s": 23.081174057733364,
+        "fit_tau_ms": 43.32535240619397,
+        "fit_r2": 0.9995242630181821
+      },
+      "candidate": {
+        "sampled_cad": -0.007512091199157,
+        "rms": 0.18669075054439235,
+        "rms_normalized": 0.4729357700024893,
+        "global_tau_point_ms": 28.135471727325708,
+        "shell_volume_fraction": 0.07127730917738102,
+        "tracer_inventory_error_percent": -0.016510760765131582,
+        "fit_n": 54,
+        "fit_k_1_s": 36.93725033042343,
+        "fit_tau_ms": 27.072941029840226,
+        "fit_r2": 0.9991639271080274
+      },
+      "candidate_over_reference_rms": 1.0559259102649854,
+      "candidate_over_reference_normalized_rms": 0.9986867947818592,
+      "interpretation": "candidate has less initial-normalized segregation remaining"
+    },
+    "+20": {
+      "reference": {
+        "sampled_cad": 20.07062110394,
+        "rms": 0.16687508256056474,
+        "rms_normalized": 0.44696652030785755,
+        "global_tau_point_ms": 54.44517084416827,
+        "shell_volume_fraction": 0.1061114064462862,
+        "tracer_inventory_error_percent": -0.0059672385237519165,
+        "fit_n": 42,
+        "fit_k_1_s": 18.338203953465985,
+        "fit_tau_ms": 54.53096729306451,
+        "fit_r2": 0.9997815724292898
+      },
+      "candidate": {
+        "sampled_cad": 19.97982349976,
+        "rms": 0.1721332818323626,
+        "rms_normalized": 0.43605795117892715,
+        "global_tau_point_ms": 46.46892484095153,
+        "shell_volume_fraction": 0.10057469368470379,
+        "tracer_inventory_error_percent": -0.015690550783942214,
+        "fit_n": 86,
+        "fit_k_1_s": 21.68319296216085,
+        "fit_tau_ms": 46.118669042197396,
+        "fit_r2": 0.9995151041934829
+      },
+      "candidate_over_reference_rms": 1.031509792781013,
+      "candidate_over_reference_normalized_rms": 0.9755942142569942,
+      "interpretation": "candidate has less initial-normalized segregation remaining"
+    },
+    "+45": {
+      "reference": {
+        "sampled_cad": 45.00787543953,
+        "rms": 0.15849027579439842,
+        "rms_normalized": 0.42450823686480993,
+        "global_tau_point_ms": 85.52068923310578,
+        "shell_volume_fraction": 0.1382345743783201,
+        "tracer_inventory_error_percent": -0.005751862706904198,
+        "fit_n": 23,
+        "fit_k_1_s": 11.714373400796251,
+        "fit_tau_ms": 85.36521466287115,
+        "fit_r2": 0.9995511147022336
+      },
+      "candidate": {
+        "sampled_cad": 45.09986973871,
+        "rms": 0.16031433675185502,
+        "rms_normalized": 0.40611751826531123,
+        "global_tau_point_ms": 54.90094646190402,
+        "shell_volume_fraction": 0.14929137653634147,
+        "tracer_inventory_error_percent": -0.01577455230686864,
+        "fit_n": 26,
+        "fit_k_1_s": 18.263069208086634,
+        "fit_tau_ms": 54.755309121711804,
+        "fit_r2": 0.9995105271510887
+      },
+      "candidate_over_reference_rms": 1.0115089771174532,
+      "candidate_over_reference_normalized_rms": 0.9566775930301784,
+      "interpretation": "candidate has less initial-normalized segregation remaining"
+    },
+    "+90": {
+      "reference": {
+        "sampled_cad": 90.00787543952,
+        "rms": 0.14935201458612912,
+        "rms_normalized": 0.400031863572578,
+        "global_tau_point_ms": 115.83834817686171,
+        "shell_volume_fraction": 0.16051331570591124,
+        "tracer_inventory_error_percent": -0.005535152086977302,
+        "fit_n": 23,
+        "fit_k_1_s": 8.634962702479125,
+        "fit_tau_ms": 115.8082593353758,
+        "fit_r2": 0.9999986691541876
+      },
+      "candidate": {
+        "sampled_cad": 89.99536377072,
+        "rms": 0.1471544612553806,
+        "rms_normalized": 0.3727801631316829,
+        "global_tau_point_ms": 89.23986871651138,
+        "shell_volume_fraction": 0.1827152534631879,
+        "tracer_inventory_error_percent": -0.014914431216217494,
+        "fit_n": 23,
+        "fit_k_1_s": 11.207332808787157,
+        "fit_tau_ms": 89.22729583045358,
+        "fit_r2": 0.9999107261339543
+      },
+      "candidate_over_reference_rms": 0.9852860817656983,
+      "candidate_over_reference_normalized_rms": 0.9318761755688224,
+      "interpretation": "candidate has less initial-normalized segregation remaining"
+    }
+  },
+  "global": {
+    "reference_initial_rms": 0.37335029577970635,
+    "candidate_initial_rms": 0.39474863688870415,
+    "candidate_over_reference_initial_rms": 1.0573143810273657,
+    "reference_shell_fraction_min": 0.08652057893702715,
+    "reference_shell_fraction_max": 0.16741984929764053,
+    "candidate_shell_fraction_min": 0.07127730917738102,
+    "candidate_shell_fraction_max": 0.19312296652484795,
+    "reference_max_tracer_inventory_error_percent": 0.0068336080413899936,
+    "candidate_max_tracer_inventory_error_percent": 0.01672641056378321
+  }
+}

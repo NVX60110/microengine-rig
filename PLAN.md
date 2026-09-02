@@ -137,9 +137,12 @@ fraction collapses from ~16.7% at BDC to ~8.65% near TDC. The updated global
 mass-weighted RMS gives `A_S1/A_flat = 0.835` at TDC (a lower cumulative
 contrast), while the local +/-5 CAD fit gives 43.33 ms versus 39.51 ms for
 flat. Treat this as a changed but non-uniform transport history, not a
-uniformly faster-mixing claim. S2 remains paused until this evidence is
-reviewed; if the design question requires a monotonic squish trend, one S2
-coarse screen is the next bounded run.
+uniformly faster-mixing claim. The bounded S2 coarse screen has now completed,
+but fails the tracer-inventory gate (`1.6726e-4` relative) and does not meet the
+predeclared ~5% improvement threshold versus S1 through -20 to TDC. Do not
+refine S2, run S3, or couple either squish schedule into Cantera. Investigate
+the S2 scalar-conservation treatment only if that numerical issue is worth
+isolating; otherwise freeze the squish branch at S1 screening evidence.
 
 ### B2 - Bore/geometry screen
 
