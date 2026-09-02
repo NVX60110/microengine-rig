@@ -130,6 +130,12 @@ Decision:
 - If it does not, accept flat-piston molecular diffusion as the transport scale
   and stop optimizing hidden stirring.
 
+Status update: S1 mild squish coarse is implemented and passes the mesh,
+volume, mass, tracer, Courant, and output-cadence gates. Its coarse local TDC
+`tau_mix` is 34.15 ms versus the promoted flat-piston 10.65 ms, so S1 is not
+yet a faster-mixing candidate. Keep the result as screening evidence only;
+run S2 coarse next, then refine only the geometry that merits refinement.
+
 ### B2 - Bore/geometry screen
 
 Only after B1. Bore alone is a weaker S/V lever than clearance height:

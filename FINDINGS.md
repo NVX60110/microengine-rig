@@ -83,6 +83,7 @@ cylinder, passive tracer, flat piston, OpenFOAM 14, three meshes
 | F11 | `correctPhi=no` is acceptable for the validated CFD-01 baseline; reopen only if a new timestep, mesh, or geometry fails continuity/mass gates | moving mesh, stored v8 fields | CONFIRMED baseline decision; conditional reopen | `GATES.md`, `CFD01_REPORT.md` |
 | F12 | Preserve/interpolate the measured `tau(theta)` schedule before fitting a lower-order closure | full cycle | METHOD NOTE | `findings/CFD01_ADDENDUM.md` |
 | F13 | maxDeltaT=0.25 CAD passes the 5% answer gate but is not faster in the measured coarse run; 0.35/0.45 CAD fail max Co (0.740/0.854) | coarse mesh, maxCo target 0.15 | CONFIRMED numerical sweep; retain 0.15 CAD recommendation | `cfd/results/cfd01_timestep_sweep.csv`, `CFD01_REPORT.md` |
+| F14 | S1 mild constant-CR squish coarse passes all numerical gates but does not show a faster TDC tracer timescale: local `tau_mix` 34.15 ms versus flat-piston 10.65 ms | 3.25 mm bowl radius, 1.00 mm squish width, 0.50 mm TDC gap, 0.918 mm recess; 2,763 cells; 1200 rpm; OpenFOAM 14 | SCREENING; geometry decision pending medium/fine confirmation and S2 comparison | `CFD02_S1_REPORT.md`, `cfd/results/cfd02_s1_coarse_metadata.json` |
 
 ## Architecture decision
 
