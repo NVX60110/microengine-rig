@@ -1,0 +1,24 @@
+{
+  "cantera_version": "3.2.0",
+  "mechanism": "mechanisms/burke_mech_56_54.yaml",
+  "species_count": 113,
+  "reaction_count": 710,
+  "transport_model": "mixture-averaged",
+  "required_species": {
+    "CH4": true,
+    "CH3OCH3": true,
+    "O2": true,
+    "N2": true,
+    "CO2": true,
+    "OH": true,
+    "HO2": true,
+    "H2O2": true
+  },
+  "smoke_state": {
+    "temperature_K": 1000.0002361627629,
+    "pressure_bar": 20.265,
+    "density_kg_m3": 6.881095365733355,
+    "viscosity_Pa_s": 4.1628615885131904e-05,
+    "advanced_to_s": 1e-05
+  }
+}

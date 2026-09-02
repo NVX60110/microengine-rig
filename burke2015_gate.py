@@ -167,10 +167,27 @@ def _aliases(items: Iterable[str]) -> dict[str, str]:
 def _map_composition(
     composition: dict[str, float], gas: ct.Solution, aliases: dict[str, str]
 ) -> dict[str, float]:
+    def resolve(source: str) -> str:
+        """Follow explicit aliases so schema synonyms can map in two steps.
+
+        Burke CSVs use the repository schema (``CH3OCH3``) or may use the
+        readable ``DME`` synonym.  A lower-case CHEMKIN phase can therefore be
+        configured with ``DME=CH3OCH3`` and ``CH3OCH3=ch3och3`` without making
+        the dataset's schema depend on one mechanism's spelling.
+        """
+        current = source
+        visited: set[str] = set()
+        while current in aliases:
+            if current in visited:
+                raise ValueError(f"cyclic species alias involving {source!r}")
+            visited.add(current)
+            current = aliases[current]
+        return current
+
     mapped: dict[str, float] = {}
     missing: list[str] = []
     for source, amount in composition.items():
-        destination = aliases.get(source, source)
+        destination = resolve(source)
         if destination not in gas.species_names:
             missing.append(f"{source}->{destination}")
             continue

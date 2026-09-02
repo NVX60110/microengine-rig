@@ -16,6 +16,13 @@ include:
 - RCM volume-time histories;
 - the DME/CH4 validation PDF linked from the AramcoMech 2.0 validation page.
 
+The raw Mech_56.54 package is now archived in
+[`mech_56_54/`](mech_56_54/), with a reproducible Cantera 3.2 conversion to
+[`mechanisms/burke_mech_56_54.yaml`](../../mechanisms/burke_mech_56_54.yaml).
+The conversion and required-species smoke test are separate from the direct
+experimental gate; installing a mechanism does not make its predictions an
+experimental validation result.
+
 A trustworthy machine-readable table of the paper's experimental ignition-delay
 points has **not** yet been located. Do not fill `points.csv` by silently OCRing
 or estimating low-resolution plots. Acquisition priority remains:
@@ -24,6 +31,14 @@ or estimating low-resolution plots. Acquisition priority remains:
 2. archived/source plotting data;
 3. careful figure digitization only if 1-2 fail, with explicit digitization
    provenance and uncertainty.
+
+The bounded search through the Galway mechanism page, paper and accepted-
+manuscript mirrors, publisher metadata, and public mechanism/data indexes did
+not recover the original point table or supplementary numeric file. No Burke
+experimental rows have therefore been fabricated or added. The published
+figures remain usable as qualitative evidence and as a possible future
+digitization target, but any digitized points must be placed in a separately
+named dataset with figure/page coordinates and explicit uncertainty.
 
 ## CSV schema
 
@@ -75,7 +90,9 @@ python burke2015_gate.py \
 ```
 
 If a mechanism uses different species names, pass repeated mappings such as
-`--alias CH3OCH3=dme`.
+`--alias CH3OCH3=ch3och3`. If a CSV uses `DME` as a readable synonym, map it
+to the canonical schema token with `--alias DME=CH3OCH3`; the gate follows both
+steps without altering the input schema.
 
 Outputs include overall sim/experiment metrics plus facility, mixture, and exact
 pressure stratification. They remain ignition-delay validation results, **not**
