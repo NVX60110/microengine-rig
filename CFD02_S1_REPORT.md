@@ -68,33 +68,45 @@ in CFD-01, not physical un-mixing.
 ## Cross-geometry mass-weighted RMS result
 
 The updated postprocessor computes the global mass-weighted tracer amplitude
-`A = sqrt(sum(rho*V*(C-Cbar)^2)/sum(rho*V))`. This is the primary comparison
-when the fixed-radius shell fraction changes. The comparison script also fits
-`ln(A/A_initial)` over +/-5 CAD around each target; the fit is invariant to a
-constant amplitude normalisation.
+`A = sqrt(sum(rho*V*(C-Cbar)^2)/sum(rho*V))` and its value normalized by each
+case's own initial amplitude.
 
-| requested CAD | raw `A` S1 / flat | normalized RMS S1 / flat | S1 fit tau (ms), R2 | flat fit tau (ms), R2 |
+That normalization is required for cross-geometry mixing efficiency because
+flat and S1 do **not** start from the same raw RMS. The fixed radial tracer seed
+occupies a different initial chamber fraction:
+
+- flat fine initial raw RMS: `0.39875866`
+- S1 coarse initial raw RMS: `0.37335030`
+- S1/flat initial raw-RMS ratio: `0.9363`
+
+S1 therefore starts 6.37% lower in raw RMS before any transport occurs. Raw RMS
+is retained as a secondary physical-amplitude diagnostic; the primary
+cumulative comparison is `A/A_initial` for each case.
+
+The comparison script also fits `ln(A/A_initial)` over +/-5 CAD around each
+target. The fit is invariant to the constant initial normalization.
+
+| requested CAD | raw `A` S1 / flat | **initial-normalized RMS S1 / flat** | S1 fit tau (ms), R2 | flat fit tau (ms), R2 |
 |---:|---:|---:|---:|---:|
-| -90 | 0.9050 | 0.9666 | 51.71, 0.99996 | 62.24, 0.99985 |
-| -45 | 0.8724 | 0.9318 | 42.11, 0.99987 | 68.43, 0.99990 |
-| -20 | 0.8446 | 0.9021 | 35.15, 0.99998 | 50.85, 0.99965 |
-| 0 (TDC) | **0.8354** | 0.8922 | **43.33, 0.99952** | **39.51, 0.99991** |
-| +20 | 0.8473 | 0.9050 | 54.53, 0.99978 | 39.28, 0.99996 |
-| +45 | 0.8750 | 0.9346 | 85.37, 0.99955 | 42.47, 1.00000 |
-| +90 | 0.9497 | 1.0144 | 115.81, 1.00000 | 49.18, 0.99991 |
+| -90 | 0.9050 | **0.9666** | 51.71, 0.99996 | 62.24, 0.99985 |
+| -45 | 0.8724 | **0.9318** | 42.11, 0.99987 | 68.43, 0.99990 |
+| -20 | 0.8446 | **0.9021** | 35.15, 0.99998 | 50.85, 0.99965 |
+| 0 (TDC) | 0.8354 | **0.8922** | **43.33, 0.99952** | **39.51, 0.99991** |
+| +20 | 0.8473 | **0.9050** | 54.53, 0.99978 | 39.28, 0.99996 |
+| +45 | 0.8750 | **0.9346** | 85.37, 0.99955 | 42.47, 1.00000 |
+| +90 | 0.9497 | **1.0144** | 115.81, 1.00000 | 49.18, 0.99991 |
 
-At TDC, S1's raw global amplitude is 0.8354 of flat CFD-01, satisfying the
-predefined `<1` direction for “more mixed” cumulative contrast. However, the
-local +/-5 CAD exponential fit is slower (43.33 ms versus 39.51 ms), despite
-excellent fit R2. The two diagnostics are not contradictory: S1 can reduce the
-amplitude earlier in compression and then have a weaker local decay rate right
-around TDC. This is evidence of a changed transport history, not proof that
-S1 is a uniformly faster mixer.
+At TDC the primary normalized ratio is 0.8922: S1 has about **10.8% less of its
+own initial segregation remaining** than flat CFD-01. The local +/-5 CAD
+exponential fit at TDC is nevertheless slower (43.33 ms versus 39.51 ms), with
+excellent fit R2. These are not contradictory. S1 decays faster earlier in the
+compression stroke (for example 35.15 ms versus flat 50.85 ms at -20 CAD),
+then its local decay weakens around/after TDC. This is evidence of a changed
+transport history, not proof that S1 is uniformly faster.
 
 Tracer-inventory drift remains below the closed-cylinder gate: 0.002456% for
 flat fine (2.46e-5 relative) and 0.006834% for S1 coarse (6.83e-5 relative).
-The updated histories and full comparison JSON are the authoritative data for
-the next geometry decision.
+The updated histories and comparison JSON are the current decision data.
 
 ## Reproducibility and outputs
 
@@ -108,6 +120,6 @@ WSL case without invoking OpenFOAM. Promoted artifacts are:
 - `cfd/results/cfd02_s1_coarse_metadata.json`
 - `cfd/results/cfd01_vs_cfd02_s1_tracer_mixing.json`
 
-The next bounded experiment is S2 coarse. Do not feed this S1 coarse schedule
-into Cantera until a geometry is selected and its transport answer is checked
-at medium/fine resolution.
+The next bounded experiment is one S2 coarse run. Do not refine S1/S2 or feed a
+squish schedule into Cantera until S2 is compared against both flat and S1 with
+the same initial-normalized RMS and local-fit diagnostics.
