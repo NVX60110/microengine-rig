@@ -51,11 +51,26 @@ def equiv_area(mdot, P_up_bar, T=1100.0, gamma=GAMMA):
 
 
 def clearance_to_area(h_um, P_up_bar, D_mm=8.5, L_mm=8.0, T=1100.0,
-                      eccentricity=0.0):
+                      mu=4.0e-5, eccentricity=0.0):
     """Convenience: ABC radial clearance -> equivalent CdA in mm^2, at a stated
-    pressure and temperature. The pressure argument is REQUIRED by design."""
-    return equiv_area(annulus_mdot(D_mm, h_um, L_mm, P_up_bar, T=T,
-                                   eccentricity=eccentricity), P_up_bar, T)
+    pressure and temperature. The pressure argument is REQUIRED by design.
+
+    ``mu`` is exposed because room-temperature leak-down comparisons and hot
+    in-cylinder comparisons must not silently share the same viscosity.
+    """
+    return equiv_area(
+        annulus_mdot(
+            D_mm,
+            h_um,
+            L_mm,
+            P_up_bar,
+            T=T,
+            mu=mu,
+            eccentricity=eccentricity,
+        ),
+        P_up_bar,
+        T,
+    )
 
 
 if __name__ == "__main__":
