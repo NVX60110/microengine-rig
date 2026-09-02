@@ -101,10 +101,32 @@ candidate against an existing gate-clean history instead of rerunning the
 0.15/0.15 baseline; every run must also pass the tracer-inventory gate.
 
 Before spending Courant headroom, read `CFD01_TIMESTEP_FINE_REPORT.md`: the
-step on every mesh is set by a spurious axis-core velocity, not by the
+step on every sector mesh is set by a spurious axis-core velocity, not by the
 physical flow, and raising `maxCo` enlarges that artifact instead of the
 step. The tracer function object now carries its own write control so the
-field is written at the snapshot cadence rather than every step. Each run records runtime, accepted steps, maximum Courant,
+field is written at the snapshot cadence rather than every step. The sweep
+also accepts `--axis` and `--initial-delta-t`, passed to `run_cfd01.py`.
+
+## Wedge axis (Issue #17, candidate)
+
+`run_cfd01.py --axis wedge` replaces the 50 micrometre `symmetry` axis core
+and three-cell sector with OpenFOAM's standard single-cell `wedge` axis
+(axis collapsed to an edge, `wedge` side patches, triangular head and piston
+faces). `--initial-delta-t 0.01` removes the first-step Courant spike. With
+`maxCo 0.15 / maxDeltaT 0.15` unchanged this removes the F26 artifact on
+every mesh, runs the fine case in 229 s instead of 1,882 s, and keeps every
+fine-mesh transport observable within 1.6% of the converged sector baseline
+(`CFD01_WEDGE_AXIS_REPORT.md`, F28). The default stays `sector` until the
+result is reviewed; the wedge histories are
+`cfd/results/cfd01_scalar_history_{coarse,medium,fine}_wedge.csv`.
+
+```bash
+python3 cfd/openfoam14/cold_flow_tracer/scripts/run_cfd01.py \
+  --mesh fine --axis wedge --initial-delta-t 0.01 --overwrite \
+  --run-root "$HOME/OpenFOAM/cfd01-axis/wedge_dt0p01"
+```
+
+Each run records runtime, accepted steps, maximum Courant,
 volume error, closed-cylinder mass drift, tracer bounds, and `DeltaC/k_mix/tau`
 at -20, 0, +20, and +45 CAD.
 

@@ -36,7 +36,13 @@ from collect_results import (  # noqa: E402
     nearest,
 )
 from postprocess_history import process  # noqa: E402
-from run_cfd01 import initialise_tracer, prepare, run  # noqa: E402
+from run_cfd01 import (  # noqa: E402
+    AXIS_MODES,
+    initialise_tracer,
+    prepare,
+    run,
+    set_initial_delta_t,
+)
 
 DEFAULT_CAPS = (0.15, 0.25, 0.35, 0.45)
 TARGETS = (-20.0, 0.0, 20.0, 45.0)
@@ -48,10 +54,19 @@ ANSWER_REL_TOL = 0.05
 MAX_OUTPUT_GAP_CAD = 0.5
 
 
-def case_tag(cap: float, max_co: float = DEFAULT_MAX_CO) -> str:
+def case_tag(
+    cap: float,
+    max_co: float = DEFAULT_MAX_CO,
+    axis: str = "sector",
+    initial_delta_t: float | None = None,
+) -> str:
     tag = f"dt_{cap:.3f}"
     if not math.isclose(max_co, DEFAULT_MAX_CO):
         tag += f"_co_{max_co:.2f}"
+    if axis != "sector":
+        tag += f"_{axis}"
+    if initial_delta_t is not None:
+        tag += f"_dt0_{initial_delta_t:.3f}"
     return tag.replace(".", "p")
 
 
@@ -126,16 +141,22 @@ def run_case(
     overwrite: bool,
     mesh: str = "coarse",
     max_co: float = DEFAULT_MAX_CO,
+    axis: str = "sector",
+    initial_delta_t: float | None = None,
 ) -> dict[str, object]:
-    tag = case_tag(cap, max_co)
+    tag = case_tag(cap, max_co, axis, initial_delta_t)
     run_root = sweep_root / tag
-    case = prepare(mesh, run_root, overwrite)
+    case = prepare(mesh, run_root, overwrite, axis)
     write_interval = configure_control_dict(case, cap, max_co)
+    if initial_delta_t is not None:
+        set_initial_delta_t(case, initial_delta_t)
     started = time.monotonic()
 
     row: dict[str, object] = {
         "tag": tag,
         "mesh_level": mesh,
+        "axis": axis,
+        "initial_delta_t_cad": initial_delta_t,
         "max_delta_t_cad": cap,
         "max_co_target": max_co,
         "write_interval_steps": write_interval,
@@ -146,7 +167,7 @@ def run_case(
 
     try:
         run(["blockMesh"], case, "log.blockMesh")
-        initialise_tracer(case)
+        initialise_tracer(case, axis)
         run(["checkMesh", "-time", "-180"], case, "log.checkMesh_bdc")
         run(["foamRun"], case, "log.foamRun")
         run(["checkMesh", "-latestTime"], case, "log.checkMesh_after_motion")
@@ -305,6 +326,10 @@ def main() -> None:
         "--reference-history", type=Path, default=None,
         help="existing gate-clean scalar history to use as the 0.15/0.15 answer baseline",
     )
+    parser.add_argument("--axis", choices=AXIS_MODES, default="sector",
+                        help="axis treatment passed to run_cfd01.prepare")
+    parser.add_argument("--initial-delta-t", type=float, default=None,
+                        help="initial deltaT in CAD (removes the start-up Courant spike)")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument(
         "--sweep-root",
@@ -346,7 +371,11 @@ def main() -> None:
     sweep_root.mkdir(parents=True, exist_ok=True)
 
     rows = [
-        run_case(cap, sweep_root, args.overwrite, args.mesh, args.max_co) for cap in caps
+        run_case(
+            cap, sweep_root, args.overwrite, args.mesh, args.max_co,
+            args.axis, args.initial_delta_t,
+        )
+        for cap in caps
     ]
     apply_answer_gate(rows, reference)
     write_summary(rows, args.output.resolve())

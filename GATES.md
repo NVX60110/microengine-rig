@@ -74,6 +74,18 @@ nonreacting transport run without a reason.
   Courant 0.373 is the same start-up spike at the 0.15 cap, not a mid-cycle
   value. Keep `maxCo 0.15 / maxDeltaT 0.15`; a small initial `deltaT`
   belongs with the axis fix.
+- Wedge axis (F28, Issue #17, for review): `run_cfd01.py --axis wedge
+  --initial-delta-t 0.01` removes the F26 artifact on every flat mesh
+  (axis velocity 0.214 m/s at 0.215 m/s piston, global maximum at the
+  piston-liner corner), keeps `maxCo 0.15 / maxDeltaT 0.15`, and passes
+  every gate: volume closure 0.1269%, gas mass `<= 4.8e-7`, tracer
+  inventory `<= 8e-12`, tracer in `[0, 1]`, checkMesh OK, fine-mesh
+  transport observables within 1.6% of the converged sector baseline. Fine
+  runtime 1,882 -> 229 s. Until adopted, `sector` remains the default and
+  the `_wedge` histories are candidates, not references. The 20%-mass-zone
+  contrast differs by 5-7% between formulations on coarse and medium and by
+  under 1.3% on fine: treat that metric as carrying about 7% coarse-mesh
+  uncertainty wherever a coarse case (S1, S2) is compared to a fine one.
 
 ### CFD-02 S1 metric warning
 

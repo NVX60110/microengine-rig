@@ -161,13 +161,25 @@ ratios reproduce legacy to `<= 0.001` with all comparison gates `ok`
 fixed 20%-mass-zone contrast at TDC is 1.354x flat for S1 and 1.261x for S2
 (F25).
 
+Issue #10 is merged and closed. Issue #17 (axis-core artifact) has a
+candidate fix on record: the single-cell `wedge` axis removes the artifact
+on every flat mesh, runs the fine case in 229 s instead of 1,882 s, and
+keeps fine-mesh transport observables within 1.6% of the converged sector
+baseline (F28, `CFD01_WEDGE_AXIS_REPORT.md`).
+
 Next actions, in order:
-1. Review and merge the Issue #10 branch; the scalar gate closes on merge.
+1. Review F28 and, if accepted, make `wedge` the CFD-01 default, promote the
+   `_wedge` histories as the flat references, and convert the S1/S2 mesh
+   generators to the same axis treatment before any further squish
+   comparison. This is cheap performance and hygiene work, not an
+   engine-design blocker; it should not displace the sealing and chemistry
+   lanes.
 2. Decide the B1 question from F25. Recommendation: accept the flat-piston
    `tau(theta)` scale from the converged CFD-01 fine history as the transport
    baseline, run no S3, and couple no S1/S2 schedule into the two-zone model.
    The only justified counter-check is a medium-mesh S1 against the 1.354x
-   zone result.
+   zone result, noting the roughly 7% coarse-mesh uncertainty of the zone
+   metric quantified in F28.
 3. Only if Cantera coupling needs a scalar bounded by construction, build and
    validate the `multicomponentFluid` inert-species tracer variant against
    the converged function-object result before it replaces anything.
