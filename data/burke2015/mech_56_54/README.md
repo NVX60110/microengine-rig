@@ -7,9 +7,13 @@ University of Galway for the methane/DME mechanism associated with Burke et al.,
 
 | file | public source | SHA-256 |
 |---|---|---|
-| `56.54_c3_chem.dat.txt` | [reaction mechanism](https://universityofgalway.ie/media/researchcentres/combustionchemistrycentre/files/mechanismdownloads/ethers/56.54_c3_chem.dat.txt) | `972E24FA01C18A0976C8BB3F8DDD1CD42202F1E0C21CC76E4B37A99843D7CEE0` |
-| `56.54_therm.dat.txt` | [thermodynamics](https://universityofgalway.ie/media/researchcentres/combustionchemistrycentre/files/mechanismdownloads/ethers/56.54_therm.dat.txt) | `16EC58F97B310EC9AFD49769910F788D49743E4F917A7A5F90FAE99CF0118A7C` |
-| `56.54_tran.dat.txt` | [transport](https://universityofgalway.ie/media/researchcentres/combustionchemistrycentre/files/mechanismdownloads/ethers/56.54_tran.dat.txt) | `D349C4B3D13A19ADD614E1424C4DDDF3EBC6EF763B888955E265062ADD35DF90` |
+| `56.54_c3_chem.dat.txt` | [reaction mechanism](https://universityofgalway.ie/media/researchcentres/combustionchemistrycentre/files/mechanismdownloads/ethers/56.54_c3_chem.dat.txt) | `C18CEFE98BDBEF7568DAA50B72C4A3871653FFABCA2E371834A151C61FD8BD89` |
+| `56.54_therm.dat.txt` | [thermodynamics](https://universityofgalway.ie/media/researchcentres/combustionchemistrycentre/files/mechanismdownloads/ethers/56.54_therm.dat.txt) | `E4E4866D21CB80C1EE636C3829BA2B48DD7F4F9E899676E43FDC1030144FA3DD` |
+| `56.54_tran.dat.txt` | [transport](https://universityofgalway.ie/media/researchcentres/combustionchemistrycentre/files/mechanismdownloads/ethers/56.54_tran.dat.txt) | `E9412904407B917CC17EA2B71FA87AA038AAC1DEA42F6323C21483CE09DE2D1B` |
+
+Hashes above are SHA-256 of the exact LF-normalized bytes committed to Git.
+Windows worktrees may materialize these text files with CRLF; the provenance
+test normalizes CRLF to LF before checking the committed-byte digest.
 
 The raw files are preserved unchanged. Run
 `python scripts/convert_burke56_54.py` from the repository root to create the
@@ -26,8 +30,12 @@ dataset uses the project's upper-case convention, for example:
 python burke2015_gate.py \
   --mechanism mechanisms/burke_mech_56_54.yaml \
   --data data/burke2015/points.csv \
-  --alias CH4=ch4 --alias DME=ch3och3 --alias O2=o2 --alias N2=n2
+  --alias CH4=ch4 --alias CH3OCH3=ch3och3 --alias O2=o2 --alias N2=n2
 ```
+
+If a future CSV uses the readable `DME` synonym instead of the canonical
+`CH3OCH3` schema token, add `--alias DME=CH3OCH3`. The gate follows that alias
+to the explicit mechanism mapping above; it never changes the CSV schema.
 
 Cantera emits two NASA-polynomial continuity warnings for the source `oh*` and
 `ch*` records at 1000 K. The mechanism loads, validates, and evaluates with

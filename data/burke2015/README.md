@@ -90,7 +90,9 @@ python burke2015_gate.py \
 ```
 
 If a mechanism uses different species names, pass repeated mappings such as
-`--alias CH3OCH3=dme`.
+`--alias CH3OCH3=ch3och3`. If a CSV uses `DME` as a readable synonym, map it
+to the canonical schema token with `--alias DME=CH3OCH3`; the gate follows both
+steps without altering the input schema.
 
 Outputs include overall sim/experiment metrics plus facility, mixture, and exact
 pressure stratification. They remain ignition-delay validation results, **not**

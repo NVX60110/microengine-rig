@@ -5,14 +5,14 @@
   "reaction_count": 710,
   "transport_model": "mixture-averaged",
   "required_species": {
-    "ch4": true,
-    "ch3och3": true,
-    "o2": true,
-    "n2": true,
-    "co2": true,
-    "oh": true,
-    "ho2": true,
-    "h2o2": true
+    "CH4": true,
+    "CH3OCH3": true,
+    "O2": true,
+    "N2": true,
+    "CO2": true,
+    "OH": true,
+    "HO2": true,
+    "H2O2": true
   },
   "smoke_state": {
     "temperature_K": 1000.0002361627629,

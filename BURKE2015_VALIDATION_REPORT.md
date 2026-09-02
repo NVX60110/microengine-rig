@@ -21,8 +21,10 @@ The resulting [`mechanisms/burke_mech_56_54.yaml`](mechanisms/burke_mech_56_54.y
 contains 113 species and 710 reactions and loads with Cantera 3.2.0.
 
 The source package uses lower-case names (`ch4`, `ch3och3`, `o2`, `n2`). Burke
-CSV runs using the repository's upper-case convention must pass explicit
-aliases; the package README gives the exact command. The smoke test confirms
+CSV runs use the canonical upper-case `CH3OCH3` schema token and pass explicit
+mechanism aliases; the package README gives the exact command. A readable
+`DME` token remains an optional alias to canonical `CH3OCH3`, and the gate
+follows that two-step mapping. The smoke test confirms
 the required fuel, oxidizer, radical, and product species and evaluates a
 20-bar, 1000-K state with mixture-averaged transport. Two source NASA
 polynomial continuity warnings (`oh*`, `ch*` at 1000 K) are retained rather

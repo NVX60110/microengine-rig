@@ -11,7 +11,16 @@ import cantera as ct
 ROOT = Path(__file__).resolve().parents[1]
 MECHANISM = ROOT / "mechanisms" / "burke_mech_56_54.yaml"
 OUTPUT = ROOT / "data" / "burke2015" / "mech_56_54" / "smoke_test.json"
-REQUIRED = ("ch4", "ch3och3", "o2", "n2", "co2", "oh", "ho2", "h2o2")
+REQUIRED = {
+    "CH4": "ch4",
+    "CH3OCH3": "ch3och3",
+    "O2": "o2",
+    "N2": "n2",
+    "CO2": "co2",
+    "OH": "oh",
+    "HO2": "ho2",
+    "H2O2": "h2o2",
+}
 
 
 def main() -> None:
@@ -31,7 +40,10 @@ def main() -> None:
         "species_count": gas.n_species,
         "reaction_count": gas.n_reactions,
         "transport_model": gas.transport_model,
-        "required_species": {name: name in gas.species_names for name in REQUIRED},
+        "required_species": {
+            canonical: mechanism_name in gas.species_names
+            for canonical, mechanism_name in REQUIRED.items()
+        },
         "smoke_state": {
             "temperature_K": gas.T,
             "pressure_bar": gas.P / 1.0e5,
