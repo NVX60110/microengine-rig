@@ -134,19 +134,26 @@ class RigTests(unittest.TestCase):
         self.assertGreater(result["estimated_aftercooler_heat_rejection_W"], 0.0)
 
     def test_two_zone_collapses_to_single_zone_when_adiabatic(self):
+        # This is a fine-step equivalence regression, not a coarse production
+        # diagnostic.  The preflight showed that the 2-degree fixture was
+        # under-resolved while 0.125 degrees with Cantera's explicit CVODE
+        # tolerances collapses to the single-zone result.
         config = RigConfig(
             fuel_profile="methane", intake_temperature_K=300.0,
             intake_pressure_bar=1.2, equivalence_ratio=0.4,
-            wall_mode="adiabatic", blowby_mode="off", step_deg=2.0,
+            wall_mode="adiabatic", blowby_mode="off", step_deg=0.125,
             bore_mm=8.5, stroke_mm=7.0, compression_ratio=7.0, rpm=1200.0,
         )
         _, single = simulate(config)
-        _, two = simulate_two_zone(config, TwoZoneOptions())
-        self.assertAlmostEqual(
-            two["peak_pressure_bar"], single["peak_pressure_bar"], delta=0.05
+        _, two = simulate_two_zone(
+            config,
+            TwoZoneOptions(integrator_rtol=1.0e-9, integrator_atol=1.0e-15),
         )
         self.assertAlmostEqual(
-            two["peak_temperature_K"], single["peak_temperature_K"], delta=0.5
+            two["peak_pressure_bar"], single["peak_pressure_bar"], delta=0.005
+        )
+        self.assertAlmostEqual(
+            two["peak_temperature_K"], single["peak_temperature_K"], delta=0.05
         )
         self.assertLess(two["max_interzone_pressure_difference_bar"], 1e-6)
 
