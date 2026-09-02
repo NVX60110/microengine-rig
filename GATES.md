@@ -37,10 +37,10 @@ nonreacting transport run without a reason.
 | Tracer boundedness | Report min/max tracer and reject material overshoot/undershoot | Passive scalar must remain physical |
 | Tracer inventory conservation | Mass-weighted mean tracer drift <= 1e-4 relative for a closed no-flux case | Boundedness alone does not prove the transported scalar is conserved |
 | Zone-volume stability | Boundary-zone fraction stable to <= 0.5% relative unless geometry intentionally changes it | Prevent zone definition from manufacturing apparent mixing |
-| Cross-geometry mixing metric | If the core/shell volume fraction changes materially between geometries or through the cycle, use global mass-weighted tracer RMS/variance decay as the primary comparison; fixed-radius `DeltaC/tau_mix` becomes a geometry-specific diagnostic | A squish land can change the Eulerian shell volume even when the CFD is correct, making the original CFD-01 two-zone metric non-equivalent |
+| Cross-geometry mixing metric | If geometry changes the initial raw tracer RMS or the fixed-radius shell fraction, compare **mass-weighted tracer RMS normalized by each case's own initial RMS** as the primary cumulative mixing metric; retain raw RMS and fixed-radius `DeltaC/tau_mix` as secondary diagnostics | A changed chamber can alter the seeded tracer inventory/amplitude before any mixing occurs, so raw RMS alone can manufacture an apparent advantage |
 | `tau_mix` promotion | Positive local derivative plus mesh/time-step convergence at the requested crank angle | Late-cycle flat/noisy derivatives must not be converted into huge finite times |
 | Mass conservation | Required for every changed timestep, mesh, or geometry | `correctPhi=no` is accepted only conditionally where continuity has been demonstrated |
-| Answer convergence table | At requested CAD, report direct scalar amplitude plus any differentiated rate used for promotion | Do not promote a derivative while its underlying scalar metric is changing materially |
+| Answer convergence table | At requested CAD, report direct normalized scalar amplitude plus any differentiated rate used for promotion | Do not promote a derivative while its underlying scalar metric is changing materially |
 
 ### CFD-01 known status
 
@@ -65,17 +65,35 @@ its inherited fixed-radius shell is not a constant ~20%-volume zone. From the
 stored promoted history it is ~16.7% of chamber volume at BDC and ~8.65% near
 TDC. Therefore S1's reported fixed-radius `DeltaC/tau_mix` cannot by itself be
 used as an apples-to-apples two-zone transport comparison against CFD-01.
-Reprocess CFD-01 and S1 with the global mass-weighted tracer RMS/variance
-metric before running S2.
+
+The same geometry change also changes the *initial* raw tracer amplitude:
+
+- flat fine initial mass-weighted RMS: `0.39875866`
+- S1 coarse initial mass-weighted RMS: `0.37335030`
+- S1/flat initial raw-RMS ratio: `0.9363`
+
+S1 therefore starts ~6.37% lower in raw RMS before any transport occurs. Raw
+RMS remains useful as a physical amplitude, but it must not be the primary
+cross-geometry mixing-efficiency metric.
 
 ### CFD-02 S1 comparison status
 
-The stored CFD-01 v8 fine and S1 coarse fields have now been reprocessed with
-the global metric. At TDC, `A_S1/A_flat=0.8354` (raw mass-weighted RMS), while
-the +/-5 CAD fit gives `tau_S1=43.33 ms` versus `tau_flat=39.51 ms`, with
-`R2=0.99952` and `0.99991`. Keep both values: the amplitude indicates a lower
-cumulative contrast, but the local rate does not establish uniformly faster
-mixing. The comparison JSON is the current cross-geometry decision artifact.
+The stored CFD-01 fine and S1 coarse fields were reprocessed with the global
+mass-weighted tracer metric. At TDC:
+
+- raw RMS ratio `A_S1/A_flat = 0.8354`;
+- **initial-normalized RMS ratio = 0.8922** (primary cumulative result);
+- +/-5 CAD fitted `tau_S1 = 43.33 ms`, `R2=0.99952`;
+- +/-5 CAD fitted `tau_flat = 39.51 ms`, `R2=0.99991`.
+
+Interpretation: by TDC S1 has about 10.8% less of its own initial segregation
+remaining than flat, but its local TDC decay rate is slower. The history shows
+faster decay earlier in compression and weaker decay around/after TDC. This is
+a changed transport history, not uniformly faster mixing.
+
+One bounded S2 coarse screen is authorized. Do not refine S1/S2 or feed either
+schedule into Cantera until S2 is compared against both flat and S1 with the
+same normalized-RMS and local-fit diagnostics.
 
 ## CFD performance gate
 
