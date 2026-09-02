@@ -1,0 +1,194 @@
+# OP-IDLE Phase 1: independent Luna C review
+
+Status: **pre-results audit only**.  This is an independent numerical and
+physical falsification checklist prepared before reviewing the Luna A low-idle
+map or Luna B axial thermal-fit study.  It does not promote, retract, or
+modify either forthcoming result.
+
+Baseline reviewed: `origin/main` / `78682e9`, on the `op-idle-review-luna-c`
+branch.  Files reviewed include `PLAN.md`, `GATES.md`, `FINDINGS.md`,
+`CANTERA_PREFLIGHT_REPORT.md`, `THERMAL_CLEARANCE_REPORT.md`,
+`THERMAL_STATE_REPORT.md`, `findings/FABLE51_REVIEW.md`,
+`microengine_rig.py`, `two_zone_model.py`, `uncertainty_campaign.py`,
+`physics/thermal_clearance.py`, `physics/thermal_state.py`, and the test suite.
+
+## Baseline audit
+
+The geometry arithmetic is internally consistent at the default rig state:
+
+| quantity | baseline value | audit note |
+|---|---:|---|
+| bore × stroke | 8.5 × 7.0 mm | diameter and axial length |
+| displacement | 0.397215 cc | `pi B^2 S / 4` |
+| BDC/TDC volume | 463.418 / 66.203 mm³ | ratio 7.000 for CR 7 |
+| 1200 rpm revolution | 50 ms | `60/N` |
+| 1200 rpm four-stroke period | 100 ms | `120/N` |
+| modeled reacting span | 360 crank degrees | compression plus expansion only |
+| mean piston speed | 0.280 m/s | useful geometry diagnostic, not FMEP |
+
+The reacting solvers therefore provide a closed, single-pass compression/
+expansion screen.  They do not model intake, exhaust, valve timing, trapped
+residuals, gas-exchange pumping, friction, lubrication, contact, or brake
+torque.  `gross_imep` and `gross_indicated_power` are consequently not net
+engine output.  Four-stroke frequency is applied in the power summary
+(`rpm / 60 / cycle_revolutions`); it does not make the missing 360 degrees of
+gas exchange or the missing second crank revolution part of the solution.
+
+`cycle_revolutions` is validated only as `>= 1`, so a four-stroke interpretation
+must require and report exactly 2.0 revolutions.  Any other value must be
+labeled as a per-pass or non-four-stroke diagnostic.  The thermal-state screen
+has a related explicit assumption: its history is one 360-degree pass followed
+by a default 0.05 s idle segment.  That equals one revolution only at 1200 rpm;
+it must be derived as `60/N - modeled_pass` for an RPM map.  At low or high RPM,
+leaving 0.05 s fixed changes the thermal duty cycle.
+
+The baseline unit suite passes: `python -m unittest discover -s tests -v`
+reports **80 tests, OK**.  This demonstrates implementation regressions and
+bookkeeping checks, not hardware validity or model-form correctness.
+
+## Falsification checklist for Luna A/B
+
+### Timing, dimensions, and state definition
+
+1. Recompute and print `t_rev=60/N`, `t_4stroke=120/N`, modeled-pass duration,
+   and idle duration for every RPM.  Reject a map if an event-time ratio uses
+   one revolution where a four-stroke period is required.
+2. Require `cycle_revolutions=2.0` for four-stroke claims.  Check that all
+   power, leakage-fraction, Damköhler-like, and thermal timescale quantities
+   state their numerator and denominator units.
+3. Recheck slider-crank volume closure, displacement, clearance height, piston
+   velocity, and `P dV` sign under the exact map settings.  Report work as
+   gross closed-cycle work and do not subtract an invented FMEP.
+4. Preserve radial/diametral conventions.  Bore and piston dimensions are
+   diameters; `annular_radial_clearance_um` and thermal-clearance inputs are
+   radial.  The factor two must be visible in any axial-fit implementation.
+
+### Ignition delay and chemistry
+
+5. Separate a frozen ignition-delay surrogate from an evolving delay.  If a
+   map freezes `tau` at intake/TDC, rerun with the local state-dependent
+   `tau(P(theta),T(theta),phi)` and report branch changes.  For Cantera, use
+   the evolving chemistry trajectory and a declared ignition criterion; do not
+   infer a constant delay from one state.
+6. Treat `proxy-auto` as a prescribed burn screen: its Arrhenius-like `tau`
+   only triggers a user-set burn fraction and duration.  It is not an
+   experimentally validated ignition model.  `spark` is likewise a prescribed
+   burn profile, not spark discharge/arc chemistry.
+7. Confirm the mechanism, species aliases, pressure-rate selection, and
+   validity ranges for every map row.  Zhao-full remains open at 25–90 bar;
+   Zhao sk39 has parent-retention evidence, not direct engine validation; LLNL
+   has source-validation evidence, not this DME/CH4 map validation.  Burke
+   DME/methane points and their pressure, phi, facility, uncertainty, and
+   max-dP/dt criterion remain the direct validation target.
+8. Record nonignitions, solver failures, and out-of-range states explicitly.
+   A timeout, NaN, or retry is not extinction, nonignition, or a physical
+   operating boundary.  Report the full mechanism envelope rather than a
+   universal IMEP percentage error bar.
+
+### Numerics and branch boundaries
+
+9. For representative stiff transition rows, refine crank-angle output and
+   internal-step controls (at least 0.25, 0.125, and a finer setting where
+   needed), tighten CVODE tolerances, and require unchanged branch class plus
+   stable peak pressure/Tmax/CA50/conversion.  The preflight demonstrates that
+   a 2-degree two-zone collapse can fail while a 0.125-degree case collapses.
+10. Apply the existing gates: positive global inventory conversion, pressure
+    mismatch <=0.10 bar, no null-as-physics, and explicit mass/volume residuals.
+    Keep source-term reaction integrals as localization only; global fuel
+    inventory is the conversion metric.
+11. Preserve solver retries, max internal steps, warnings, and errors in every
+    Luna row.  A map point is not promotable merely because `acceptable()` is
+    true: that helper does not itself encode mechanism validity, solver retry,
+    thermal-fit contact, or stability.
+12. Distinguish physical from numerical boundaries.  A transition that moves
+    with timestep, tolerance, sampling, mechanism, mixing closure, or wall
+    closure is a screening interval, not a hardware RPM limit.  Report direct
+    state quantities (`P`, `T`, pressure-rise, conversion, CA50) beside any
+    differentiated or threshold-derived quantity.
+
+### Heat transfer and double-counting check
+
+13. In the single-zone Cantera path, the Reactor wall is the gas energy sink;
+    the separately accumulated `q_gas_to_wall` is an accounting/update signal,
+    not a second cylinder sink.  Verify this with an energy ledger and do not
+    apply the same wall flux again in the reacting integration.
+14. The thermal RC pipeline is driven by a gas history that was generated with
+    the existing finite-wall `h=600 W/(m² K)` proxy, then applies an independent
+    gas-to-solid `h` network.  This is an explicitly assumed forcing chain, not
+    a closed conjugate gas/solid solution.  Falsify any claim of physical heat
+    balance by comparing: adiabatic history + RC, finite-wall history + RC,
+    measured/CFD wall heat flux when available, and integrated heat against
+    the gas energy change.  Do not call the resulting difference a calibrated
+    wall loss.
+15. Check area assignment and axial pairing.  The conventional skirt receives
+    zero direct chamber-gas area in the RC model; crown/TDC liner, skirt/TDC
+    liner, and skirt/lower-liner pairs must remain separate.  A minimum path
+    contact result is not a zero-leak annulus result.
+16. For RPM-dependent thermal work, recheck explicit RC step convergence,
+    periodic-map residual, warm-up convergence separately, cycle energy
+    closure, and the spectral/stability behavior of the one-cycle map.  A
+    solved linear fixed point is not evidence that the physical coupled
+    engine is stable.
+
+### Sealing, clearance, and leakage
+
+17. Keep cold static leak-down and dynamic in-cylinder blow-by as separate
+    evidence lanes.  Static rows require direct flow or a calibrated/documented
+    reference restriction; dynamic rows remain flow histories unless a stated
+    pressure-history inversion is supplied.
+18. Preserve signed hot clearance.  Zero and negative values are contact or
+    interference and must not be clamped into annulus flow.  Positive annulus
+    flow must retain current pressure, gas temperature/viscosity, bore, skirt
+    length, and eccentricity; its cubic clearance law is an uncalibrated
+    sensitivity, not a measured blow-by prediction.
+19. For Luna B's axial fit, require local piston/liner temperature pairing,
+    axial station, taper/roundness, thrust direction, and clearance convention.
+    A crown or skirt temperature paired to a remote liner temperature cannot
+    establish local clearance.  CTE profiles outside their source range are
+    extrapolations and need an explicit uncertainty bracket.
+20. Do not promote ringless, ringed, or material architecture from the RC
+    screen.  Ring motion, multi-volume ring-pack flow, oil viscosity/film,
+    piston rock, contact pressure, scuffing, wear, and manufacturability remain
+    unresolved.  Likewise, an axial temperature gradient is a concept, not a
+    solved lubrication model.
+
+### Stability, operating limits, and claimed outputs
+
+21. Require a repeated-cycle residual/EGR treatment before claiming cycle-to-
+    cycle stability or an idle operating boundary.  The present reacting model
+    refreshes neither charge nor residual composition and does not test a
+    periodic chemistry fixed point.
+22. Require a coupled thermal-clearance/leakage stability screen before using
+    “runaway,” “saddle,” or “bistable” for hardware.  Include the stabilizing
+    possibility that a tighter gap increases heat rejection; report Jacobian/
+    eigenvalue behavior and nonlinear fixed points.
+23. Motor torque, friction, pumping, accessories, brake output, lubrication,
+    contact, and spark-assisted operation must remain unresolved outputs.  The
+    model supports gross indicated work and conditional chemistry/thermal/
+    sealing sensitivities only; it does not support net torque, brake power,
+    friction power, or a spark-capable hardware operating map.
+24. For every promoted-looking Luna headline, attach status and provenance:
+    `CONFIRMED` implementation check, `SCREENING` model result,
+    `OPEN` unresolved item, or `RETRACTED`.  Include the exact configuration,
+    mechanism source/status, numerical settings, residuals, thermal closure,
+    and whether the boundary is physical or numerical.
+
+## Outputs currently supported vs unresolved
+
+Supported as conditional calculations: slider-crank geometry and ideal-gas
+closed-pass p/T/V; Cantera evolving species and global fuel-inventory change;
+two-zone pressure/mixing brackets under stated closure; gross `P dV` work and
+gross IMEP; pressure-rise and heat-release timing diagnostics; pressure-aware
+annulus sensitivity for positive clearance; and analytical CTE/thermal-RC
+screening with explicit periodic residual and energy bookkeeping.
+
+Unresolved: net motor torque/brake power; friction and pumping; intake/exhaust
+and residual/EGR chemistry; cycle-to-cycle stability; calibrated DME/CH4
+ignition delay and Zhao pressure-rate selection; hardware dynamic blow-by;
+ring-pack architecture; local axial thermal field and taper; oil film,
+lubrication, piston rock, contact/scuffing and wear; and physical RPM or
+CI-to-spark operating boundaries.  These must not be inferred from a positive
+gross-IMEP screen or a numerically converged proxy.
+
+This file intentionally stops at Phase 1.  It contains no Luna A/B result and
+should be revisited only after their commits are supplied for Phase 2 review.
