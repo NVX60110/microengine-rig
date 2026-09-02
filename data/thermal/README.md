@@ -45,3 +45,21 @@ negative hot clearance is retained as contact/interference and has no annulus
 flow value. `warmup_converged` and `periodic_converged` are separate: the
 linear one-cycle fixed point can be solved even when the finite cold-to-warm
 trajectory has not reached the 0.01 K criterion.
+
+## Literature evidence lane
+
+`literature_sources.csv` records source provenance and access status;
+`literature_measurements.csv` contains only values recoverable from the cited
+public summaries/abstracts, with transferability labels. It intentionally has
+no absolute paired piston/liner temperature rows yet. Run:
+
+```bash
+python scripts/analyze_thermal_literature.py
+```
+
+The script writes `literature_transferables.csv` and
+`literature_transferables.json`, deriving piston-minus-liner or normalized
+quantities only when a single local paired record supplies all required
+temperatures. Missing AP .09, 710578, Furuhama and SETC point tables remain
+recovery tasks; no values are inferred from a graph or copied into the engine
+model.

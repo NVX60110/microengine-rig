@@ -251,6 +251,18 @@ campaign with at least three repeats at 2, 4 and 6.5 bar absolute across cold
 and safe warm states, with local fit/taper, paired temperatures, lubricant
 condition, pressure, gas state and direct flow recorded together.
 
+#### C1 thermal-literature ingestion (bounded evidence step)
+
+`data/thermal/literature_sources.csv` and
+`data/thermal/literature_measurements.csv` preserve the highest-value
+near-scale and piston-temperature leads with access status, source locator,
+classification and transferability. `scripts/analyze_thermal_literature.py`
+derives local piston-minus-liner and normalized temperature quantities only from
+complete paired rows. The current public set contains no paired piston/liner
+temperature row and therefore supplies no empirical clearance prior. Missing
+AP .09/Tian, Kruggel 710578, Furuhama and SETC point tables remain recovery
+targets; graph values are not silently digitized or promoted.
+
 Hypothesis: if manufactured radial clearance is roughly independent of bore,
 then annular leak area scales approximately with `B*c` while displacement
 scales with `B^2*S`, so leakage-per-displacement can deteriorate rapidly as
