@@ -143,6 +143,26 @@ refine S1/S2, run S3, or couple either squish schedule into Cantera until a
 scalar treatment passes conservation and boundedness and the geometry-
 independent metric is reproducible.
 
+Issue #10 resolution (2026-09-01): the S2 inventory loss was the tracer linear
+solve stopping after one PBiCGStab iteration under the shared `relTol 0.01`
+solver entry, not a moving-mesh or wall-flux defect. The base `fvSolution`
+now carries an exact-keyword converged `tracer` entry; on the identical S2
+coarse case it gives `9.9e-12` relative inventory drift, tracer in `[0, 1]`,
+all other gates unchanged, and a physical answer that moves by <= 0.005%
+(`CFD02_S2_SCALAR_ISOLATION_REPORT.md`, F21-F23). The promoted S1 and flat
+histories carry the same defect below the gate (`6.8e-5`, `2.4e-5`).
+
+Next bounded CFD action, in order:
+1. Regenerate flat fine, S1 coarse and S2 coarse with the converged solve
+   (all runners inherit the base `fvSolution`); the flat fine run is the
+   expensive one.
+2. Redo the flat/S1/S2 normalized-RMS and 20%-mass-zone comparison under
+   those shared numerics, then apply the B1 decision rule above.
+3. Only if Cantera coupling needs a scalar bounded by construction, build and
+   validate the `multicomponentFluid` inert-species tracer variant against
+   the converged function-object result before it replaces anything.
+No S3 and no Cantera coupling before step 2 exists.
+
 ### B2 - Bore/geometry screen
 
 Only after B1. Bore alone is a weaker S/V lever than clearance height:

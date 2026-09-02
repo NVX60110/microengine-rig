@@ -41,6 +41,7 @@ nonreacting transport run without a reason.
 | `tau_mix` promotion | Positive local derivative plus mesh/time-step convergence at the requested crank angle | Late-cycle flat/noisy derivatives must not be converted into huge finite times |
 | Mass conservation | Required for every changed timestep, mesh, or geometry | `correctPhi=no` is accepted only conditionally where continuity has been demonstrated |
 | Answer convergence table | At requested CAD, report direct normalized scalar amplitude plus any differentiated rate used for promotion | Do not promote a derivative while its underlying scalar metric is changing materially |
+| Passive-scalar linear-solver convergence | The tracer owns an exact-keyword `tracer`/`tracerFinal` solver entry converged to the normalized-residual floor (`tolerance 1e-13; relTol 0`); never inherit the momentum/energy pattern entry. Report the tracer final residual and iteration count from the solver log, and audit inventory from solver-written `rho`/`Vc`/`phi` with `cfd/audit_scalar_inventory.py` | Under the shared `relTol 0.01` entry PBiCGStab stopped after one iteration per step and the signed residual leaked tracer mass during squish flow (S2 coarse `1.663e-4`, S1 `6.8e-5`, flat fine `2.4e-5` relative); the converged solve gives `9.9e-12` with the answer unchanged (Issue #10, `CFD02_S2_SCALAR_ISOLATION_REPORT.md`) |
 
 ### CFD-01 known status
 
@@ -113,6 +114,28 @@ gates: inventory drift is `2.01883e-4` relative and the tracer minimum is
 `-0.0192431`. This variant is retained as a numerical diagnostic, not as a
 replacement scheme. No new squish geometry is authorized until a tracer
 treatment passes both conservation and boundedness.
+
+**Issue #10 resolution (2026-09-01).** The inventory loss was an unconverged
+tracer linear solve, not a moving-mesh or wall-flux defect: the shared
+`"(U|e|tracer).*" relTol 0.01` entry stopped PBiCGStab after one iteration
+per step, and the signed residual removed tracer mass fastest between -30 and
+-13 CAD. Solver-field audits show gas mass constant to `1e-10` and wall
+`phi` at `<= 2.6e-23` kg/s in every stored case. With the exact-keyword
+converged entry now in the base `fvSolution`, the same S2 coarse geometry,
+mesh, schemes and controls give tracer inventory drift `9.9e-12` relative
+(`1.6e-10` by the postprocessor), tracer in `[0, 1]`, unchanged volume,
+Courant and mesh checks, and a physical answer that moves by at most
+0.005%. Status: **one bounded, inventory-conserving passive-scalar treatment
+is demonstrated on the existing S2 moving mesh** (`cfd02_s2_tighttol_*`,
+`cfd/results/cfd02_scalar_inventory_audit.json`). The promoted S1 coarse and
+flat fine histories carry the same defect below the gate (`6.8e-5`, `2.4e-5`);
+regenerate flat, S1 and S2 with the converged solve before any cross-geometry
+decision. Boundedness under the function object is real but rests on the
+solver's small continuity error, because it is solved against the
+thermodynamic density after `postSolve`; a structurally bounded alternative
+(inert species in `multicomponentFluid`) is recorded in the report and is not
+part of this gate. S3 and Cantera coupling remain blocked until the
+regenerated three-geometry comparison exists.
 
 ## CFD performance gate
 

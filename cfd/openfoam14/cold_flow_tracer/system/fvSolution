@@ -37,6 +37,25 @@ solvers
         relTol 0.01;
         maxIter 200;
     }
+    // Issue #10: the passive scalar owns an exact-keyword entry.  Exact keys
+    // override the "(U|e|tracer).*" pattern above.  Under that shared
+    // relTol 0.01 entry PBiCGStab stopped after one iteration and the signed
+    // residual sum leaked tracer mass at up to ~1e-6 per step during squish
+    // flow (S2 coarse: 1.67e-4 relative over the cycle; S1 6.8e-5; flat fine
+    // 2.5e-5).  Converging the linear system to the normalized-residual floor
+    // removes the drift (S2 coarse: 9.9e-12 relative) for ~7% more runtime.
+    tracer
+    {
+        solver PBiCGStab;
+        preconditioner DILU;
+        tolerance 1e-13;
+        relTol 0;
+        maxIter 500;
+    }
+    tracerFinal
+    {
+        $tracer;
+    }
     "rho.*"
     {
         solver diagonal;
