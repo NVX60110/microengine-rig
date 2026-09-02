@@ -122,3 +122,22 @@ uses the repository's existing calculated constant-`h` history and an explicitly
 unvalidated angle-dependent sensitivity to produce a temperature envelope. Its
 outputs live in `data/thermal/` and are still calculated screening artifacts;
 they must not be copied into `records.csv` or treated as measured temperatures.
+
+## C1 measurement reduction
+
+Use `data/leakage/measurement_schema.csv` for new warm direct-flow fixture
+rows, then reduce them with:
+
+```bash
+python scripts/reduce_leakdown_experiment.py input_measurements.csv \
+  --output-csv data/leakage/reduced_experiment_results.csv \
+  --output-json data/leakage/reduced_experiment_results.json \
+  --mc-samples 2000
+```
+
+The reducer keeps static direct/differential and dynamic blow-by lanes separate,
+pairs local piston/liner temperatures, evaluates the existing annulus model
+only for positive hot clearance, and records uncertainty/sensitivity outputs.
+Its generated files are calculated analysis artifacts; it never appends to
+`records.csv`. Promote a measured row to that ledger only after the provenance,
+calibration, pressure, temperature and uncertainty gates are satisfied.

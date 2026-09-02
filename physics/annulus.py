@@ -25,33 +25,39 @@ GAMMA = 1.35
 
 
 def annulus_mdot(D_mm, h_um, L_mm, P_up_bar, P_dn_bar=1.0,
-                 T=1100.0, mu=4.0e-5, eccentricity=0.0):
+                 T=1100.0, mu=4.0e-5, eccentricity=0.0,
+                 gas_constant=R_AIR):
     """Laminar compressible flow through a thin annulus (ABC piston/liner,
     or a valve seat). Eccentricity multiplier 1 + 1.5*e^2 per Beta 2.3.
 
     D_mm : annulus diameter
     h_um : radial clearance
     L_mm : flow length (piston skirt length, or valve seat width)
+    gas_constant : specific gas constant [J/(kg K)]; defaults to air
     """
     D, h, L = D_mm / 1e3, h_um / 1e6, L_mm / 1e3
     Pu, Pd = P_up_bar * 1e5, P_dn_bar * 1e5
     if Pu <= Pd:
         return 0.0
-    base = math.pi * D * h**3 * (Pu**2 - Pd**2) / (24 * mu * L * R_AIR * T)
+    if gas_constant <= 0:
+        raise ValueError("gas_constant must be positive")
+    base = math.pi * D * h**3 * (Pu**2 - Pd**2) / (24 * mu * L * gas_constant * T)
     return base * (1.0 + 1.5 * eccentricity**2)
 
 
-def equiv_area(mdot, P_up_bar, T=1100.0, gamma=GAMMA):
+def equiv_area(mdot, P_up_bar, T=1100.0, gamma=GAMMA, gas_constant=R_AIR):
     """Effective choked-orifice area (mm^2) giving the same mass flow AT THIS
     PRESSURE. Not transferable to another pressure -- recompute."""
     Pu = P_up_bar * 1e5
-    k = Pu / math.sqrt(R_AIR * T) * math.sqrt(gamma) * \
+    if gas_constant <= 0:
+        raise ValueError("gas_constant must be positive")
+    k = Pu / math.sqrt(gas_constant * T) * math.sqrt(gamma) * \
         (2 / (gamma + 1)) ** ((gamma + 1) / (2 * (gamma - 1)))
     return mdot / k * 1e6
 
 
 def clearance_to_area(h_um, P_up_bar, D_mm=8.5, L_mm=8.0, T=1100.0,
-                      mu=4.0e-5, eccentricity=0.0):
+                      mu=4.0e-5, eccentricity=0.0, gas_constant=R_AIR):
     """Convenience: ABC radial clearance -> equivalent CdA in mm^2, at a stated
     pressure and temperature. The pressure argument is REQUIRED by design.
 
@@ -67,9 +73,11 @@ def clearance_to_area(h_um, P_up_bar, D_mm=8.5, L_mm=8.0, T=1100.0,
             T=T,
             mu=mu,
             eccentricity=eccentricity,
+            gas_constant=gas_constant,
         ),
         P_up_bar,
         T,
+        gas_constant=gas_constant,
     )
 
 
