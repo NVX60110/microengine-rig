@@ -104,8 +104,9 @@ in the regression fixture. Retain the current coarse 2 CAD check only as a
 diagnostic and do not interpret its pressure difference as a physical regime
 change.
 
-If changing production defaults is undesirable for runtime, the minimum code
-correction is to expose/record the single-zone baseline tolerances and require
-the fine-step collapse preflight before any RPM-dependent chemistry result is
-promoted. No tolerance/code change was made by this diagnostic branch.
-
+The regression fixture now applies the minimum correction: it uses the
+project's existing `step_deg <= 0.125` transition-resolution rule and passes
+`rtol=1e-9`, `atol=1e-15` explicitly to the two-zone solver. Production
+defaults remain unchanged, so ordinary exploratory runs do not incur a hidden
+runtime increase. The coarse 2-degree case remains represented by this report
+as a diagnostic, not as an equivalence gate.
