@@ -251,6 +251,43 @@ campaign with at least three repeats at 2, 4 and 6.5 bar absolute across cold
 and safe warm states, with local fit/taper, paired temperatures, lubricant
 condition, pressure, gas state and direct flow recorded together.
 
+#### C1 thermal-literature ingestion (bounded evidence step)
+
+`data/thermal/literature_sources.csv` and
+`data/thermal/literature_measurements.csv` preserve the highest-value
+near-scale and piston-temperature leads with access status, source locator,
+classification and transferability. `scripts/analyze_thermal_literature.py`
+derives local piston-minus-liner and normalized temperature quantities only from
+complete paired rows. The current public set contains no paired piston/liner
+temperature row and therefore supplies no empirical clearance prior. Missing
+AP .09/Tian, Kruggel 710578, Furuhama and SETC point tables remain recovery
+targets; graph values are not silently digitized or promoted.
+
+The evidence lane now also records the 11.25 mm ringless Shang engine's
+reported head-temperature/power context, the approximately 9 mm HCCI engine's
+controlled block-temperature setpoints, and the ringed Furuhama/Tada heat-path
+and leakage coefficients. Ringed values are kept out of the ringless thermal
+network. A manufacturer ABC reference supports intentional cold taper
+qualitatively, but no quantitative ringless skirt-to-liner conductance, oil-film
+resistance or taper profile has been recovered.
+
+#### RPM-envelope audit (hypothesis routing only)
+
+The external RPM audit is retained as a hypothesis generator. Before any of
+its regime or architecture claims can be promoted, all event-time quantities
+must use `t_rev = 60/N` and the four-stroke period `t_4stroke = 120/N` seconds;
+at 1200 rpm these are 50 and 100 ms, while at 25,000 rpm they are 2.4 and
+4.8 ms. The audit's `mu U/W` and `tau_piston/t_cycle` labels are not accepted
+as Hersey or Stanton numbers, and Reynolds/Fourier crossings are not universal
+RPM boundaries.
+
+The next bounded study is an RPM/chemistry map of self-consistent TDC pressure,
+temperature and ignition delay, followed by a 1-D axial thermal-clearance
+profile, a coupled fixed-point/Jacobian stability screen, and only then a
+ringed-versus-ringless leakage comparison. No saddle, hard CI-to-spark switch,
+“no film” lubrication claim or material architecture is promoted from the
+audit.
+
 Hypothesis: if manufactured radial clearance is roughly independent of bore,
 then annular leak area scales approximately with `B*c` while displacement
 scales with `B^2*S`, so leakage-per-displacement can deteriorate rapidly as
