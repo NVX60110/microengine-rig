@@ -53,6 +53,25 @@ digitized dataset. If digitization becomes necessary, every row must retain
 figure/page provenance and an explicit digitization uncertainty, and OH/OH*
 criteria must remain unsupported until a matching diagnostic is implemented.
 
+## Galway validation graphics recovered (plot catalog only)
+
+The Galway AramcoMech 2.0 validation download exposes the exact 80/20 and
+60/40 CH4/DME Petersen plots plus pure-DME Petersen and Cook plots. Their URLs,
+page/panel conditions, axis transforms, and SHA-256 hashes are recorded in
+[`data/burke2015/validation_plots.json`](data/burke2015/validation_plots.json)
+and summarized in the
+[`recovery memo`](data/burke2015/VALIDATION_PLOT_RECOVERY.md). The PDFs contain
+plotted black-square points but no public machine-readable attachment or
+point-level uncertainty. They are consequently a provenance-safe
+digitization target, not original Burke rows. No points were OCRed, estimated,
+or added to `records.csv`.
+
+The empty
+[`digitized_points_template.csv`](data/burke2015/digitized_points_template.csv)
+requires strict gate fields plus source PDF hash, page/panel, calibrated axis
+metadata, point marker, lineage, and explicit digitization uncertainty before
+a separately named dataset can be reviewed.
+
 ## Next bounded action
 
 Request the supplementary point file from the Burke/Curran group or the

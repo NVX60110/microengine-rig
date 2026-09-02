@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "galway_aramcomech20_validation_plot_catalog",
+  "status": "plot_catalog_only",
+  "retrieved_date": "2026-09-02",
+  "purpose": "Catalog public Galway validation graphics that may help recover Burke-era DME and DME/CH4 ignition-delay points without claiming plotted values as machine-readable measurements.",
+  "publisher": "Combustion Chemistry Centre, University of Galway",
+  "landing_page": "https://c3.universityofgalway.ie/combustionchemistrycentre/mechanismdownloads/aramcomech20/",
+  "ingestion_policy": {
+    "canonical_records_csv_modified": false,
+    "canonical_burke_points_added": false,
+    "plot_points_ingested": false,
+    "reason": "The PDFs expose plotted markers and mechanism curves, but not the original numerical attachment, point lineage, or point-level uncertainty. They are therefore cataloged for a future, separately labeled digitization only.",
+    "required_before_ingestion": [
+      "Verify whether the points are author-supplied or a secondary transcription/digitization.",
+      "Record PDF URL, SHA-256, page, panel, axis transforms, and point marker for every row.",
+      "Assign explicit digitization uncertainty; do not infer a false precision from the marker size.",
+      "Keep digitized rows separate from original supplementary rows and do not mix RCM and shock-tube criteria."
+    ]
+  },
+  "axis_defaults": {
+    "x": {
+      "label": "10^4 K / T",
+      "quantity": "10000 / T_K",
+      "units": "dimensionless axis coordinate",
+      "scale": "linear",
+      "temperature_recovery": "T_K = 10000 / x_axis_value"
+    },
+    "y": {
+      "label": "Ignition delay time (tau) / microseconds",
+      "quantity": "ignition_delay",
+      "units": "microsecond",
+      "marker": "black square experimental point"
+    }
+  },
+  "sources": [
+    {
+      "source_id": "galway_dme_ch4_st_petersen",
+      "title": "DME/CH4 shock-tube validation plots (Petersen)",
+      "url": "https://c3.universityofgalway.ie/media/researchcentres/combustionchemistrycentre/files/pdf/validation/DME_CH4_ST_PETERSEN.pdf",
+      "file_name": "DME_CH4_ST_PETERSEN.pdf",
+      "sha256": "C5B419E41C81F0ACE1B064499D4602D27BFD77F4DF68181EB4093DD645AD737E",
+      "download_bytes": 1244004,
+      "page_count": 4,
+      "source_kind": "secondary_validation_graphic",
+      "associated_mechanism": "AramcoMech 2.0",
+      "lineage_status": "The landing page identifies this as a validation download, but does not expose the experimental point file or state whether each marker was author-supplied or digitized.",
+      "panels": [
+        {"page": 1, "panel": "upper", "mixture_label": "80CH4_20DME", "equivalence_ratio": 0.3, "pressure_atm": 21.96, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 1, "panel": "lower", "mixture_label": "80CH4_20DME", "equivalence_ratio": 0.5, "pressure_atm": 40.11, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 2, "panel": "upper", "mixture_label": "80CH4_20DME", "equivalence_ratio": 1.0, "pressure_atm": 21.9, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 2, "panel": "lower", "mixture_label": "80CH4_20DME", "equivalence_ratio": 2.0, "pressure_atm": 44.9, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 3, "panel": "upper", "mixture_label": "60CH4_40DME", "equivalence_ratio": 0.5, "pressure_atm": 52.73, "oxidizer": "air", "y_scale": "linear"},
+        {"page": 3, "panel": "lower", "mixture_label": "60CH4_40DME", "equivalence_ratio": 0.5, "pressure_atm": 23.91, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 4, "panel": "upper", "mixture_label": "60CH4_40DME", "equivalence_ratio": 1.0, "pressure_atm": 22.61, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 4, "panel": "lower", "mixture_label": "60CH4_40DME", "equivalence_ratio": 0.3, "pressure_atm": 24.23, "oxidizer": "air", "y_scale": "log10"}
+      ]
+    },
+    {
+      "source_id": "galway_dme_st_petersen",
+      "title": "Pure-DME shock-tube validation plots (Petersen)",
+      "url": "https://c3.universityofgalway.ie/media/researchcentres/combustionchemistrycentre/files/pdf/validation/DME_ST_PETERSEN.pdf",
+      "file_name": "DME_ST_PETERSEN.pdf",
+      "sha256": "D8BA6E5266F09DF759A43903F69B60336FDA20B837F243A97780A308DBD8B65A",
+      "download_bytes": 1776006,
+      "page_count": 6,
+      "source_kind": "secondary_validation_graphic",
+      "associated_mechanism": "AramcoMech 2.0",
+      "lineage_status": "Pure-DME validation graphic; it is not asserted to be the Burke 2015 supplementary dataset.",
+      "panels": [
+        {"page": 1, "panel": "upper", "mixture_label": "pure_DME", "equivalence_ratio": 2.0, "pressure_atm": 1.98, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 1, "panel": "lower", "mixture_label": "pure_DME", "equivalence_ratio": 2.0, "pressure_atm": 10.9, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 2, "panel": "upper", "mixture_label": "pure_DME", "equivalence_ratio": 2.0, "pressure_atm": 25.7, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 2, "panel": "lower", "mixture_label": "pure_DME", "equivalence_ratio": 1.0, "pressure_atm": 1.8, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 3, "panel": "upper", "mixture_label": "pure_DME", "equivalence_ratio": 1.0, "pressure_atm": 11.62, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 3, "panel": "lower", "mixture_label": "pure_DME", "equivalence_ratio": 1.0, "pressure_atm": 25.9, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 4, "panel": "upper", "mixture_label": "pure_DME", "equivalence_ratio": 0.5, "pressure_atm": 1.81, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 4, "panel": "lower", "mixture_label": "pure_DME", "equivalence_ratio": 0.5, "pressure_atm": 11.52, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 5, "panel": "upper", "mixture_label": "pure_DME", "equivalence_ratio": 0.5, "pressure_atm": 25.4, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 5, "panel": "lower", "mixture_label": "pure_DME", "equivalence_ratio": 0.3, "pressure_atm": 1.9, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 6, "panel": "upper", "mixture_label": "pure_DME", "equivalence_ratio": 0.3, "pressure_atm": 11.79, "oxidizer": "air", "y_scale": "log10"},
+        {"page": 6, "panel": "lower", "mixture_label": "pure_DME", "equivalence_ratio": 0.3, "pressure_atm": 23.74, "oxidizer": "air", "y_scale": "log10"}
+      ]
+    },
+    {
+      "source_id": "galway_dme_st_cook",
+      "title": "Pure-DME shock-tube validation plots (Cook)",
+      "url": "https://c3.universityofgalway.ie/media/researchcentres/combustionchemistrycentre/files/pdf/validation/DME_ST_COOK.pdf",
+      "file_name": "DME_ST_COOK.pdf",
+      "sha256": "AA7B4A2F41D49E5239B2DF3B405DF56DA396E056D803B6D912565C8AE70597F4",
+      "download_bytes": 446383,
+      "page_count": 2,
+      "source_kind": "secondary_validation_graphic",
+      "associated_mechanism": "AramcoMech 2.0",
+      "lineage_status": "Cook pure-DME validation graphic in AramcoMech's download tree; not asserted to be Burke 2015 data.",
+      "panels": [
+        {"page": 1, "panel": "upper", "mixture_label": "pure_DME_Cook_Ar", "equivalence_ratio": 2.0, "pressure_atm": 3.26, "fuel_mole_percent": 1.0, "oxygen_mole_percent": 1.5, "diluent": "Ar", "y_scale": "log10"},
+        {"page": 1, "panel": "lower", "mixture_label": "pure_DME_Cook_Ar", "equivalence_ratio": 1.0, "pressure_atm": 3.26, "fuel_mole_percent": 1.0, "oxygen_mole_percent": 3.0, "diluent": "Ar", "y_scale": "log10"},
+        {"page": 2, "panel": "full", "mixture_label": "pure_DME_Cook_Ar", "equivalence_ratio": 0.5, "pressure_atm": 3.26, "fuel_mole_percent": 1.0, "oxygen_mole_percent": 6.0, "diluent": "Ar", "y_scale": "log10"}
+      ]
+    }
+  ]
+}
