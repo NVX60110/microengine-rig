@@ -51,6 +51,7 @@ class Cycle720Tests(unittest.TestCase):
         self.assertAlmostEqual(result["regression"]["canonical_gross_work_mJ"], 1.0)
         self.assertEqual([row["cycle_deg"] for row in result["rows"]], [-180.0, 0.0, 180.0])
         self.assertAlmostEqual(result["cycle_state_out"]["mass_kg"], 0.9e-6)
+        self.assertAlmostEqual(result["summary"]["four_stroke_period_s"], 0.10)
 
     def test_lumped_valve_step_conserves_positive_mass_and_returns_state(self):
         config = RigConfig(fuel_profile="methane", intake_temperature_K=300.0,

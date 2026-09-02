@@ -288,7 +288,15 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
             "gate": True,
             "note": "No 720-CAD gas exchange, pumping, friction or motor work is invented on this path.",
         }
-        return {"rows": rows, "summary": closed_summary, "closed_pass": True,
+        summary = dict(closed_summary)
+        summary.update({
+            "model": "minimum-viable-720-CAD-wrapper-regression",
+            "phase_names": PHASES,
+            "cycle_start_convention": "-360 CAD intake TDC; 0 CAD firing TDC; +360 CAD exhaust end",
+            "one_revolution_period_s": 60.0 / c.rpm,
+            "four_stroke_period_s": 120.0 / c.rpm,
+        })
+        return {"rows": rows, "summary": summary, "closed_pass": True,
                 "regression": regression,
                 "cycle_state_in": initial_state, "cycle_state_out": end_state,
                 "periodic_metrics": {"mass_rel": 0.0, "species_max": 0.0,
