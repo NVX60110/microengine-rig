@@ -40,33 +40,34 @@ diagnostic until the complete periodic state is closed.
 ## Result
 
 The run covered 12 consecutive cycles at 1,200 rpm and 5 CAD step. The mass
-balance residual was approximately -0.00074 to -0.00089 mg per cycle. Relative
-to the reacting kernel's 1.63 mg initial mass this is about 4.5–5.5e-4, and
-relative to the cycle-start mass it is about 3.5–4.4e-3, so it does **not** meet
-the strict 1e-6 periodic mass gate. It is consistent with a rate-integration /
-quadrature residual, not the 3–50% homologous-state drift.
+balance residual was approximately -0.00071 to -0.00089 mg per cycle. Relative
+to the reacting kernel's 1.63 mg initial mass this is about 4.6–5.5e-4, and
+relative to the cycle-start mass it spans 4.4e-3 to 2.0e-2, so it does **not**
+meet the strict 1e-6 periodic mass gate. It is consistent with a
+rate-integration / quadrature residual, not the 1.6–43.4% homologous-state
+drift observed in this rerun.
 
 Representative cycle 1 accounting was:
 
 | quantity | value |
 |---|---:|
 | cycle-start mass | 0.20285 mg |
-| cycle-end mass | 0.07540 mg |
+| cycle-end mass | 0.06863 mg |
 | intake mass in | 1.42861 mg |
-| exhaust mass out | 1.36089 mg |
+| exhaust mass out | 1.36765 mg |
 | reacting-kernel blow-by out | 0.19607 mg |
 | complete mass residual | -8.95e-4 mg |
-| start/end temperature | 300.00 / 256.70 K |
+| start/end temperature | 300.00 / 242.45 K |
 
 The mass identity closes to the displayed accounting residual:
 
 ```text
-0.20285 + 1.42861 - 1.36089 - 0.19607 - 0.07540
+0.20285 + 1.42861 - 1.36765 - 0.19608 - 0.06863
   = -0.00089 mg
 ```
 
-Across cycles 2–12, the end-state temperature wandered from 184.8 K to
-279.1 K and the homologous mass change remained 0.013–0.506 relative. The
+Across cycles 2–12, the end-state temperature wandered from 183.5 K to
+269.8 K and the homologous mass change remained 0.016–0.434 relative. The
 state therefore did not approach a demonstrably periodic engine cycle in this
 bounded run. The first classification is:
 
