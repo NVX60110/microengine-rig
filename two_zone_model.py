@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import cantera as ct
 
@@ -124,7 +124,70 @@ def _branch(summary: dict[str, Any]) -> str:
     return "hot_combustion"
 
 
-def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
+def _apply_initial_state(
+    gas: ct.Solution, c: RigConfig, initial_state: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Apply an explicitly supplied pre-cycle state.
+
+    ``simulate_two_zone`` historically created only a fresh charge.  This
+    small adapter makes a repeated-cycle experiment possible without changing
+    the reactor/volume model: callers may provide a complete mole or mass
+    composition and a temperature/pressure at the modeled cycle start.  The
+    caller owns any mixing operation used to construct that state.
+    """
+    if initial_state is None:
+        return {
+            "source": "fresh-charge",
+            "basis": "mole",
+            "temperature_K": c.intake_temperature_K,
+            "pressure_bar": c.intake_pressure_bar,
+        }
+    if not isinstance(initial_state, Mapping):
+        raise TypeError("initial_state must be a mapping or None")
+    has_x = "X" in initial_state
+    has_y = "Y" in initial_state
+    if has_x == has_y:
+        raise ValueError("initial_state must contain exactly one of X or Y")
+    basis = "mole" if has_x else "mass"
+    composition = initial_state["X"] if has_x else initial_state["Y"]
+    if not isinstance(composition, Mapping):
+        raise TypeError("initial_state composition must be a species mapping")
+    if not composition:
+        raise ValueError("initial_state composition cannot be empty")
+    unknown = sorted(set(composition) - set(gas.species_names))
+    if unknown:
+        raise ValueError(
+            "initial_state contains species absent from mechanism: "
+            + ", ".join(unknown)
+        )
+    values = [float(composition.get(name, 0.0)) for name in gas.species_names]
+    if any(not math.isfinite(value) or value < 0.0 for value in values):
+        raise ValueError("initial_state composition must be finite and nonnegative")
+    if sum(values) <= 0.0:
+        raise ValueError("initial_state composition must have positive total")
+    temperature = float(initial_state.get("T_K", c.intake_temperature_K))
+    pressure_bar = float(initial_state.get("P_bar", c.intake_pressure_bar))
+    if not math.isfinite(temperature) or temperature <= 0.0:
+        raise ValueError("initial_state T_K must be positive and finite")
+    if not math.isfinite(pressure_bar) or pressure_bar <= 0.0:
+        raise ValueError("initial_state P_bar must be positive and finite")
+    if basis == "mole":
+        gas.TPX = temperature, pressure_bar * 1e5, dict(composition)
+    else:
+        gas.TPY = temperature, pressure_bar * 1e5, dict(composition)
+    return {
+        "source": str(initial_state.get("source", "supplied")),
+        "basis": basis,
+        "temperature_K": gas.T,
+        "pressure_bar": gas.P / 1e5,
+    }
+
+
+def simulate_two_zone(
+    c: RigConfig,
+    z: TwoZoneOptions = TwoZoneOptions(),
+    initial_state: Mapping[str, Any] | None = None,
+):
     """Run one closed compression-expansion cycle.
 
     Returns per-angle rows and a flat summary. Fuel consumption is the time
@@ -138,6 +201,7 @@ def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
     gas = ct.Solution(mechanism, profile.phase) if profile.phase else ct.Solution(mechanism)
     gas.set_equivalence_ratio(c.equivalence_ratio, profile.fuel, profile.oxidizer)
     gas.TP = c.intake_temperature_K, c.intake_pressure_bar * 1e5
+    initial_state_info = _apply_initial_state(gas, c, initial_state)
     initial_X = gas.X
 
     boundary_gas = (
@@ -591,6 +655,42 @@ def simulate_two_zone(c: RigConfig, z: TwoZoneOptions = TwoZoneOptions()):
             summary[f"end_{key}"] = rows[-1][key]
             finite = [row[key] for row in rows if math.isfinite(row[key])]
             summary[f"max_{key}"] = max(finite) if finite else float("nan")
+    # Preserve the complete end composition for a repeated-cycle adapter.
+    # Zone states are aggregated on a mass basis, while the aggregate
+    # temperature is recovered from mass-weighted specific enthalpy at the
+    # reported effective pressure.  This is a state snapshot, not an exhaust
+    # valve model or a claim that the one-revolution interval is a four-stroke
+    # cycle.
+    end_mass = core.mass + boundary.mass
+    end_pressure = effective_pressure()
+    end_Y = (
+        core.mass * core.phase.Y + boundary.mass * boundary.phase.Y
+    ) / max(end_mass, 1e-30)
+    end_h = (
+        core.mass * core.phase.enthalpy_mass
+        + boundary.mass * boundary.phase.enthalpy_mass
+    ) / max(end_mass, 1e-30)
+    end_phase = (
+        ct.Solution(mechanism, profile.phase)
+        if profile.phase else ct.Solution(mechanism)
+    )
+    end_phase.TPY = max(250.0, min(5000.0, rows[-1]["coreTemperature_K"])), end_pressure, end_Y
+    end_phase.HP = end_h, end_pressure
+    summary["initial_state"] = initial_state_info
+    summary["end_state"] = {
+        "source": "mass-aggregated-two-zone-end",
+        "basis": "mass",
+        "T_K": end_phase.T,
+        "P_bar": end_pressure / 1e5,
+        "Y": {
+            name: float(value) for name, value in zip(end_phase.species_names, end_phase.Y)
+            if value > 0.0
+        },
+        "X": {
+            name: float(value) for name, value in zip(end_phase.species_names, end_phase.X)
+            if value > 0.0
+        },
+    }
     summary["branch"] = _branch(summary)
     return rows, summary
 
