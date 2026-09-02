@@ -96,6 +96,7 @@ class Cycle720Options:
     step_deg: float = 1.0
     valves_enabled: bool = False
     friction_enabled: bool = False
+    crank_dynamics_enabled: bool = False
     motor_enabled: bool = False
     # The full cycle is -360..+360 CAD: intake TDC=-360, firing TDC=0.
     intake_valve: ValveConfig = ValveConfig(-360.0, -160.0)
@@ -125,6 +126,8 @@ class Cycle720Options:
             raise ValueError("exhaust pressure must be positive")
         if self.motor_enabled and abs(self.motor.target_rpm - c.rpm) > 1e-9:
             raise ValueError("motor target_rpm must match RigConfig.rpm")
+        if self.motor_enabled and not self.crank_dynamics_enabled:
+            raise ValueError("motor control requires crank_dynamics_enabled")
 
 
 def phase_at(deg: float) -> str:
@@ -237,6 +240,12 @@ def _gas_torque(c: RigConfig, pressure_bar: float, theta_deg: float) -> float:
 
 def _speed_step(c: RigConfig, options: Cycle720Options, speed_rpm: float,
                 torque_gas: float, dt: float) -> tuple[float, float]:
+    # The canonical regression and gas-exchange-only stages hold crank speed
+    # at the prescribed RigConfig value.  Do not integrate gas torque against
+    # a placeholder inertia unless the caller explicitly enables crank
+    # dynamics; doing so can create meaningless six-figure RPM excursions.
+    if not options.crank_dynamics_enabled:
+        return speed_rpm, 0.0
     friction = options.friction.torque() if options.friction_enabled else 0.0
     motor = 0.0
     if options.motor_enabled:
@@ -362,7 +371,7 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
     rows.extend(exhaust_rows)
     # Complete output uses gas pressure for torque/inertia diagnostics.  The
     # pressure trace in the closed rows remains the canonical reacting trace.
-    speed = c.rpm
+    speed = float(state.get("speed_rpm", c.rpm))
     for idx, row in enumerate(rows):
         previous = rows[max(0, idx - 1)]
         theta = row["cycle_deg"]
@@ -380,6 +389,8 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
            "Y": state["Y"], "speed_rpm": speed, "h_J_kg": state.get("h_J_kg", _specific_enthalpy(state))}
     summary = {"model": "minimum-viable-720-CAD-wrapper", "phase_names": PHASES,
                "cycle_start_convention": "-360 CAD intake TDC; 0 CAD firing TDC; +360 CAD exhaust end",
+               "one_revolution_period_s": 60.0 / c.rpm,
+               "four_stroke_period_s": 120.0 / c.rpm,
                "gross_work_mJ": sum(work_by_phase.values()),
                "phase_work_mJ": work_by_phase, "intake_mass_mg": total_in * 1e6,
                "exhaust_mass_mg": total_out * 1e6,

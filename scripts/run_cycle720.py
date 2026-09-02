@@ -5,9 +5,31 @@ from __future__ import annotations
 import argparse
 import json
 from dataclasses import asdict
+import math
+import sys
+from pathlib import Path
+
+# Support the documented ``python scripts/run_cycle720.py`` invocation from
+# the repository root.  Python otherwise puts only ``scripts/`` on sys.path.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from cycle720 import Cycle720Options, FrictionBracket, MotorController, ValveConfig, iterate_periodic_720
 from microengine_rig import RigConfig
+
+
+def _json_safe(value):
+    """Convert intentional non-finite convergence sentinels to JSON null."""
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, tuple):
+        return [_json_safe(item) for item in value]
+    return value
 
 
 def main() -> None:
@@ -17,14 +39,19 @@ def main() -> None:
     parser.add_argument("--cycles", type=int, default=3)
     parser.add_argument("--enable-valves", action="store_true")
     parser.add_argument("--enable-friction", action="store_true")
+    parser.add_argument("--enable-crank-dynamics", action="store_true")
     parser.add_argument("--enable-motor", action="store_true")
+    parser.add_argument("--wall-temperature", type=float, default=560.0,
+                        help="fixed wall temperature for the two-zone kernel [K]")
     parser.add_argument("--output", default="cycle720_result.json")
     args = parser.parse_args()
-    config = RigConfig(rpm=args.rpm, step_deg=args.step_deg)
+    config = RigConfig(rpm=args.rpm, step_deg=args.step_deg,
+                       wall_mode="fixed", wall_temperature_K=args.wall_temperature)
     options = Cycle720Options(
         step_deg=args.step_deg, max_cycles=args.cycles,
         valves_enabled=args.enable_valves,
         friction_enabled=args.enable_friction,
+        crank_dynamics_enabled=args.enable_crank_dynamics or args.enable_motor,
         motor_enabled=args.enable_motor,
         intake_valve=ValveConfig(-360.0, -160.0, effective_area_m2=1e-6),
         exhaust_valve=ValveConfig(160.0, 360.0, effective_area_m2=1e-6),
@@ -32,9 +59,9 @@ def main() -> None:
         motor=MotorController(target_rpm=args.rpm),
     )
     result = iterate_periodic_720(config, options)
-    output = {"configuration": {"rig": asdict(config), "cycle": asdict(options)},
-              "convergence": result["converged"], "cycles": result["cycles"],
-              "history": result["history"], "summary": result["result"]["summary"]}
+    output = _json_safe({"configuration": {"rig": asdict(config), "cycle": asdict(options)},
+                         "convergence": result["converged"], "cycles": result["cycles"],
+                         "history": result["history"], "summary": result["result"]["summary"]})
     with open(args.output, "w", encoding="utf-8", newline="\n") as stream:
         json.dump(output, stream, indent=2, sort_keys=True, allow_nan=False)
         stream.write("\n")

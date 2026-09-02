@@ -9,11 +9,13 @@ from cycle720 import (
     ValveConfig,
     _advance_lumped,
     _fresh_state,
+    _speed_step,
     phase_at,
     serialize_cycle_state,
     simulate_cycle720,
 )
 from microengine_rig import RigConfig, build_geometry
+from scripts.run_cycle720 import _json_safe
 
 
 class Cycle720Tests(unittest.TestCase):
@@ -69,6 +71,30 @@ class Cycle720Tests(unittest.TestCase):
             Cycle720Options(intake_valve=ValveConfig(10, 0)).validate(config)
         with self.assertRaises(ValueError):
             Cycle720Options(motor_enabled=True, motor=MotorController(target_rpm=1000)).validate(config)
+
+    def test_disabled_crank_dynamics_holds_prescribed_speed(self):
+        config = RigConfig(wall_mode="fixed", wall_temperature_K=560.0, step_deg=5.0)
+        result = simulate_cycle720(config, Cycle720Options(step_deg=5.0))
+        self.assertTrue(result["closed_pass"])
+        self.assertAlmostEqual(result["cycle_state_out"]["speed_rpm"], config.rpm)
+
+    def test_gas_exchange_stage_holds_speed_until_dynamics_enabled(self):
+        options = Cycle720Options()
+        speed, motor = _speed_step(RigConfig(), options, 1200.0, 1.0, 1.0e-4)
+        self.assertEqual(speed, 1200.0)
+        self.assertEqual(motor, 0.0)
+
+    def test_four_stroke_timing_is_120_over_rpm(self):
+        config = RigConfig(rpm=1200.0, wall_mode="fixed", wall_temperature_K=560.0,
+                           step_deg=5.0)
+        result = simulate_cycle720(config, Cycle720Options(step_deg=5.0))
+        self.assertAlmostEqual(result["summary"]["one_revolution_period_s"], 0.05)
+        self.assertAlmostEqual(result["summary"]["four_stroke_period_s"], 0.10)
+
+    def test_runner_serializes_nonfinite_first_cycle_metrics_as_null(self):
+        self.assertIsNone(_json_safe(float("inf")))
+        self.assertEqual(_json_safe({"x": [float("-inf"), 1.0]}),
+                         {"x": [None, 1.0]})
 
 
 if __name__ == "__main__":
