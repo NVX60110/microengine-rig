@@ -218,15 +218,19 @@ angle-dependent pressure/temperature/speed closure is sensitivity only; there
 is no crank-angle heat-flux correlation or measured wall temperature in the
 repository yet.
 
-The primary Al-4032/4140 screen gives 328–328.4 K piston skirt and 333.3–334.4
-K liner TDC for constant h, with a 2.82–5.78 µm cold-fit intersection for a
-2–5 µm hot target.  The angle sensitivity gives 349.2–349.7 K and 351.4–353.0
-K, moving the intersection to 3.63–6.57 µm.  The 54-case bounded sensitivity
-envelope is lower 2.66–3.97 µm and upper 5.63–6.91 µm (p05–p95; not a
-confidence interval).  These low proxy temperatures are not a hardware
-prediction.  The next C1 action is a warm direct-flow fixture that measures
-the piston/liner temperature difference and leakage together; do not promote
-a ringless, ringed or material architecture from this RC screen alone.
+The primary Al-4032/4140 periodic screen gives 441.2–441.3 K piston skirt and
+395.5–396.2 K liner TDC for constant h, with a 9.53–12.11 µm local paired
+cold-fit intersection for a 2–5 µm hot target.  The explicitly unvalidated
+angle sensitivity gives 515.1–515.2 K and 443.3–444.3 K, moving the
+intersection to 13.43–15.76 µm.  The 54-case bounded sensitivity envelope is
+lower 8.30–14.69 µm and upper 10.94–16.99 µm (p05–p95; not a confidence
+interval).  These are still proxy temperatures, not a hardware prediction.
+The solver now includes a 0.15 W/K block-to-300 K sink and solves the linear
+one-cycle map for a periodic fixed point; the 120-cycle cold-to-warm trajectory
+is retained separately and is not falsely labeled converged.  The next C1
+action is a warm direct-flow fixture that measures local piston/liner
+temperature difference and leakage together; do not promote a ringless,
+ringed or material architecture from this RC screen alone.
 
 Hypothesis: if manufactured radial clearance is roughly independent of bore,
 then annular leak area scales approximately with `B*c` while displacement

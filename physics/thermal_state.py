@@ -83,10 +83,13 @@ class ThermalRCConfig:
     h_max_multiplier: float = 4.0
     piston_skirt_area_fraction: float = 0.15
     liner_tdc_area_fraction: float = 0.425
+    ambient_temperature_K: float = 300.0
+    block_ambient_conductance_W_K: float = 0.15
     idle_duration_s: float = 0.05
     max_warmup_cycles: int = 120
     min_warmup_cycles: int = 10
     convergence_tolerance_K: float = 0.01
+    solve_periodic_fixed_point: bool = True
 
 
 _SCREENING_CONDUCTIVITY_W_MK = {
@@ -128,6 +131,8 @@ def default_nodes(config: ThermalRCConfig) -> tuple[ThermalNode, ...]:
         liner_cp = 460.0
     else:
         liner_cp = 500.0
+    if config.block_ambient_conductance_W_K < 0:
+        raise ValueError("block ambient conductance must be nonnegative")
     return (
         ThermalNode("piston_crown", 0.00045, piston_cp),
         ThermalNode("piston_skirt", 0.00080, piston_cp),
@@ -135,7 +140,11 @@ def default_nodes(config: ThermalRCConfig) -> tuple[ThermalNode, ...]:
         ThermalNode("liner_tdc", 0.00040, liner_cp),
         ThermalNode("liner_lower", 0.00080, liner_cp),
         ThermalNode("head_deck", 0.00100, 500.0),
-        ThermalNode("block", 0.00200, 850.0),
+        ThermalNode(
+            "block", 0.00200, 850.0,
+            external_temperature_K=config.ambient_temperature_K,
+            external_conductance_W_K=config.block_ambient_conductance_W_K,
+        ),
     )
 
 
@@ -278,12 +287,14 @@ def _advance_network(
     nodes: Sequence[ThermalNode],
     links: Sequence[ConductiveLink],
     area_lookup: Mapping[float, Mapping[str, float]] | None = None,
-) -> tuple[list[float], dict[str, float]]:
+) -> tuple[list[float], dict[str, float], dict[str, float]]:
     if dt_s <= 0:
-        return list(temperatures), {node.name: 0.0 for node in nodes}
+        zeros = {node.name: 0.0 for node in nodes}
+        return list(temperatures), zeros, dict(zeros)
     names = {node.name: index for index, node in enumerate(nodes)}
     rates = [0.0] * len(nodes)
     gas_rates = {node.name: 0.0 for node in nodes}
+    external_rates = {node.name: 0.0 for node in nodes}
     if point is not None:
         areas = area_lookup[point.deg] if area_lookup is not None else gas_areas_m2(config, point.deg)
         h = heat_transfer_coeff_W_m2K(point, config)
@@ -294,17 +305,18 @@ def _advance_network(
             gas_rates[node_name] += q
     for index, node in enumerate(nodes):
         if node.external_conductance_W_K > 0:
-            rates[index] += node.external_conductance_W_K * (node.external_temperature_K - temperatures[index])
+            q = node.external_conductance_W_K * (node.external_temperature_K - temperatures[index])
+            rates[index] += q
+            external_rates[node.name] += q
     for link in links:
         ia, ib = names[link.node_a], names[link.node_b]
         q = link.conductance_W_K * (temperatures[ib] - temperatures[ia])
         rates[ia] += q
         rates[ib] -= q
-    updated = [
-        max(100.0, temperature + dt_s * rate / node.capacity_J_K)
-        for temperature, rate, node in zip(temperatures, rates, nodes)
-    ]
-    return updated, gas_rates
+    updated = [temperature + dt_s * rate / node.capacity_J_K for temperature, rate, node in zip(temperatures, rates, nodes)]
+    if any(not math.isfinite(value) or value < 0.0 for value in updated):
+        raise ValueError("thermal RC produced a negative temperature")
+    return updated, gas_rates, external_rates
 
 
 def _advance_idle(
@@ -323,36 +335,119 @@ def _advance_idle(
     dt = duration_s / steps
     result = list(temperatures)
     for _ in range(steps):
-        result, _ = _advance_network(result, dt, None, config, nodes, links, area_lookup)
+        result, _, _ = _advance_network(result, dt, None, config, nodes, links, area_lookup)
     return result
+
+
+def _advance_cycle(
+    temperatures: Sequence[float],
+    history: Sequence[HistoryPoint],
+    config: ThermalRCConfig,
+    nodes: Sequence[ThermalNode],
+    links: Sequence[ConductiveLink],
+    area_lookup: Mapping[float, Mapping[str, float]],
+) -> tuple[list[float], float, float]:
+    """Advance one modeled pass plus idle segment and collect energy terms."""
+    result = list(temperatures)
+    gas_energy_J = 0.0
+    external_energy_J = 0.0
+    for point in history:
+        result, gas_rates, external_rates = _advance_network(result, point.dt_s, point, config, nodes, links, area_lookup)
+        gas_energy_J += sum(gas_rates.values()) * point.dt_s
+        external_energy_J += sum(external_rates.values()) * point.dt_s
+    if config.idle_duration_s > 0:
+        steps = max(1, math.ceil(config.idle_duration_s / 0.001))
+        dt = config.idle_duration_s / steps
+        for _ in range(steps):
+            result, gas_rates, external_rates = _advance_network(result, dt, None, config, nodes, links, area_lookup)
+            gas_energy_J += sum(gas_rates.values()) * dt
+            external_energy_J += sum(external_rates.values()) * dt
+    return result, gas_energy_J, external_energy_J
+
+
+def _solve_linear_system(matrix: Sequence[Sequence[float]], vector: Sequence[float]) -> list[float]:
+    """Solve a small dense system with pivoted Gaussian elimination."""
+    n = len(vector)
+    augmented = [list(map(float, row)) + [float(vector[i])] for i, row in enumerate(matrix)]
+    for pivot in range(n):
+        row = max(range(pivot, n), key=lambda index: abs(augmented[index][pivot]))
+        if abs(augmented[row][pivot]) < 1e-14:
+            raise ValueError("periodic RC map is singular")
+        augmented[pivot], augmented[row] = augmented[row], augmented[pivot]
+        scale = augmented[pivot][pivot]
+        augmented[pivot] = [value / scale for value in augmented[pivot]]
+        for index in range(n):
+            if index == pivot:
+                continue
+            factor = augmented[index][pivot]
+            if factor:
+                augmented[index] = [left - factor * right for left, right in zip(augmented[index], augmented[pivot])]
+    return [augmented[index][-1] for index in range(n)]
+
+
+def _periodic_fixed_point(
+    history: Sequence[HistoryPoint],
+    config: ThermalRCConfig,
+    nodes: Sequence[ThermalNode],
+    links: Sequence[ConductiveLink],
+    area_lookup: Mapping[float, Mapping[str, float]],
+) -> tuple[list[float], dict[str, float]]:
+    """Solve T_end=A*T_start+b for the periodic starting state."""
+    n = len(nodes)
+    zero_end, _, _ = _advance_cycle([0.0] * n, history, config, nodes, links, area_lookup)
+    columns: list[list[float]] = []
+    for column in range(n):
+        basis = [0.0] * n
+        basis[column] = 1.0
+        end, _, _ = _advance_cycle(basis, history, config, nodes, links, area_lookup)
+        columns.append([end[row] - zero_end[row] for row in range(n)])
+    # Columns above are A's columns.  Solve (I-A)T*=b.
+    matrix = [[(1.0 if row == col else 0.0) - columns[col][row] for col in range(n)] for row in range(n)]
+    start = _solve_linear_system(matrix, zero_end)
+    end, gas_energy_J, external_energy_J = _advance_cycle(start, history, config, nodes, links, area_lookup)
+    residual = max(abs(after - before) for after, before in zip(end, start))
+    scale = max(1.0, abs(gas_energy_J))
+    return start, {
+        "periodic_residual_K": residual,
+        "cycle_gas_energy_J": gas_energy_J,
+        "cycle_external_energy_J": external_energy_J,
+        "cycle_energy_balance_residual_J": gas_energy_J + external_energy_J,
+        "cycle_energy_balance_relative": abs(gas_energy_J + external_energy_J) / scale,
+    }
 
 
 def _clearance_snapshot(
     config: ThermalRCConfig,
-    piston_temperature_K: float,
-    liner_temperature_K: float,
+    pair_temperatures: Mapping[str, tuple[float, float]],
     piston_cte: CTE,
     liner_cte: CTE,
     cold_clearances_um: Iterable[float],
 ) -> dict[str, Any]:
-    result: dict[str, Any] = {
-        "piston_temperature_K": piston_temperature_K,
-        "liner_temperature_K": liner_temperature_K,
-    }
+    result: dict[str, Any] = {}
     for cold_um in cold_clearances_um:
-        clearance = calculate_clearance(
-            bore_diameter_mm=config.bore_mm,
-            cold_radial_clearance_um=float(cold_um),
-            piston_reference_temperature_K=config.piston_reference_temperature_K,
-            liner_reference_temperature_K=config.liner_reference_temperature_K,
-            hot_piston_temperature_K=piston_temperature_K,
-            hot_liner_temperature_K=liner_temperature_K,
-            piston_cte_per_K=piston_cte,
-            liner_cte_per_K=liner_cte,
-        )
         label = str(float(cold_um)).replace(".", "p")
-        result[f"hot_clearance_{label}_um"] = clearance.hot_radial_clearance_um
-        result[f"interference_{label}"] = clearance.interference
+        clearances: dict[str, float] = {}
+        for pair_name, (piston_temperature_K, liner_temperature_K) in pair_temperatures.items():
+            clearance = calculate_clearance(
+                bore_diameter_mm=config.bore_mm,
+                cold_radial_clearance_um=float(cold_um),
+                piston_reference_temperature_K=config.piston_reference_temperature_K,
+                liner_reference_temperature_K=config.liner_reference_temperature_K,
+                hot_piston_temperature_K=piston_temperature_K,
+                hot_liner_temperature_K=liner_temperature_K,
+                piston_cte_per_K=piston_cte,
+                liner_cte_per_K=liner_cte,
+            )
+            clearances[pair_name] = clearance.hot_radial_clearance_um
+            result[f"hot_clearance_{pair_name}_{label}_um"] = clearance.hot_radial_clearance_um
+            result[f"interference_{pair_name}_{label}"] = clearance.interference
+        # Preserve the historical skirt/TDC key while making the local pairs
+        # and the minimum path gap explicit for cross-geometry consumers.
+        legacy = clearances["skirt_liner_tdc"]
+        result[f"hot_clearance_{label}_um"] = legacy
+        result[f"interference_{label}"] = legacy < 0.0
+        result[f"hot_clearance_min_path_{label}_um"] = min(clearances.values())
+        result[f"interference_min_path_{label}"] = min(clearances.values()) < 0.0
     return result
 
 
@@ -366,7 +461,7 @@ def run_thermal_rc(
     links: Sequence[ConductiveLink] | None = None,
     cold_clearances_um: Sequence[float] = (3.0, 8.0, 12.0, 16.0),
 ) -> dict[str, Any]:
-    """Run warm-up and return final-cycle history plus inverse-fit bounds."""
+    """Run warm-up, solve the periodic fixed point, and return fit bounds."""
     if len(history) < 2:
         raise ValueError("history needs at least two points")
     nodes = tuple(nodes or default_nodes(config))
@@ -379,19 +474,40 @@ def run_thermal_rc(
     temperatures = [node.initial_temperature_K for node in nodes]
     cycle_rows: list[dict[str, Any]] = []
     final_rows: list[dict[str, Any]] = []
-    last_cycle_start: list[float] | None = None
-    converged = False
-    piston_index = next(index for index, node in enumerate(nodes) if node.name == "piston_skirt")
-    liner_index = next(index for index, node in enumerate(nodes) if node.name == "liner_tdc")
+    node_index = {node.name: index for index, node in enumerate(nodes)}
+    required_nodes = {"piston_crown", "piston_skirt", "rod_crank", "liner_tdc", "liner_lower", "head_deck", "block"}
+    missing = required_nodes - set(node_index)
+    if missing:
+        raise ValueError(f"thermal nodes missing required names: {sorted(missing)}")
+    piston_index = node_index["piston_skirt"]
+    liner_index = node_index["liner_tdc"]
+    periodic_start: list[float] | None = None
+    periodic_info: dict[str, Any] = {
+        "periodic_fixed_point_requested": bool(config.solve_periodic_fixed_point),
+        "periodic_fixed_point_solved": False,
+    }
+    if config.solve_periodic_fixed_point:
+        try:
+            periodic_start, fixed_info = _periodic_fixed_point(history, config, nodes, links, area_lookup)
+            periodic_info.update(fixed_info)
+            periodic_info["periodic_fixed_point_solved"] = True
+        except ValueError as error:
+            # A network with no external sink and no forcing has no unique
+            # periodic solution.  Keep the warm-up result and expose why the
+            # analytic solve was unavailable instead of hiding the failure.
+            periodic_info["periodic_solver_error"] = str(error)
+
+    warmup_converged = False
     for cycle in range(1, config.max_warmup_cycles + 1):
         cycle_start = list(temperatures)
-        gas_energy_J = 0.0
-        for point in history:
-            temperatures, gas_rates = _advance_network(temperatures, point.dt_s, point, config, nodes, links, area_lookup)
-            gas_energy_J += sum(gas_rates.values()) * point.dt_s
-        temperatures = _advance_idle(temperatures, config.idle_duration_s, config, nodes, links, area_lookup)
-        last_cycle_start = cycle_start
+        temperatures, gas_energy_J, external_energy_J = _advance_cycle(temperatures, history, config, nodes, links, area_lookup)
         delta_K = max(abs(after - before) for after, before in zip(temperatures, cycle_start))
+        warmup_pair_temperatures = {
+            "crown_liner_tdc": (temperatures[node_index["piston_crown"]], temperatures[node_index["liner_tdc"]]),
+            "skirt_liner_tdc": (temperatures[node_index["piston_skirt"]], temperatures[node_index["liner_tdc"]]),
+            "skirt_liner_lower": (temperatures[node_index["piston_skirt"]], temperatures[node_index["liner_lower"]]),
+        }
+        warmup_fit = _clearance_snapshot(config, warmup_pair_temperatures, piston_cte, liner_cte, (3.0,))
         cycle_rows.append({
             "cycle": cycle,
             "max_temperature_K": max(temperatures),
@@ -400,93 +516,146 @@ def run_thermal_rc(
             "liner_tdc_end_K": temperatures[liner_index],
             "cycle_max_delta_K": delta_K,
             "gas_energy_J": gas_energy_J,
+            "external_energy_J": external_energy_J,
+            "cycle_energy_balance_residual_J": gas_energy_J + external_energy_J,
+            "min_path_hot_clearance_3um": warmup_fit["hot_clearance_min_path_3p0_um"],
+            "skirt_liner_tdc_hot_clearance_3um": warmup_fit["hot_clearance_skirt_liner_tdc_3p0_um"],
         })
         if cycle >= config.min_warmup_cycles and delta_K <= config.convergence_tolerance_K:
-            converged = True
+            warmup_converged = True
             break
-    if last_cycle_start is None:
+    if not cycle_rows:
         raise RuntimeError("thermal RC produced no final-cycle rows")
 
-    # Capture only the final completed pass.  Avoiding clearance evaluation on
-    # every warm-up cycle keeps the uncertainty grid inexpensive while leaving
-    # the thermal state integration unchanged.
-    capture_temperatures = list(last_cycle_start)
+    # Use the solved periodic start for the reported operating cycle.  The
+    # warm-up trajectory remains in cycle_rows so startup and periodic states
+    # cannot be conflated.
+    final_cycle_start = periodic_start if periodic_start is not None else list(temperatures)
+    final_cycle_end, final_gas_energy_J, final_external_energy_J = _advance_cycle(
+        final_cycle_start, history, config, nodes, links, area_lookup
+    )
+    periodic_info.setdefault("periodic_residual_K", max(abs(after - before) for after, before in zip(final_cycle_end, final_cycle_start)))
+    periodic_info.setdefault("cycle_gas_energy_J", final_gas_energy_J)
+    periodic_info.setdefault("cycle_external_energy_J", final_external_energy_J)
+    periodic_info.setdefault("cycle_energy_balance_residual_J", final_gas_energy_J + final_external_energy_J)
+    periodic_info.setdefault("cycle_energy_balance_relative", abs(final_gas_energy_J + final_external_energy_J) / max(1.0, abs(final_gas_energy_J)))
+    periodic_converged = bool(
+        periodic_info.get("periodic_fixed_point_solved")
+        and periodic_info.get("periodic_residual_K", math.inf) <= config.convergence_tolerance_K
+        and periodic_info.get("cycle_energy_balance_relative", math.inf) <= 1e-8
+    ) if periodic_info.get("periodic_fixed_point_solved") else warmup_converged
+
+    # Capture the final periodic pass, pairing temperatures at corresponding
+    # axial locations rather than silently using skirt-vs-TDC for every gap.
+    capture_temperatures = list(final_cycle_start)
     for point in history:
+        pair_temperatures = {
+            "crown_liner_tdc": (capture_temperatures[node_index["piston_crown"]], capture_temperatures[node_index["liner_tdc"]]),
+            "skirt_liner_tdc": (capture_temperatures[node_index["piston_skirt"]], capture_temperatures[node_index["liner_tdc"]]),
+            "skirt_liner_lower": (capture_temperatures[node_index["piston_skirt"]], capture_temperatures[node_index["liner_lower"]]),
+        }
         snapshot = {
-            "cycle": cycle_rows[-1]["cycle"],
+            "cycle": "periodic_fixed_point" if periodic_start is not None else cycle_rows[-1]["cycle"],
             "deg": point.deg,
             "pressure_bar": point.pressure_bar,
             "gas_temperature_K": point.gas_temperature_K,
             "h_W_m2K": heat_transfer_coeff_W_m2K(point, config),
-            "piston_crown_temperature_K": capture_temperatures[next(i for i, n in enumerate(nodes) if n.name == "piston_crown")],
-            "piston_skirt_temperature_K": capture_temperatures[piston_index],
-            "rod_crank_temperature_K": capture_temperatures[next(i for i, n in enumerate(nodes) if n.name == "rod_crank")],
-            "liner_tdc_temperature_K": capture_temperatures[liner_index],
-            "liner_lower_temperature_K": capture_temperatures[next(i for i, n in enumerate(nodes) if n.name == "liner_lower")],
-            "head_deck_temperature_K": capture_temperatures[next(i for i, n in enumerate(nodes) if n.name == "head_deck")],
-            "block_temperature_K": capture_temperatures[next(i for i, n in enumerate(nodes) if n.name == "block")],
+            "piston_crown_temperature_K": capture_temperatures[node_index["piston_crown"]],
+            "piston_skirt_temperature_K": capture_temperatures[node_index["piston_skirt"]],
+            "rod_crank_temperature_K": capture_temperatures[node_index["rod_crank"]],
+            "liner_tdc_temperature_K": capture_temperatures[node_index["liner_tdc"]],
+            "liner_lower_temperature_K": capture_temperatures[node_index["liner_lower"]],
+            "head_deck_temperature_K": capture_temperatures[node_index["head_deck"]],
+            "block_temperature_K": capture_temperatures[node_index["block"]],
         }
         snapshot.update(_clearance_snapshot(
             config,
-            capture_temperatures[piston_index],
-            capture_temperatures[liner_index],
+            pair_temperatures,
             piston_cte,
             liner_cte,
             cold_clearances_um,
         ))
         final_rows.append(snapshot)
-        capture_temperatures, _ = _advance_network(capture_temperatures, point.dt_s, point, config, nodes, links, area_lookup)
+        capture_temperatures, _, _ = _advance_network(capture_temperatures, point.dt_s, point, config, nodes, links, area_lookup)
 
     # The required cold fit interval is the intersection of all instantaneous
     # inverse constraints: c_hot >= 2 µm and c_hot <= 5 µm.
     lower_bounds = []
     upper_bounds = []
+    pair_keys = {
+        "crown_liner_tdc": ("piston_crown_temperature_K", "liner_tdc_temperature_K"),
+        "skirt_liner_tdc": ("piston_skirt_temperature_K", "liner_tdc_temperature_K"),
+        "skirt_liner_lower": ("piston_skirt_temperature_K", "liner_lower_temperature_K"),
+    }
     for row in final_rows:
-        lower_bounds.append(cold_clearance_for_hot_target_um(
-            bore_diameter_mm=config.bore_mm,
-            target_hot_clearance_um=2.0,
-            piston_reference_temperature_K=config.piston_reference_temperature_K,
-            liner_reference_temperature_K=config.liner_reference_temperature_K,
-            hot_piston_temperature_K=row["piston_skirt_temperature_K"],
-            hot_liner_temperature_K=row["liner_tdc_temperature_K"],
-            piston_cte_per_K=piston_cte,
-            liner_cte_per_K=liner_cte,
-        ))
-        upper_bounds.append(cold_clearance_for_hot_target_um(
-            bore_diameter_mm=config.bore_mm,
-            target_hot_clearance_um=5.0,
-            piston_reference_temperature_K=config.piston_reference_temperature_K,
-            liner_reference_temperature_K=config.liner_reference_temperature_K,
-            hot_piston_temperature_K=row["piston_skirt_temperature_K"],
-            hot_liner_temperature_K=row["liner_tdc_temperature_K"],
-            piston_cte_per_K=piston_cte,
-            liner_cte_per_K=liner_cte,
-        ))
+        for piston_key, liner_key in pair_keys.values():
+            lower_bounds.append(cold_clearance_for_hot_target_um(
+                bore_diameter_mm=config.bore_mm,
+                target_hot_clearance_um=2.0,
+                piston_reference_temperature_K=config.piston_reference_temperature_K,
+                liner_reference_temperature_K=config.liner_reference_temperature_K,
+                hot_piston_temperature_K=row[piston_key],
+                hot_liner_temperature_K=row[liner_key],
+                piston_cte_per_K=piston_cte,
+                liner_cte_per_K=liner_cte,
+            ))
+            upper_bounds.append(cold_clearance_for_hot_target_um(
+                bore_diameter_mm=config.bore_mm,
+                target_hot_clearance_um=5.0,
+                piston_reference_temperature_K=config.piston_reference_temperature_K,
+                liner_reference_temperature_K=config.liner_reference_temperature_K,
+                hot_piston_temperature_K=row[piston_key],
+                hot_liner_temperature_K=row[liner_key],
+                piston_cte_per_K=piston_cte,
+                liner_cte_per_K=liner_cte,
+            ))
     inverse_lower = max(lower_bounds)
     inverse_upper = min(upper_bounds)
+    fit_bounds = {
+        "lower_bound_um": inverse_lower,
+        "upper_bound_um": inverse_upper,
+        "feasible": inverse_lower <= inverse_upper,
+        "nonnegative_cold_fit_feasible": max(0.0, inverse_lower) <= inverse_upper,
+        "lower_bound_is_negative_interference_target": inverse_lower < 0.0,
+    }
+    startup_pair_temperatures = {
+        "crown_liner_tdc": (nodes[node_index["piston_crown"]].initial_temperature_K, nodes[node_index["liner_tdc"]].initial_temperature_K),
+        "skirt_liner_tdc": (nodes[node_index["piston_skirt"]].initial_temperature_K, nodes[node_index["liner_tdc"]].initial_temperature_K),
+        "skirt_liner_lower": (nodes[node_index["piston_skirt"]].initial_temperature_K, nodes[node_index["liner_lower"]].initial_temperature_K),
+    }
+    startup_fit = _clearance_snapshot(config, startup_pair_temperatures, piston_cte, liner_cte, (3.0,))
     return {
         "config": config,
         "nodes": nodes,
         "links": links,
         "history_rows": final_rows,
         "cycle_rows": cycle_rows,
-        "converged": converged,
+        "converged": periodic_converged,
+        "periodic_converged": periodic_converged,
+        "warmup_converged": warmup_converged,
+        "periodic_info": periodic_info,
         "cycles_completed": len(cycle_rows),
-        "final_node_temperatures_K": {node.name: value for node, value in zip(nodes, temperatures)},
+        "final_node_temperatures_K": {node.name: value for node, value in zip(nodes, final_cycle_end)},
+        "periodic_start_node_temperatures_K": {node.name: value for node, value in zip(nodes, final_cycle_start)},
+        "piston_crown_min_K": min(row["piston_crown_temperature_K"] for row in final_rows),
+        "piston_crown_max_K": max(row["piston_crown_temperature_K"] for row in final_rows),
         "piston_skirt_min_K": min(row["piston_skirt_temperature_K"] for row in final_rows),
         "piston_skirt_max_K": max(row["piston_skirt_temperature_K"] for row in final_rows),
         "liner_tdc_min_K": min(row["liner_tdc_temperature_K"] for row in final_rows),
         "liner_tdc_max_K": max(row["liner_tdc_temperature_K"] for row in final_rows),
-        "required_cold_clearance_for_hot_2_to_5_um": {
-            "lower_bound_um": inverse_lower,
-            "upper_bound_um": inverse_upper,
-            "feasible": inverse_lower <= inverse_upper,
-        },
+        "liner_lower_min_K": min(row["liner_lower_temperature_K"] for row in final_rows),
+        "liner_lower_max_K": max(row["liner_lower_temperature_K"] for row in final_rows),
+        "required_cold_clearance_for_hot_2_to_5_um": fit_bounds,
+        "startup_clearance_3um": startup_fit,
+        "warmup_min_path_hot_clearance_3um": min(row["min_path_hot_clearance_3um"] for row in cycle_rows),
+        "warmup_max_path_hot_clearance_3um": max(row["min_path_hot_clearance_3um"] for row in cycle_rows),
+        "periodic_min_path_hot_clearance_3um": min(row["hot_clearance_min_path_3p0_um"] for row in final_rows),
+        "periodic_max_path_hot_clearance_3um": max(row["hot_clearance_min_path_3p0_um"] for row in final_rows),
         "model_classification": {
             "measured": "none",
             "literature_derived": "material CTE/conductivity inputs only",
             "calculated": "RC temperatures and thermal-clearance inversion",
             "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-            "extrapolated": "steady-state envelope from repeated modeled closed-cycle history",
+            "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history",
         },
     }

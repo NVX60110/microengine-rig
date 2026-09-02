@@ -2,7 +2,9 @@
   "campaign": "thermal state -> hot clearance -> annulus leakage",
   "status": "screening_only",
   "history_file": "data/thermal/engine_history_proxy.csv",
+  "history_sha256": "c6c042b4542c1f4fa39e7513fd52254dfe8012876e9a8eecb0f3fb201016f066",
   "history_classification": "calculated proxy from microengine_rig.py; replace with measured/CFD history when available",
+  "warmup_file": "data/thermal/thermal_state_warmup.csv",
   "rpm": 1200.0,
   "modeled_history_span_deg": [
     -180.0,
@@ -11,6 +13,13 @@
   "four_stroke_period_ms": 100.0,
   "modeled_pass_ms": 50.00000000000018,
   "idle_duration_ms": 50.0,
+  "ambient_temperature_K": 300.0,
+  "block_ambient_conductance_W_K": 0.15,
+  "max_warmup_cycles": 120,
+  "periodic_fixed_point": true,
+  "periodic_method": "dense Gaussian-elimination solve of one-cycle T_end=A*T_start+b",
+  "warmup_convergence_tolerance_K": 0.01,
+  "warmup_convergence_note": "finite cold-to-warm trajectory is reported separately; max cycle count is not treated as convergence",
   "nodes": [
     "piston_crown",
     "piston_skirt",
@@ -113,33 +122,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 328.1089472423725,
-      "piston_skirt_max_K": 328.4243274097682,
-      "liner_tdc_min_K": 333.30474146862286,
-      "liner_tdc_max_K": 334.4317881037828,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 2.816284662483055,
-        "upper_bound_um": 5.781495937114638,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 6.650680006714538e-12,
+        "cycle_gas_energy_J": 1.3105451575287361,
+        "cycle_external_energy_J": -1.3105451575171851,
+        "cycle_energy_balance_residual_J": 1.1550982392805054e-11,
+        "cycle_energy_balance_relative": 8.813875909920163e-12
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 0.8063173926983868,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 2.7878774200003065,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 2.7878774200003065,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 2.7878774200003065,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 2.7878774200003065,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 2.7878774200003065,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": 0.584049316934454,
+      "warmup_max_path_hot_clearance_3um": 2.7785787467529133,
+      "periodic_min_path_hot_clearance_3um": -4.550597152431557,
+      "periodic_max_path_hot_clearance_3um": -4.525491178072549,
+      "piston_crown_min_K": 445.28328538542416,
+      "piston_crown_max_K": 445.7829997786001,
+      "piston_skirt_min_K": 441.22390863723354,
+      "piston_skirt_max_K": 441.2824818122978,
+      "liner_tdc_min_K": 395.4939914317949,
+      "liner_tdc_max_K": 396.21955598161986,
+      "liner_lower_min_K": 391.45841331614946,
+      "liner_lower_max_K": 391.82737897448254,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 9.530581940886739,
+        "upper_bound_um": 12.10787217888688,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 31.248892983855217,
       "final_node_temperatures_K": {
-        "piston_crown": 332.7351816452448,
-        "piston_skirt": 328.56280003935444,
-        "rod_crank": 323.2471386038975,
-        "liner_tdc": 333.75158653832176,
-        "liner_lower": 329.4390142963367,
-        "head_deck": 328.60945369736805,
-        "block": 325.80172052801237
+        "piston_crown": 445.37312082863855,
+        "piston_skirt": 441.2395782768448,
+        "rod_crank": 425.8587445934089,
+        "liner_tdc": 395.58374878691063,
+        "liner_lower": 391.5012688210092,
+        "head_deck": 391.32145390648134,
+        "block": 387.3708041953491
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -152,33 +194,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 349.2016977486665,
-      "piston_skirt_max_K": 349.7100795515495,
-      "liner_tdc_min_K": 351.3848326021807,
-      "liner_tdc_max_K": 353.0439191313676,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 3.6259711688841785,
-        "upper_bound_um": 6.572780374941712,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 8.981260180007666e-12,
+        "cycle_gas_energy_J": 1.9897161535249308,
+        "cycle_external_energy_J": -1.9897161535258419,
+        "cycle_energy_balance_residual_J": -9.110490140074035e-13,
+        "cycle_energy_balance_relative": 4.578788850828859e-13
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 1.7208753651307804,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 2.7878774200003065,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 2.7878774200003065,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 2.7878774200003065,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 2.7878774200003065,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 2.7878774200003065,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": -1.5361162193388012,
+      "warmup_max_path_hot_clearance_3um": 2.7262199231685713,
+      "periodic_min_path_hot_clearance_3um": -8.477031136171043,
+      "periodic_max_path_hot_clearance_3um": -8.434912551154916,
+      "piston_crown_min_K": 521.5658117519366,
+      "piston_crown_max_K": 522.5438859226562,
+      "piston_skirt_min_K": 515.1077390312877,
+      "piston_skirt_max_K": 515.1846680000914,
+      "liner_tdc_min_K": 443.245064184907,
+      "liner_tdc_max_K": 444.2732458271491,
+      "liner_lower_min_K": 437.98274307612957,
+      "liner_lower_max_K": 438.5066437102267,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 13.428394354243238,
+        "upper_bound_um": 15.759051325921046,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 87.40748778189116,
       "final_node_temperatures_K": {
-        "piston_crown": 357.8823778070053,
-        "piston_skirt": 349.9746048586993,
-        "rod_crank": 339.9921130737711,
-        "liner_tdc": 352.1316301089307,
-        "liner_lower": 346.43163603196297,
-        "head_deck": 347.5607497206139,
-        "block": 341.8269441911115
+        "piston_crown": 521.7496058870521,
+        "piston_skirt": 515.131600450142,
+        "rod_crank": 491.57904611210773,
+        "liner_tdc": 443.3916809107374,
+        "liner_lower": 438.0548009911005,
+        "head_deck": 439.5825179252816,
+        "block": 432.6493014961063
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -191,33 +266,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 328.13557632521224,
-      "piston_skirt_max_K": 328.4514000863774,
-      "liner_tdc_min_K": 333.2849989950823,
-      "liner_tdc_max_K": 334.4118869852501,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 3.2502315954144225,
-        "upper_bound_um": 6.21890200333583,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 7.73070496506989e-12,
+        "cycle_gas_energy_J": 1.309496687526318,
+        "cycle_external_energy_J": -1.3094966875428955,
+        "cycle_energy_balance_residual_J": -1.6577406114492987e-11,
+        "cycle_energy_balance_relative": 1.2659372316403677e-11
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 1.2394222865627327,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 2.7035107649995282,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 2.7035107649995282,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 2.7035107649995282,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 2.7035107649995282,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 2.7035107649995282,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": -0.2249375736216308,
+      "warmup_max_path_hot_clearance_3um": 2.6781576207142166,
+      "periodic_min_path_hot_clearance_3um": -6.556000885117541,
+      "periodic_max_path_hot_clearance_3um": -6.525226218683677,
+      "piston_crown_min_K": 445.9390856401555,
+      "piston_crown_max_K": 446.4379590110581,
+      "piston_skirt_min_K": 441.6905685685349,
+      "piston_skirt_max_K": 441.7489583632838,
+      "liner_tdc_min_K": 395.4276681130056,
+      "liner_tdc_max_K": 396.1534382901291,
+      "liner_lower_min_K": 391.39031329847523,
+      "liner_lower_max_K": 391.7593853229816,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 11.525851416076353,
+        "upper_bound_um": 14.025031380121586,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 55.27075890044748,
       "final_node_temperatures_K": {
-        "piston_crown": 332.96455402103527,
-        "piston_skirt": 328.5903218851053,
-        "rod_crank": 323.0755241988566,
-        "liner_tdc": 333.7313613106106,
-        "liner_lower": 329.4166463424164,
-        "head_deck": 328.586926357878,
-        "block": 325.7763714311826
+        "piston_crown": 446.0294148764138,
+        "piston_skirt": 441.70622655889287,
+        "rod_crank": 425.65026764445696,
+        "liner_tdc": 395.5173595268517,
+        "liner_lower": 391.4331357764821,
+        "head_deck": 391.25266692253086,
+        "block": 387.3009060690748
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -230,33 +338,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 349.2385854775851,
-      "piston_skirt_max_K": 349.7477315114257,
-      "liner_tdc_min_K": 351.3482936971599,
-      "liner_tdc_max_K": 353.00717231772614,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 4.321344560622236,
-        "upper_bound_um": 7.272628524315632,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 1.2789769243681803e-11,
+        "cycle_gas_energy_J": 1.9877745422815103,
+        "cycle_external_energy_J": -1.9877745422799775,
+        "cycle_energy_balance_residual_J": 1.5327739077974911e-12,
+        "cycle_energy_balance_relative": 7.711004820688656e-13
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 2.912950239095434,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 2.7035107649995282,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 2.7035107649995282,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 2.7035107649995282,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 2.7035107649995282,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 2.7035107649995282,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": -2.890329012688042,
+      "warmup_max_path_hot_clearance_3um": 2.6113568581482838,
+      "periodic_min_path_hot_clearance_3um": -11.847691678591232,
+      "periodic_max_path_hot_clearance_3um": -11.788342964857534,
+      "piston_crown_min_K": 522.4716578391824,
+      "piston_crown_max_K": 523.4470062542852,
+      "piston_skirt_min_K": 515.7169542535877,
+      "piston_skirt_max_K": 515.7936455654369,
+      "liner_tdc_min_K": 443.12269884151476,
+      "liner_tdc_max_K": 444.15133959276403,
+      "liner_lower_min_K": 437.8568615112451,
+      "liner_lower_max_K": 438.38100187573247,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 16.772542874890423,
+        "upper_bound_um": 18.927660534097075,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 170.32292627293626,
       "final_node_temperatures_K": {
-        "piston_crown": 358.3012926852615,
-        "piston_skirt": 350.01308660072976,
-        "rod_crank": 339.66422532203325,
-        "liner_tdc": 352.09423241958643,
-        "liner_lower": 346.3901475979127,
-        "head_deck": 347.51919599284156,
-        "block": 341.7797718908237
+        "piston_crown": 522.656044292488,
+        "piston_skirt": 515.740641153766,
+        "rod_crank": 491.1789246699081,
+        "liner_tdc": 443.2692609167216,
+        "liner_lower": 437.92889360538504,
+        "head_deck": 439.45615770064813,
+        "block": 432.5198609277447
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -269,33 +410,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 328.1943355290044,
-      "piston_skirt_max_K": 328.5108418118337,
-      "liner_tdc_min_K": 333.03854102845787,
-      "liner_tdc_max_K": 334.25129809490693,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 2.904759170054381,
-        "upper_bound_um": 5.867714105796775,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 3.581135388230905e-12,
+        "cycle_gas_energy_J": 1.3122504507647146,
+        "cycle_external_energy_J": -1.3122504507627868,
+        "cycle_energy_balance_residual_J": 1.927791259959122e-12,
+        "cycle_energy_balance_relative": 1.4690726597470022e-12
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 0.884721888456292,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 2.7762324200004684,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 2.7762324200004684,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 2.7762324200004684,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 2.7762324200004684,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 2.7762324200004684,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": 0.4539483205183714,
+      "warmup_max_path_hot_clearance_3um": 2.7692501295382144,
+      "periodic_min_path_hot_clearance_3um": -4.959715128176612,
+      "periodic_max_path_hot_clearance_3um": -4.933399150930384,
+      "piston_crown_min_K": 445.3679312110193,
+      "piston_crown_max_K": 445.86754011203897,
+      "piston_skirt_min_K": 441.3104304291843,
+      "piston_skirt_max_K": 441.3689800916427,
+      "liner_tdc_min_K": 394.58297790053035,
+      "liner_tdc_max_K": 395.3751215105399,
+      "liner_lower_min_K": 391.05349431971035,
+      "liner_lower_max_K": 391.4553587152369,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 9.938437090237915,
+        "upper_bound_um": 12.517786962493645,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 35.43485474643982,
       "final_node_temperatures_K": {
-        "piston_crown": 332.8094159744601,
-        "piston_skirt": 328.6505138308061,
-        "rod_crank": 323.4446587764651,
-        "liner_tdc": 333.49513082766,
-        "liner_lower": 329.66293547417337,
-        "head_deck": 329.15757028902647,
-        "block": 326.38626114801394
+        "piston_crown": 445.4578059419185,
+        "piston_skirt": 441.3261113808265,
+        "rod_crank": 425.9530249647953,
+        "liner_tdc": 394.678916684047,
+        "liner_lower": 391.0995402172694,
+        "head_deck": 391.4333455136098,
+        "block": 387.48461732985606
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -308,33 +482,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 349.3251387560772,
-      "piston_skirt_max_K": 349.83516653524117,
-      "liner_tdc_min_K": 351.18446217113734,
-      "liner_tdc_max_K": 352.9694591157361,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 3.744981398111121,
-        "upper_bound_um": 6.6883905914655095,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 1.546140993013978e-11,
+        "cycle_gas_energy_J": 1.991968624599788,
+        "cycle_external_energy_J": -1.991968624611308,
+        "cycle_energy_balance_residual_J": -1.151989614811555e-11,
+        "cycle_energy_balance_relative": 5.783171484656313e-12
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 1.8959434184911959,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 2.7762324200004684,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 2.7762324200004684,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 2.7762324200004684,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 2.7762324200004684,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 2.7762324200004684,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": -1.7294132259859651,
+      "warmup_max_path_hot_clearance_3um": 2.7177948525896056,
+      "periodic_min_path_hot_clearance_3um": -9.370739298486086,
+      "periodic_max_path_hot_clearance_3um": -9.325475718175547,
+      "piston_crown_min_K": 521.667083209391,
+      "piston_crown_max_K": 522.6448571036035,
+      "piston_skirt_min_K": 515.2123449255769,
+      "piston_skirt_max_K": 515.2892424669417,
+      "liner_tdc_min_K": 442.0471272294982,
+      "liner_tdc_max_K": 443.16982593964667,
+      "liner_lower_min_K": 437.4500515222294,
+      "liner_lower_max_K": 438.02057975111154,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 14.317926084463036,
+        "upper_bound_um": 16.650353521311878,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 105.95384607968461,
       "final_node_temperatures_K": {
-        "piston_crown": 357.9885779153273,
-        "piston_skirt": 350.1014526516751,
-        "rod_crank": 340.2829020124727,
-        "liner_tdc": 351.9503948170048,
-        "liner_lower": 346.87413088777936,
-        "head_deck": 348.3691240344764,
-        "block": 342.6976458075703
+        "piston_crown": 521.8508931425117,
+        "piston_skirt": 515.2362144692247,
+        "rod_crank": 491.69666131453306,
+        "liner_tdc": 442.2042089327399,
+        "liner_lower": 437.5273923878298,
+        "head_deck": 439.72912857042525,
+        "block": 432.7995982268266
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -347,33 +554,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 328.2197216441818,
-      "piston_skirt_max_K": 328.53666035337557,
-      "liner_tdc_min_K": 333.0179697550781,
-      "liner_tdc_max_K": 334.23057811551945,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 3.339635438075797,
-        "upper_bound_um": 6.306062732045495,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 1.0118128557223827e-11,
+        "cycle_gas_energy_J": 1.3112032304020513,
+        "cycle_external_energy_J": -1.3112032304081092,
+        "cycle_energy_balance_residual_J": -6.057820911564704e-12,
+        "cycle_energy_balance_relative": 4.6200472749805596e-12
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 1.344539484330581,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 2.69186576499969,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 2.69186576499969,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 2.69186576499969,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 2.69186576499969,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 2.69186576499969,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": -0.35687330411260376,
+      "warmup_max_path_hot_clearance_3um": 2.668829003252604,
+      "periodic_min_path_hot_clearance_3um": -6.9656299833908975,
+      "periodic_max_path_hot_clearance_3um": -6.933548228611031,
+      "piston_crown_min_K": 446.02344580933016,
+      "piston_crown_max_K": 446.52221402972157,
+      "piston_skirt_min_K": 441.7768894257162,
+      "piston_skirt_max_K": 441.8352557920719,
+      "liner_tdc_min_K": 394.51630043024227,
+      "liner_tdc_max_K": 395.3086702352002,
+      "liner_lower_min_K": 390.985256068638,
+      "liner_lower_max_K": 391.38723706396866,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 11.93401799573727,
+        "upper_bound_um": 14.435234380881612,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 61.35309035606285,
       "final_node_temperatures_K": {
-        "piston_crown": 333.0370863538902,
-        "piston_skirt": 328.67676936635667,
-        "rod_crank": 323.2756421974766,
-        "liner_tdc": 333.4740766330196,
-        "liner_lower": 329.64010183599817,
-        "head_deck": 329.135101366669,
-        "block": 326.36097670939137
+        "piston_crown": 446.1138141471752,
+        "piston_skirt": 441.7925587243606,
+        "rod_crank": 425.74469155094283,
+        "liner_tdc": 394.61216871667034,
+        "liner_lower": 391.0312668017199,
+        "head_deck": 391.3646405173695,
+        "block": 387.4148024817148
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -386,33 +626,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 349.36023410791415,
-      "piston_skirt_max_K": 349.8710097290894,
-      "liner_tdc_min_K": 351.14628000095445,
-      "liner_tdc_max_K": 352.9310910201885,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 4.441697123359693,
-        "upper_bound_um": 7.389601843259159,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 1.5347723092418164e-11,
+        "cycle_gas_energy_J": 1.9900295418425835,
+        "cycle_external_energy_J": -1.9900295418606604,
+        "cycle_energy_balance_residual_J": -1.8076873331551724e-11,
+        "cycle_energy_balance_relative": 9.083721096328152e-12
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 3.1631748624660054,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 2.69186576499969,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 2.69186576499969,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 2.69186576499969,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 2.69186576499969,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 2.69186576499969,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": -3.0858466654173355,
+      "warmup_max_path_hot_clearance_3um": 2.602931787209606,
+      "periodic_min_path_hot_clearance_3um": -12.7423957008439,
+      "periodic_max_path_hot_clearance_3um": -12.679589719927442,
+      "piston_crown_min_K": 522.5725060079005,
+      "piston_crown_max_K": 523.5475553768113,
+      "piston_skirt_min_K": 515.8212870159655,
+      "piston_skirt_max_K": 515.8979471225977,
+      "liner_tdc_min_K": 441.9240518443561,
+      "liner_tdc_max_K": 443.04725363664346,
+      "liner_lower_min_K": 437.3238944680174,
+      "liner_lower_max_K": 437.89468363802456,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 17.662351022019887,
+        "upper_bound_um": 19.819150429381377,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 198.89410574122002,
       "final_node_temperatures_K": {
-        "piston_crown": 358.40501820111876,
-        "piston_skirt": 350.13810764244624,
-        "rod_crank": 339.95887506395405,
-        "liner_tdc": 351.91135144152463,
-        "liner_lower": 346.83167102523026,
-        "head_deck": 348.3275900543486,
-        "block": 342.65048978192726
+        "piston_crown": 522.756908011941,
+        "piston_skirt": 515.8449821112284,
+        "rod_crank": 491.2968342083956,
+        "liner_tdc": 442.08107537677137,
+        "liner_lower": 437.4012067254002,
+        "head_deck": 439.6029329112363,
+        "block": 432.670326219554
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -425,33 +698,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 327.88273096669474,
-      "piston_skirt_max_K": 328.1928861510974,
-      "liner_tdc_min_K": 324.20541807257126,
-      "liner_tdc_max_K": 324.9233195499963,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 1.748167474515624,
-        "upper_bound_um": 4.699227327221772,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 4.320099833421409e-12,
+        "cycle_gas_energy_J": 1.3211673036890035,
+        "cycle_external_energy_J": -1.3211673036825438,
+        "cycle_energy_balance_residual_J": 6.459721646479011e-12,
+        "cycle_energy_balance_relative": 4.889404716906012e-12
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 0.19285259409038472,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 3.122671170000757,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 3.122671170000757,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 3.122671170000757,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 3.122671170000757,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 3.122671170000757,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": 2.3218048166766536,
+      "warmup_max_path_hot_clearance_3um": 3.1096951297096,
+      "periodic_min_path_hot_clearance_3um": -0.1527995561829698,
+      "periodic_max_path_hot_clearance_3um": -0.12808663251284713,
+      "piston_crown_min_K": 445.8105380080261,
+      "piston_crown_max_K": 446.309595297749,
+      "piston_skirt_min_K": 441.7628465176532,
+      "piston_skirt_max_K": 441.82127322466306,
+      "liner_tdc_min_K": 390.1096032751439,
+      "liner_tdc_max_K": 390.523502248027,
+      "liner_lower_min_K": 389.0958914567912,
+      "liner_lower_max_K": 389.30264619209794,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 5.14619833030685,
+        "upper_bound_um": 7.723217450564775,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 4.919669594699992,
       "final_node_temperatures_K": {
-        "piston_crown": 332.55311843491694,
-        "piston_skirt": 328.3258962869177,
-        "rod_crank": 322.52914020164366,
-        "liner_tdc": 324.59624420338173,
-        "liner_lower": 323.7242335662504,
-        "head_deck": 326.24344879394596,
-        "block": 323.1444524802815
+        "piston_crown": 445.90061817124166,
+        "piston_skirt": 441.7785866254352,
+        "rod_crank": 426.4460080522136,
+        "liner_tdc": 390.15495797913115,
+        "liner_lower": 389.1183062357339,
+        "head_deck": 392.0184041513905,
+        "block": 388.0793793266007
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -464,33 +770,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 348.8008056340475,
-      "piston_skirt_max_K": 349.300526305247,
-      "liner_tdc_min_K": 338.4290387672113,
-      "liner_tdc_max_K": 339.482983721376,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 2.0470522601936367,
-        "upper_bound_um": 4.974501441268162,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 2.1600499167107046e-12,
+        "cycle_gas_energy_J": 2.0038319083039844,
+        "cycle_external_energy_J": -2.0038319083059393,
+        "cycle_energy_balance_residual_J": -1.9548807017599756e-12,
+        "cycle_energy_balance_relative": 9.755712011865106e-13
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 0.30964435587578454,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 3.122671170000757,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 3.122671170000757,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 3.122671170000757,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 3.122671170000757,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 3.122671170000757,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": 1.123525648496937,
+      "warmup_max_path_hot_clearance_3um": 3.055440174722257,
+      "periodic_min_path_hot_clearance_3um": -1.8642326883311355,
+      "periodic_max_path_hot_clearance_3um": -1.8234949610871354,
+      "piston_crown_min_K": 522.2004583258464,
+      "piston_crown_max_K": 523.1766507271329,
+      "piston_skirt_min_K": 515.763281799983,
+      "piston_skirt_max_K": 515.8400138089467,
+      "liner_tdc_min_K": 436.2241391164692,
+      "liner_tdc_max_K": 436.81130795835264,
+      "liner_lower_min_K": 434.90938704253153,
+      "liner_lower_max_K": 435.2026708259959,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 6.846244022489615,
+        "upper_bound_um": 9.177215999932006,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 11.58333194345526,
       "final_node_temperatures_K": {
-        "piston_crown": 357.558708039655,
-        "piston_skirt": 349.5559545171518,
-        "rod_crank": 338.760985139072,
-        "liner_tdc": 339.0683712604835,
-        "liner_lower": 337.9819133697981,
-        "head_deck": 343.59720265877473,
-        "block": 337.3665518279001
+        "piston_crown": 522.3843514637358,
+        "piston_skirt": 515.787194153228,
+        "rod_crank": 492.3161119526271,
+        "liner_tdc": 436.2996439727859,
+        "liner_lower": 434.94709185079574,
+        "head_deck": 440.5012710892859,
+        "block": 433.59068989053543
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -503,33 +842,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 345.6431578467276,
-      "piston_skirt_max_K": 346.12996925135434,
-      "liner_tdc_min_K": 333.1313028052543,
-      "liner_tdc_max_K": 334.2583336153567,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 2.6423343167709796,
-        "upper_bound_um": 5.606904513673548,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 6.30961949354969e-12,
+        "cycle_gas_energy_J": 1.2622893996869855,
+        "cycle_external_energy_J": -1.2622893996852143,
+        "cycle_energy_balance_residual_J": 1.7712498134869747e-12,
+        "cycle_energy_balance_relative": 1.4032042207802727e-12
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 0.6659470097448434,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 3.0002486549998153,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 3.0002486549998153,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 3.0002486549998153,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 3.0002486549998153,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 3.0002486549998153,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": 0.4551996724693197,
+      "warmup_max_path_hot_clearance_3um": 2.971942274286654,
+      "periodic_min_path_hot_clearance_3um": -1.9463664879149079,
+      "periodic_max_path_hot_clearance_3um": -1.9154383306894118,
+      "piston_crown_min_K": 475.29810784578694,
+      "piston_crown_max_K": 476.13190843257365,
+      "piston_skirt_min_K": 462.6459659180884,
+      "piston_skirt_max_K": 462.74013109365876,
+      "liner_tdc_min_K": 392.44141299555304,
+      "liner_tdc_max_K": 393.1764938153442,
+      "liner_lower_min_K": 388.3240850588678,
+      "liner_lower_max_K": 388.69797589073585,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 6.936882485676399,
+        "upper_bound_um": 9.118772118795219,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 12.04951009917586,
       "final_node_temperatures_K": {
-        "piston_crown": 361.07019449232445,
-        "piston_skirt": 346.3226649816841,
-        "rod_crank": 323.0600032372839,
-        "liner_tdc": 333.57680369509205,
-        "liner_lower": 329.25574901686946,
-        "head_deck": 328.4235011787371,
-        "block": 325.61057738073254
+        "piston_crown": 475.48980002682816,
+        "piston_skirt": 462.6779505217918,
+        "rod_crank": 416.26395485812105,
+        "liner_tdc": 392.528187694502,
+        "liner_lower": 388.3654501588288,
+        "head_deck": 388.1555377319038,
+        "block": 384.15374814491844
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -542,33 +914,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 378.1646781839653,
-      "piston_skirt_max_K": 378.9226493030145,
-      "liner_tdc_min_K": 351.02990795462676,
-      "liner_tdc_max_K": 352.68861084444774,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 3.4355617966069683,
-        "upper_bound_um": 6.385722219943913,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 1.057287590811029e-11,
+        "cycle_gas_energy_J": 1.9042047123056418,
+        "cycle_external_energy_J": -1.9042047123108927,
+        "cycle_energy_balance_residual_J": -5.25091081726714e-12,
+        "cycle_energy_balance_relative": 2.7575348298079007e-12
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 1.4637593158636966,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 3.0002486549998153,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 3.0002486549998153,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 3.0002486549998153,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 3.0002486549998153,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 3.0002486549998153,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": -1.931821989376914,
+      "warmup_max_path_hot_clearance_3um": 2.902077960974303,
+      "periodic_min_path_hot_clearance_3um": -4.365456389987088,
+      "periodic_max_path_hot_clearance_3um": -4.316124998634763,
+      "piston_crown_min_K": 561.1562055906816,
+      "piston_crown_max_K": 562.7077931161874,
+      "piston_skirt_min_K": 541.8661212719306,
+      "piston_skirt_max_K": 541.9907430475275,
+      "liner_tdc_min_K": 437.85580747344056,
+      "liner_tdc_max_K": 438.9043759659294,
+      "liner_lower_min_K": 432.4387231234291,
+      "liner_lower_max_K": 432.9732234386621,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 9.342493053258412,
+        "upper_bound_um": 11.096427027037624,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": false
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 29.435046663040794,
       "final_node_temperatures_K": {
-        "piston_crown": 406.0383721603573,
-        "piston_skirt": 379.28634407325137,
-        "rod_crank": 338.673378204757,
-        "liner_tdc": 351.7722595443123,
-        "liner_lower": 346.0469555872142,
-        "head_deck": 347.17359840933455,
-        "block": 341.4127638700417
+        "piston_crown": 561.509259423381,
+        "piston_skirt": 541.9087457208103,
+        "rod_crank": 473.9575218066397,
+        "liner_tdc": 438.00012266264486,
+        "liner_lower": 432.5096528232133,
+        "head_deck": 434.0174260664283,
+        "block": 426.94854721623017
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -581,33 +986,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 333.0697737402195,
-      "piston_skirt_max_K": 333.4820772081884,
-      "liner_tdc_min_K": 332.736762891078,
-      "liner_tdc_max_K": 333.85727429044,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 0.37150814724075,
-        "upper_bound_um": 3.3176944643153536,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 4.433786671143025e-12,
+        "cycle_gas_energy_J": 1.228458306539648,
+        "cycle_external_energy_J": -1.2284583065471728,
+        "cycle_energy_balance_residual_J": -7.524869616304386e-12,
+        "cycle_energy_balance_relative": 6.1254578818394145e-12
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 0.0018508933919663777,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 3.2824405699996007,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 3.2824405699996007,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 3.2824405699996007,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 3.2824405699996007,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 3.2824405699996007,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": 3.327233785395123,
+      "warmup_max_path_hot_clearance_3um": 4.750130884404236,
+      "periodic_min_path_hot_clearance_3um": 6.0059366275453385,
+      "periodic_max_path_hot_clearance_3um": 6.027797664986068,
+      "piston_crown_min_K": 496.6114017146564,
+      "piston_crown_max_K": 497.17602901375,
+      "piston_skirt_min_K": 477.60703918236754,
+      "piston_skirt_max_K": 477.66910891552794,
+      "liner_tdc_min_K": 390.3012890475805,
+      "liner_tdc_max_K": 391.04306716953596,
+      "liner_lower_min_K": 386.1266589570096,
+      "liner_lower_max_K": 386.5040174510869,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": -1.0041639557691642,
+        "upper_bound_um": 1.7027033792063266,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": null,
       "final_node_temperatures_K": {
-        "piston_crown": 356.35960973960965,
-        "piston_skirt": 333.6710170358303,
-        "rod_crank": 316.7960482487315,
-        "liner_tdc": 333.1656182307046,
-        "liner_lower": 328.777047479512,
-        "head_deck": 327.94411666116224,
-        "block": 325.03049806071544
+        "piston_crown": 496.76422202871817,
+        "piston_skirt": 477.6321260579331,
+        "rod_crank": 409.5372690270415,
+        "liner_tdc": 390.3859983153026,
+        "liner_lower": 386.1669938910138,
+        "head_deck": 385.9359807337883,
+        "block": 381.89833808837983
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -620,33 +1058,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 356.406009818689,
-      "piston_skirt_max_K": 357.0660703537545,
-      "liner_tdc_min_K": 350.3376535873225,
-      "liner_tdc_max_K": 351.9875975159075,
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 1.5916157281026244e-11,
+        "cycle_gas_energy_J": 1.8486140318997932,
+        "cycle_external_energy_J": -1.848614031907442,
+        "cycle_energy_balance_residual_J": -7.648770505852553e-12,
+        "cycle_energy_balance_relative": 4.137570295294159e-12
+      },
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 3.2824405699996007,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 3.2824405699996007,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 3.2824405699996007,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 3.2824405699996007,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 3.2824405699996007,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": 3.34642501191329,
+      "warmup_max_path_hot_clearance_3um": 5.443327721214253,
+      "periodic_min_path_hot_clearance_3um": 7.71542230162936,
+      "periodic_max_path_hot_clearance_3um": 7.746902671352807,
+      "piston_crown_min_K": 587.3275008403336,
+      "piston_crown_max_K": 588.3429546888697,
+      "piston_skirt_min_K": 559.1950285391931,
+      "piston_skirt_max_K": 559.2787732955617,
+      "liner_tdc_min_K": 434.3522080826563,
+      "liner_tdc_max_K": 435.4141533931939,
+      "liner_lower_min_K": 428.83454856956394,
+      "liner_lower_max_K": 429.37599792928467,
       "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": -0.2951352860019484,
-        "upper_bound_um": 2.6254615614119103,
-        "feasible": true
+        "lower_bound_um": -2.7117751959892087,
+        "upper_bound_um": -0.10418644399412241,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": false,
+        "lower_bound_is_negative_interference_target": true
       },
       "cold_static_mdot_mg_s_at_lower_bound": null,
       "final_node_temperatures_K": {
-        "piston_crown": 399.29030852105717,
-        "piston_skirt": 357.4199684243611,
-        "rod_crank": 327.686395042978,
-        "liner_tdc": 351.0523255108515,
-        "liner_lower": 345.20781413258766,
-        "head_deck": 346.3374021860613,
-        "block": 340.39536039599614
+        "piston_crown": 587.5923656670354,
+        "piston_skirt": 559.2261497095288,
+        "rod_crank": 462.50186000597444,
+        "liner_tdc": 434.49509003546115,
+        "liner_lower": 428.9047719406013,
+        "head_deck": 430.39957986231354,
+        "block": 423.2425073980178
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -659,33 +1130,66 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 333.11174250282835,
-      "piston_skirt_max_K": 333.52469261324336,
-      "liner_tdc_min_K": 332.443173257744,
-      "liner_tdc_max_K": 333.6495997521638,
-      "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": 0.4538250140711469,
-        "upper_bound_um": 3.397650037196675,
-        "feasible": true
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 5.8548721426632255e-12,
+        "cycle_gas_energy_J": 1.2302628003471963,
+        "cycle_external_energy_J": -1.2302628003467337,
+        "cycle_energy_balance_residual_J": 4.625189120588402e-13,
+        "cycle_energy_balance_relative": 3.7595131050724393e-13
       },
-      "cold_static_mdot_mg_s_at_lower_bound": 0.0033739734999897455,
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 3.2707955699997626,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 3.2707955699997626,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 3.2707955699997626,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 3.2707955699997626,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 3.2707955699997626,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": 3.3168820459250625,
+      "warmup_max_path_hot_clearance_3um": 4.646531342422655,
+      "periodic_min_path_hot_clearance_3um": 5.709159719819112,
+      "periodic_max_path_hot_clearance_3um": 5.741555917696317,
+      "piston_crown_min_K": 496.67288300040644,
+      "piston_crown_max_K": 497.2374240840558,
+      "piston_skirt_min_K": 477.6770742504407,
+      "piston_skirt_max_K": 477.7391214244048,
+      "liner_tdc_min_K": 389.3626947026427,
+      "liner_tdc_max_K": 390.1726023769566,
+      "liner_lower_min_K": 385.71104708709873,
+      "liner_lower_max_K": 386.1220646465773,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": -0.7073483312010174,
+        "upper_bound_um": 2.057448656998831,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": null,
       "final_node_temperatures_K": {
-        "piston_crown": 356.3790241537318,
-        "piston_skirt": 333.7143265046387,
-        "rod_crank": 317.1031442480828,
-        "liner_tdc": 332.8815710129894,
-        "liner_lower": 328.98596385798834,
-        "head_deck": 328.4958618186903,
-        "block": 325.6192525311114
+        "piston_crown": 496.82574563031307,
+        "piston_skirt": 477.70217474584666,
+        "rod_crank": 409.6430585329292,
+        "liner_tdc": 389.4531693082608,
+        "liner_lower": 385.7543643604528,
+        "head_deck": 386.0543809001507,
+        "block": 382.0187622570428
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     },
     {
@@ -698,42 +1202,80 @@
         "temperature_offset_K": 0.0,
         "initial_temperature_K": 300.0
       },
-      "converged": false,
-      "cycles_completed": 60,
-      "piston_skirt_min_K": 356.46678354751555,
-      "piston_skirt_max_K": 357.12779009572745,
-      "liner_tdc_min_K": 350.0830037253222,
-      "liner_tdc_max_K": 351.859371629835,
+      "converged": true,
+      "periodic_converged": true,
+      "warmup_converged": false,
+      "cycles_completed": 120,
+      "periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 1.3415046851150692e-11,
+        "cycle_gas_energy_J": 1.851053882895981,
+        "cycle_external_energy_J": -1.851053882889523,
+        "cycle_energy_balance_residual_J": 6.4579452896396106e-12,
+        "cycle_energy_balance_relative": 3.488793788939374e-12
+      },
+      "startup_clearance_3um": {
+        "hot_clearance_crown_liner_tdc_3p0_um": 3.2707955699997626,
+        "interference_crown_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_tdc_3p0_um": 3.2707955699997626,
+        "interference_skirt_liner_tdc_3p0": false,
+        "hot_clearance_skirt_liner_lower_3p0_um": 3.2707955699997626,
+        "interference_skirt_liner_lower_3p0": false,
+        "hot_clearance_3p0_um": 3.2707955699997626,
+        "interference_3p0": false,
+        "hot_clearance_min_path_3p0_um": 3.2707955699997626,
+        "interference_min_path_3p0": false
+      },
+      "warmup_min_path_hot_clearance_3um": 3.336605143652527,
+      "warmup_max_path_hot_clearance_3um": 5.281180911674177,
+      "periodic_min_path_hot_clearance_3um": 6.958935555321233,
+      "periodic_max_path_hot_clearance_3um": 7.008350405026675,
+      "piston_crown_min_K": 587.396402898635,
+      "piston_crown_max_K": 588.4116160819955,
+      "piston_skirt_min_K": 559.2783489669254,
+      "piston_skirt_max_K": 559.362068742352,
+      "liner_tdc_min_K": 433.10296883036693,
+      "liner_tdc_max_K": 434.2626173378038,
+      "liner_lower_min_K": 428.28203283257614,
+      "liner_lower_max_K": 428.8716710925073,
       "required_cold_clearance_for_hot_2_to_5_um": {
-        "lower_bound_um": -0.18464742824779112,
-        "upper_bound_um": 2.732458348732487,
-        "feasible": true
+        "lower_bound_um": -1.9554347611943035,
+        "upper_bound_um": 0.6980433026295404,
+        "feasible": true,
+        "nonnegative_cold_fit_feasible": true,
+        "lower_bound_is_negative_interference_target": true
       },
       "cold_static_mdot_mg_s_at_lower_bound": null,
       "final_node_temperatures_K": {
-        "piston_crown": 399.3175630734312,
-        "piston_skirt": 357.4827084664977,
-        "rod_crank": 328.1380611601959,
-        "liner_tdc": 350.8163285515644,
-        "liner_lower": 345.6187443623248,
-        "head_deck": 347.1493762377186,
-        "block": 341.2701099918856
+        "piston_crown": 587.6612943903941,
+        "piston_skirt": 559.3094816334084,
+        "rod_crank": 462.6416131527429,
+        "liner_tdc": 433.2559919241699,
+        "liner_lower": 428.3573762627939,
+        "head_deck": 430.5583859862077,
+        "block": 423.40529573944485
       },
       "model_classification": {
         "measured": "none",
         "literature_derived": "material CTE/conductivity inputs only",
         "calculated": "RC temperatures and thermal-clearance inversion",
         "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
-        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+        "extrapolated": "warm-up trajectory and periodic state from repeated modeled closed-cycle history"
       }
     }
   ],
   "uncertainty_envelope": {
-    "required_cold_lower_p05_um": 2.6586727669378587,
-    "required_cold_lower_p95_um": 3.9707324083911484,
-    "required_cold_upper_p05_um": 5.632233421328219,
-    "required_cold_upper_p95_um": 6.905737282738277,
+    "required_cold_lower_p05_um": 8.300103666494051,
+    "required_cold_lower_p95_um": 14.69038879832085,
+    "required_cold_upper_p05_um": 10.940115172708818,
+    "required_cold_upper_p95_um": 16.993883689455945,
     "engineering_assumption_label": "95% percentile envelope of bounded sensitivity cases, not a confidence interval"
+  },
+  "uncertainty_gate_counts": {
+    "periodic_fixed_point_solved": 54,
+    "nonnegative_cold_fit_feasible": 54,
+    "total": 54
   },
   "model_classification": {
     "measured": "none",

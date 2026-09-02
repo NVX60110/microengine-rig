@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -124,7 +125,9 @@ def enrich_rows(result: dict[str, Any], config: ThermalRCConfig) -> list[dict[st
     rows = []
     for row in result["history_rows"]:
         row = dict(row)
-        hot_clearance = row["hot_clearance_3p0_um"]
+        # Use the minimum paired radial gap for the conservative leakage
+        # screen; retain the individual pair columns for diagnosis.
+        hot_clearance = row["hot_clearance_min_path_3p0_um"]
         leakage = annulus_leakage_from_clearance(
             hot_clearance,
             pressure_up_bar=row["pressure_bar"],
@@ -138,6 +141,7 @@ def enrich_rows(result: dict[str, Any], config: ThermalRCConfig) -> list[dict[st
         row["annulus_mdot_mg_s_for_3um_cold"] = (
             None if leakage["mass_flow_kg_s"] is None else float(leakage["mass_flow_kg_s"]) * 1e6
         )
+        row["annulus_clearance_path_for_3um_cold"] = "minimum_of_crown_liner_tdc_skirt_liner_tdc_skirt_liner_lower"
         rows.append(row)
     return rows
 
@@ -162,8 +166,8 @@ def run_case(
         h_ref_W_m2K=600.0 * h_scale,
         piston_conductivity_W_mK=float(materials[piston_material]["thermal_conductivity_W_mK"]),
         liner_conductivity_W_mK=float(materials[liner_material]["thermal_conductivity_W_mK"]),
-        max_warmup_cycles=60,
-        min_warmup_cycles=8,
+        max_warmup_cycles=120,
+        min_warmup_cycles=10,
     )
     result = run_thermal_rc(
         scaled_history(history, temperature_offset_K),
@@ -205,11 +209,23 @@ def compact_case(result: dict[str, Any]) -> dict[str, Any]:
     return {
         "case": result["case"],
         "converged": result["converged"],
+        "periodic_converged": result["periodic_converged"],
+        "warmup_converged": result["warmup_converged"],
         "cycles_completed": result["cycles_completed"],
+        "periodic_info": result["periodic_info"],
+        "startup_clearance_3um": result["startup_clearance_3um"],
+        "warmup_min_path_hot_clearance_3um": result["warmup_min_path_hot_clearance_3um"],
+        "warmup_max_path_hot_clearance_3um": result["warmup_max_path_hot_clearance_3um"],
+        "periodic_min_path_hot_clearance_3um": result["periodic_min_path_hot_clearance_3um"],
+        "periodic_max_path_hot_clearance_3um": result["periodic_max_path_hot_clearance_3um"],
+        "piston_crown_min_K": result["piston_crown_min_K"],
+        "piston_crown_max_K": result["piston_crown_max_K"],
         "piston_skirt_min_K": result["piston_skirt_min_K"],
         "piston_skirt_max_K": result["piston_skirt_max_K"],
         "liner_tdc_min_K": result["liner_tdc_min_K"],
         "liner_tdc_max_K": result["liner_tdc_max_K"],
+        "liner_lower_min_K": result["liner_lower_min_K"],
+        "liner_lower_max_K": result["liner_lower_max_K"],
         "required_cold_clearance_for_hot_2_to_5_um": bounds,
         "cold_static_mdot_mg_s_at_lower_bound": result["cold_static_mdot_mg_s_at_lower_bound"],
         "final_node_temperatures_K": result["final_node_temperatures_K"],
@@ -253,10 +269,10 @@ def write_plots(out: Path, primary_results: dict[str, dict[str, Any]], uncertain
     fig, ax = plt.subplots(figsize=(6.4, 4.0))
     for h_model, result in primary_results.items():
         r = result["history_rows"]
-        ax.plot([x["deg"] for x in r], [x["hot_clearance_3p0_um"] for x in r], label=h_model)
+        ax.plot([x["deg"] for x in r], [x["hot_clearance_min_path_3p0_um"] for x in r], label=h_model)
     ax.axhline(0.0, color="black", linewidth=0.8)
     ax.axhspan(2.0, 5.0, color="tab:green", alpha=0.12, label="2–5 µm hot window")
-    ax.set(xlabel="crank angle (deg, modeled pass)", ylabel="hot clearance for 3 µm cold (µm)", title="Thermal-fit trajectory")
+    ax.set(xlabel="crank angle (deg, modeled pass)", ylabel="minimum paired hot clearance for 3 µm cold (µm)", title="Thermal-fit trajectory")
     ax.legend(fontsize=8)
     fig.tight_layout()
     path = figure_dir / "thermal_state_hot_clearance_trajectory.png"
@@ -294,6 +310,7 @@ def main() -> None:
     base_cases = []
     primary_results: dict[str, dict[str, Any]] = {}
     history_rows = []
+    warmup_rows = []
     for piston_material, liner_material in pairs:
         for h_model in ("constant_h", "angle_correlation"):
             result = run_case(history, materials, profiles, piston_material, liner_material, h_model)
@@ -302,6 +319,8 @@ def main() -> None:
                 primary_results[h_model] = result
                 for row in result["history_rows"]:
                     history_rows.append({"piston_material": piston_material, "liner_material": liner_material, "h_model": h_model, **row})
+                for row in result["cycle_rows"]:
+                    warmup_rows.append({"piston_material": piston_material, "liner_material": liner_material, "h_model": h_model, **row})
 
     # Bounded uncertainty envelope around the primary Al/steel case.  These
     # are sensitivity assumptions, not measured probabilities.
@@ -324,6 +343,8 @@ def main() -> None:
                     uncertainty.append({
                         **result["case"],
                         "converged": result["converged"],
+                        "periodic_converged": result["periodic_converged"],
+                        "warmup_converged": result["warmup_converged"],
                         "cycles_completed": result["cycles_completed"],
                         "piston_skirt_min_K": result["piston_skirt_min_K"],
                         "piston_skirt_max_K": result["piston_skirt_max_K"],
@@ -332,23 +353,43 @@ def main() -> None:
                         "required_cold_lower_um": bounds["lower_bound_um"],
                         "required_cold_upper_um": bounds["upper_bound_um"],
                         "feasible": bounds["feasible"],
+                        "nonnegative_cold_fit_feasible": bounds["nonnegative_cold_fit_feasible"],
+                        "lower_bound_is_negative_interference_target": bounds["lower_bound_is_negative_interference_target"],
+                        "warmup_min_path_hot_clearance_3um": result["warmup_min_path_hot_clearance_3um"],
+                        "periodic_min_path_hot_clearance_3um": result["periodic_min_path_hot_clearance_3um"],
                         "assumption_label": "engineering sensitivity grid; not measured production statistics",
                     })
 
     out = args.output_dir.resolve()
     out.mkdir(parents=True, exist_ok=True)
+    history_path = args.history.resolve()
+    try:
+        history_label = history_path.relative_to(ROOT).as_posix()
+    except ValueError:
+        history_label = history_path.name
+    history_classification = "calculated proxy from microengine_rig.py; replace with measured/CFD history when available" if history_path == DEFAULT_HISTORY.resolve() else "custom supplied history; caller must provide provenance and classification"
     write_csv(out / "thermal_state_history.csv", history_rows)
+    write_csv(out / "thermal_state_warmup.csv", warmup_rows)
     write_csv(out / "thermal_state_uncertainty.csv", uncertainty)
     summary = {
         "campaign": "thermal state -> hot clearance -> annulus leakage",
         "status": "screening_only",
-        "history_file": "data/thermal/engine_history_proxy.csv" if args.history.resolve() == DEFAULT_HISTORY.resolve() else args.history.name,
-        "history_classification": "calculated proxy from microengine_rig.py; replace with measured/CFD history when available",
+        "history_file": history_label,
+        "history_sha256": hashlib.sha256(history_path.read_bytes()).hexdigest(),
+        "history_classification": history_classification,
+        "warmup_file": "data/thermal/thermal_state_warmup.csv",
         "rpm": 1200.0,
         "modeled_history_span_deg": [history[0].deg, history[-1].deg],
         "four_stroke_period_ms": 100.0,
         "modeled_pass_ms": sum(point.dt_s for point in history) * 1000.0,
         "idle_duration_ms": 50.0,
+        "ambient_temperature_K": ThermalRCConfig().ambient_temperature_K,
+        "block_ambient_conductance_W_K": ThermalRCConfig().block_ambient_conductance_W_K,
+        "max_warmup_cycles": 120,
+        "periodic_fixed_point": True,
+        "periodic_method": "dense Gaussian-elimination solve of one-cycle T_end=A*T_start+b",
+        "warmup_convergence_tolerance_K": ThermalRCConfig().convergence_tolerance_K,
+        "warmup_convergence_note": "finite cold-to-warm trajectory is reported separately; max cycle count is not treated as convergence",
         "nodes": ["piston_crown", "piston_skirt", "rod_crank", "liner_tdc", "liner_lower", "head_deck", "block"],
         "closures": {
             "constant_h": "existing repository closure, h=600 W/m2-K",
@@ -367,6 +408,11 @@ def main() -> None:
             "required_cold_upper_p05_um": percentile(upper_values, 0.05),
             "required_cold_upper_p95_um": percentile(upper_values, 0.95),
             "engineering_assumption_label": "95% percentile envelope of bounded sensitivity cases, not a confidence interval",
+        },
+        "uncertainty_gate_counts": {
+            "periodic_fixed_point_solved": sum(bool(row["periodic_converged"]) for row in uncertainty),
+            "nonnegative_cold_fit_feasible": sum(bool(row["nonnegative_cold_fit_feasible"]) for row in uncertainty),
+            "total": len(uncertainty),
         },
         "model_classification": {
             "measured": "none",

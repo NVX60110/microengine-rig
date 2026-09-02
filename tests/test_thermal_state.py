@@ -29,6 +29,7 @@ class ThermalStateTests(unittest.TestCase):
         )
         self.assertGreater(sum(node.capacity_J_K for node in nodes), 0.0)
         self.assertTrue(default_links())
+        self.assertGreater(next(node for node in nodes if node.name == "block").external_conductance_W_K, 0.0)
 
     def test_material_conductivity_scales_screening_links(self):
         base = default_links(ThermalRCConfig())
@@ -74,6 +75,16 @@ class ThermalStateTests(unittest.TestCase):
         self.assertIn("lower_bound_um", bounds)
         self.assertIn("upper_bound_um", bounds)
         self.assertLess(bounds["lower_bound_um"], bounds["upper_bound_um"])
+        self.assertTrue(result["periodic_converged"])
+        self.assertLess(result["periodic_info"]["periodic_residual_K"], 1e-8)
+        self.assertLess(result["periodic_info"]["cycle_energy_balance_relative"], 1e-10)
+        row = result["history_rows"][0]
+        self.assertIn("hot_clearance_crown_liner_tdc_3p0_um", row)
+        self.assertIn("hot_clearance_skirt_liner_lower_3p0_um", row)
+        self.assertIn("hot_clearance_min_path_3p0_um", row)
+        self.assertIn("startup_clearance_3um", result)
+        self.assertEqual(len(result["cycle_rows"]), 5)
+        self.assertIn("min_path_hot_clearance_3um", result["cycle_rows"][0])
 
 
 if __name__ == "__main__":

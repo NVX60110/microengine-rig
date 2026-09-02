@@ -27,8 +27,10 @@ skirt, rod/crank, liner TDC band, lower liner, head/deck, and block/ambient.
 Solid links are bidirectional conductance brackets.  Piston and liner links
 scale linearly with the selected material conductivity relative to the
 Al-4032/4140 reference pair; this is a transparent `kA/L` screen, not a CAD
-or finite-element extraction.  The default node capacities and link values
-are recorded in `data/thermal/thermal_state_summary.json`.
+or finite-element extraction.  A 0.15 W/K block-to-300 K ambient sink is
+present in the default network and is exposed as a sensitivity input.  The
+default node capacities and link values are recorded in
+`data/thermal/thermal_state_summary.json`.
 
 Two gas-side closures are deliberately separated:
 
@@ -45,30 +47,51 @@ clearance as contact/interference; it never converts it to an annular flow.
 ## Primary 8.5 mm result
 
 For the representative EN AW-4032 piston / AISI 4140 liner at 293.15 K
-reference, the final-cycle RC envelope is:
+reference, the periodic final-cycle RC envelope is:
 
 | gas-side case | piston skirt (K) | liner TDC band (K) | cold fit for 2–5 µm hot (µm radial) |
 |---|---:|---:|---:|
-| constant `h=600` | 328.11–328.42 | 333.30–334.43 | **2.82–5.78** |
-| angle sensitivity | 349.20–349.71 | 351.38–353.04 | **3.63–6.57** |
+| constant `h=600` | **441.22–441.28** | **395.49–396.22** | **9.53–12.11** |
+| angle sensitivity | **515.11–515.18** | **443.25–444.27** | **13.43–15.76** |
 
-These temperatures are low because the only available gas-side input is the
-existing lumped 600 W/(m² K) proxy and the node masses/conductances are
-engineering brackets.  They should not be read as a prediction of the actual
-engine thermal state.  The important result is the sensitivity to the
-unmeasured piston–liner temperature difference: a nominal **3 µm cold** fit
-would give only 2.18–2.22 µm hot under the constant-`h` proxy, but 1.37–1.42 µm
-under the angle sensitivity.  The latter is below the desired 2 µm lower edge.
+These are still calculated screening temperatures, not a prediction of the
+actual engine thermal state.  The block sink and periodic solve expose why the
+old 60-cycle result was not converged: solid warm-up is much slower than a
+100 ms cycle.  The local paired gap matters too.  At a 3 µm cold fit the
+periodic minimum path clearance is approximately −4.55 to −4.53 µm (constant
+h) and −8.48 to −8.43 µm (angle sensitivity), i.e. contact; it is not assigned
+an annulus flow.
 
 The broader bounded sensitivity grid (54 cases around Al-4032/4140, with
-`h`×0.75/1/1.25, cooling ×0.5/1/1.5, and gas-history offsets ±20 K) gives:
+`h`×0.75/1/1.25, block cooling ×0.5/1/1.5, and gas-history offsets ±20 K)
+gives:
 
-* lower cold-fit bound for ≥2 µm hot: **2.66–3.97 µm** (5th–95th percentiles);
-* upper cold-fit bound for ≤5 µm hot: **5.63–6.91 µm** (5th–95th percentiles).
+* lower cold-fit bound for ≥2 µm hot: **8.30–14.69 µm** (5th–95th percentiles);
+* upper cold-fit bound for ≤5 µm hot: **10.94–16.99 µm** (5th–95th percentiles).
 
 Those are percentiles of an explicit engineering sensitivity grid, **not
 confidence or production probabilities**.  The complete rows are in
 `data/thermal/thermal_state_uncertainty.csv`.
+
+The final state is not a 60-cycle stopping rule.  For this linear RC network
+the code forms the one-cycle map `T_end = A T_start + b` and solves
+`(I-A)T*=b`; it then checks `max|T_end-T*|` and gas-plus-ambient cycle energy
+balance.  All 16 base cases and 54 uncertainty cases have a periodic fixed
+point with residual below 1e-8 K and relative cycle energy residual below
+1e-8.  The 120-cycle cold-to-warm trajectory remains separate and reports
+`warmup_converged=false` where 0.01 K has not been reached.
+
+For a **3 µm cold** fit, the three-state view is:
+
+| state | constant h | angle sensitivity |
+|---|---:|---:|
+| cold startup (300 K nodes) | 2.79 µm | 2.79 µm |
+| warm-up trajectory, minimum path | 0.58 µm | −1.54 µm (contact) |
+| periodic trajectory, minimum path | −4.55 µm (contact) | −8.48 µm (contact) |
+
+This is why the old 3 µm phrase cannot be a drawing value: even with the
+repaired solver, the fit can pass through sub-micrometre or contact conditions
+before periodic operation.
 
 ## Material screen
 
@@ -81,6 +104,25 @@ less differential-expansion-sensitive; silicon nitride is low-CTE but has
 conductivity, brittleness, surface-finish, lubrication and manufacturability
 questions outside this scalar model; an aluminum liner changes wear/galling
 and tribology questions rather than solving them.
+
+Periodic local-pair fit windows from the eight-pair screen are summarized
+below (constant h / angle sensitivity, in µm cold radial clearance):
+
+| piston / liner | constant h | angle sensitivity |
+|---|---:|---:|
+| Al-4032 / 4140 | 9.53–12.11 | 13.43–15.76 |
+| Al-2618 / 4140 | 11.53–14.03 | 16.77–18.93 |
+| Al-4032 / gray iron | 9.94–12.52 | 14.32–16.65 |
+| Al-2618 / gray iron | 11.93–14.44 | 17.66–19.82 |
+| Al-4032 / Al-6061 | 5.15–7.72 | 6.85–9.18 |
+| 4140 / 4140 | 6.94–9.12 | 9.34–11.10 |
+| Si₃N₄ / 4140 | −1.00–1.70 | −2.71–−0.10 |
+| Si₃N₄ / gray iron | −0.71–2.06 | −1.96–0.70 |
+
+Negative lower bounds mean the mathematical target would prefer cold
+interference; a negative upper bound means no nonnegative cold fit meets the
+stated 2–5 µm hot window in that sensitivity case.  These are screening
+outputs, not material selections.
 
 The earlier analytical inversion remains the cleanest temperature sensitivity
 reference.  For Al-4032/4140 at 8.5 mm, the cold radial clearance required for
@@ -107,21 +149,32 @@ cannot be hidden inside one leak-down percentage.
 
 ## Startup trap and design questions
 
-The inverse fit is an intersection over the complete warm-up cycle, not only a
-steady endpoint.  A cold fit selected to survive the hottest state can leak
-more when the parts are cold; a fit that is tight at room temperature can pass
-through zero clearance during warm-up.  The current model does not calculate
+The outputs now keep three states separate:
+
+1. **cold startup:** the initial 300 K node state and its 3 µm reference fit;
+2. **warm-up:** the 120-cycle trajectory in `cycle_rows`, including the
+   minimum path hot clearance at every cycle (also written to
+   `data/thermal/thermal_state_warmup.csv`);
+3. **periodic steady state:** the fixed-point crank-angle history and its
+   whole-cycle inverse fit.
+
+The inverse fit is an intersection over the periodic crank-angle path, not
+only a steady endpoint.  A cold fit selected to survive the hottest state can
+leak more when the parts are cold; a fit that is tight at room temperature can
+pass through zero clearance during warm-up.  The current model does not calculate
 contact pressure, oil-film failure, taper, piston rock, or scuffing, so it
 cannot choose between ringless ABC-style fit and a ring.
 
 The defensible answer tonight is therefore:
 
-> For the current Al-4032/4140 screen, individual proxy cases require roughly
-> **2.7–6.9 µm cold radial clearance** for a 2–5 µm hot target.  The overlap
-> that remains conservative across the reported percentile envelope is about
-> **4.0–5.6 µm**, pending measured temperatures.  The controlling uncertainty
-> is the actual piston–liner temperature difference; the frequently quoted
-> “3 µm” is not a complete fit specification.
+> The repaired RC framework does **not** justify a new cold-fit target yet.
+> With the current proxy and explicit 0.15 W/K ambient sink, Al-4032/4140
+> requires about **9.5–12.1 µm cold** under constant h and **13.4–15.8 µm**
+> under the unvalidated angle sensitivity for the local 2–5 µm hot window.
+> The 5th–95th bounded sensitivity envelope is 8.3–14.7 µm on the lower bound
+> and 10.9–17.0 µm on the upper bound.  These are calculated proxy ranges,
+> not a hardware drawing value; the controlling unknown remains the measured
+> local piston–liner temperature difference.
 
 This does not establish that the ringless architecture is feasible.  It says
 the 8.5 mm engine is not ruled out by first-order thermal expansion, provided
