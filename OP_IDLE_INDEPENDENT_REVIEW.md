@@ -192,3 +192,85 @@ gross-IMEP screen or a numerically converged proxy.
 
 This file intentionally stops at Phase 1.  It contains no Luna A/B result and
 should be revisited only after their commits are supplied for Phase 2 review.
+
+## Phase 2 — Luna B axial thermal-fit falsification
+
+Reviewed read-only: Luna B commit `12f5b5281483961756ab4ffe6f7729f91b40c475`
+in `microengine-rig-op-idle-thermal-fit`.  No Luna B file was modified.  The
+targeted command
+`python -m unittest tests.test_thermal_fit_axial tests.test_thermal_clearance tests.test_thermal_state -v`
+passes **21/21 tests**.
+
+### Checks that reproduce
+
+* The axial station arithmetic is radial.  The hand case gives 5.01 µm hot
+  radial clearance for a 5 µm cold gap with matched 100 K strains, and the
+  independent inverse calculation reproduces the neutral 8.5 mm bounds
+  8.8986–11.7149 µm (`constant_h`) and 12.7573–15.3984 µm (angle sensitivity).
+* Signed hot gaps are preserved.  Zero/negative station gaps return
+  `contact_invalid_annulus` and no flow; no contact gap is silently clamped.
+  A 3 µm cold neutral fit independently reaches 3.1047 µm minimum hot gap at
+  the constant-h periodic path and −0.7698 µm under the angle sensitivity.
+* The series-annulus closure reproduces
+  `c_eq = [mean(c_i^-3)]^-1/3`; for 2/4/8 µm stations the calculated value is
+  2.76072 µm.  This is algebraically consistent with equal-length series
+  resistances, but remains an uncalibrated flow closure and assumes one scalar
+  pressure/temperature/viscosity state for the path.
+* Corresponding station pairing, ±2 µm shape envelopes, ±1 µm error offsets,
+  and the 1 µm contact-margin flag are exposed as assumptions.  The report
+  correctly keeps ringed literature, ringless annulus flow, lubrication, and
+  contact/seizure claims separate.
+
+### Discrepancy B-C1: leakage state is not the worst-profile state
+
+In `scripts/thermal_fit_axial.py`, each candidate first finds `worst` as the
+minimum clearance over all periodic history rows, but then calls
+`nonuniform_annulus_leakage` with `periodic_rows[0]["pressure_bar"]` and
+`periodic_rows[0]["gas_temperature_K"]`.  Row zero is BDC (−180°), not the
+row where `worst` occurred; the axial profile object does not retain its crank
+angle.  This is a real state-pairing mismatch, even though the code labels the
+flow as screening.
+
+Independent rerun for the neutral 8.5 mm constant-h, 10 µm cold base case:
+
+| state | CAD | pressure | gas T | minimum hot gap | series flow |
+|---|---:|---:|---:|---:|---:|
+| script BDC inputs | −180 | 3.0816 bar | 300.0 K | 3.1217 µm at BDC profile | 0.1107 mg/s (CSV) |
+| actual worst profile | +60 | 18.5892 bar | 721.66 K | 3.1047 µm | 1.8663 mg/s |
+
+The difference is about 16.9× for the same annulus law.  It does not change
+the contact status of the angle-sensitivity case (both states are contact),
+but any Luna B flow number must either identify the chosen state as a BDC
+sensitivity or pair pressure/temperature with the worst-clearance angle.  The
+same issue applies to shaped/error candidates whose worst station/time shifts.
+
+### Timing and artifact findings
+
+The report properly limits results to the 1200 rpm proxy.  The implementation
+still hardcodes that scope in two places: `scripts/thermal_fit_axial.py` calls
+`load_history_csv(..., rpm=1200.0)` with no RPM option, and the inherited RC
+default uses `idle_duration_s=0.05`.  Supplying a non-1200-RPM history through
+the CLI would therefore assign incorrect seconds and thermal duty cycle.  A
+future speed map must pass an explicit RPM, derive the one-revolution idle
+segment as `60/N - modeled_pass`, and regenerate the gas history; no RPM
+boundary follows from this commit.
+
+The report’s reproduction section says the candidate artifact has 84
+shape/error rows, while the committed CSV contains 96 data rows: 8 shapes × 3
+machining offsets × 4 (bore, closure) cases.  This is a documentation/count
+discrepancy, not evidence of a physics error, but it should be resolved for
+reproducibility.
+
+### Luna B disposition
+
+Luna B supports a bounded, corresponding-station **calculated** hot-gap and
+series-annulus sensitivity at 1200 rpm under the stated RC/interpolation and
+shape/error assumptions.  It does not establish an axial temperature field,
+manufactured taper, local roundness/rock, hot contact load, oil film, ringless
+lubrication, calibrated leakage, or a safe preheat/cranking interval.  The
+conditional preheat scan is correctly treated as CTE-only; `minimum_safe` or
+`maximum_safe` is not an engine operating permission.  The neutral and
+shape/error fit intervals should remain screening envelopes, and the
+state-pairing discrepancy above must be attached to any leakage headline.
+
+Phase-2 Luna B review is complete pending the lead’s Luna A results.
