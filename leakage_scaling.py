@@ -315,17 +315,15 @@ def target_annulus_brackets(
                 D_mm=8.5,
                 L_mm=8.0,
                 T=temperature_K,
+                mu=mu_Pa_s,
                 eccentricity=eccentricity,
             )
-            # physics.annulus currently fixes mu internally; retain the input in
-            # metadata so a later API extension can expose it without changing
-            # the evidence schema.
             rows.append({
                 "clearance_um": clearance,
                 "eccentricity_ratio": eccentricity,
                 "comparison_pressure_bar_abs": pressure_bar_abs,
                 "comparison_temperature_K": temperature_K,
-                "comparison_mu_Pa_s_requested": mu_Pa_s,
+                "comparison_mu_Pa_s": mu_Pa_s,
                 "equivalent_cda_mm2": cda,
             })
     return rows
