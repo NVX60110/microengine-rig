@@ -61,7 +61,16 @@ class ThermalClearanceTests(unittest.TestCase):
             pressure_up_bar=45.0,
             temperature_K=1100.0,
         )
-        self.assertEqual(leakage["leakage_status"], "interference_invalid_annulus")
+        self.assertEqual(leakage["leakage_status"], "contact_invalid_annulus")
+        self.assertIsNone(leakage["mass_flow_kg_s"])
+
+    def test_zero_hot_clearance_is_contact_not_zero_flow(self):
+        leakage = annulus_leakage_from_clearance(
+            0.0,
+            pressure_up_bar=45.0,
+            temperature_K=1100.0,
+        )
+        self.assertEqual(leakage["leakage_status"], "contact_invalid_annulus")
         self.assertIsNone(leakage["mass_flow_kg_s"])
 
     def test_known_hand_calculation(self):

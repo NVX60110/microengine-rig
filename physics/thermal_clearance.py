@@ -237,13 +237,13 @@ def annulus_leakage_from_clearance(
 ) -> dict[str, float | str | None]:
     """Feed positive hot clearance into the existing annular leakage model.
 
-    Interference is not clamped to zero and is not converted to a fictitious
-    leak.  The returned flow/area fields are ``None`` with status
-    ``"interference_invalid_annulus"`` in that case.
+    Contact/interference is not clamped to zero and is not converted to a
+    fictitious leak.  The returned flow/area fields are ``None`` with status
+    ``"contact_invalid_annulus"`` for zero or negative clearance.
     """
-    if hot_radial_clearance_um < 0:
+    if hot_radial_clearance_um <= 0:
         return {
-            "leakage_status": "interference_invalid_annulus",
+            "leakage_status": "contact_invalid_annulus",
             "mass_flow_kg_s": None,
             "equivalent_cda_mm2": None,
         }

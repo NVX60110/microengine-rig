@@ -106,8 +106,8 @@ The 8.5 mm extrapolation remains a screening comparison until small-engine hardw
 analytical screen that converts cold radial fit plus independent piston/liner
 temperatures and material strain profiles into signed hot radial clearance.
 Positive hot clearance is passed to `physics/annulus.py` for a sensitivity-only
-flow estimate; negative clearance is retained as an interference warning and
-has no annulus flow value.  These calculated rows are not measured leakage and
+flow estimate; zero or negative clearance is retained as contact/interference
+and has no annulus flow value.  These calculated rows are not measured leakage and
 must not be merged into `records.csv` or the calibrated static/dynamic
 regressions.
 

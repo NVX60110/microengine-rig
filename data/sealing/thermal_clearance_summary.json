@@ -8,7 +8,7 @@
     "assumed": "temperature grids, tolerance distributions, viscosity and representative pressure states",
     "extrapolated": "profile endpoint strain outside source temperature ranges and 8.5/12.5 scale bridge"
   },
-  "materials_file": "C:\\Users\\gflip\\OneDrive\\Documents\\HTML siege\\microengine-rig\\data\\materials\\thermal_properties.json",
+  "materials_file": "data/materials/thermal_properties.json",
   "pressure_states": [
     {
       "state_id": "cold_static_leakdown",
@@ -6297,8 +6297,8 @@
     }
   ],
   "plots": [
-    "figures\\hot_clearance_vs_piston_temperature_3um.png",
-    "figures\\hot_clearance_vs_piston_temperature_12um.png",
-    "figures\\annulus_leakage_vs_hot_clearance.png"
+    "figures/hot_clearance_vs_piston_temperature_3um.png",
+    "figures/hot_clearance_vs_piston_temperature_12um.png",
+    "figures/annulus_leakage_vs_hot_clearance.png"
   ]
 }

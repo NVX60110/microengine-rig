@@ -45,7 +45,8 @@ an interference flag.  It accepts scalar CTEs or piecewise cumulative-strain
 profiles.  Negative values are intentional physical warnings.
 
 The hot clearance is passed to [`physics/annulus.py`](physics/annulus.py) only
-when it is positive.  The existing annulus model remains an uncalibrated
+when it is strictly positive.  Zero clearance is treated as contact, just like
+negative clearance, and receives no annulus flow value.  The existing annulus model remains an uncalibrated
 screen with its cubic clearance dependence and eccentricity multiplier; it is
 not a measured blow-by law.  Cold static leak-down rows and hot dynamic
 in-cylinder rows are separate in the output.

@@ -215,7 +215,7 @@ direction of the bound explicitly.
 | Gate | Requirement | Consequence |
 |---|---:|---|
 | Diameter/radius convention | Report bore and piston as diameters, clearance as radial; derive the factor of two in the method | A factor-of-two ambiguity is a hard documentation failure |
-| Negative hot clearance | Preserve the signed value and set an interference flag | Do not clamp to zero or evaluate it as a positive annulus leak |
+| Non-positive hot clearance | Preserve the signed value; zero is contact and negative values are interference | Do not clamp to zero or evaluate non-positive clearance as a positive annulus leak |
 | Independent temperatures | Sweep piston and liner temperatures independently and state their source/classification | Isothermal results are a sensitivity case, not the default |
 | Material provenance | Preserve designation, temperature range, CTE treatment, conductivity, source, and uncertainty/limitation | Random/untraceable property values cannot support a promotion |
 | Leakage coupling | Keep cold static leak-down and hot dynamic blow-by rows separate; pass only positive hot clearance to `physics/annulus.py` | No single calibrated leak area may be inferred from this screen |

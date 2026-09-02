@@ -68,7 +68,7 @@
       "family": "lamellar graphite cast iron",
       "thermal_conductivity_W_mK": 48.5,
       "thermal_conductivity_temperature_K": 373.15,
-      "strain_points": [[293.15, 0.0], [473.15, 0.002106], [673.15, 0.005306]],
+      "strain_points": [[293.15, 0.0], [473.15, 0.002106], [673.15, 0.004940]],
       "cte_source_range": "20-200 C; 20-400 C",
       "source": "Grey cast iron EN 1561 property sheet",
       "source_url": "https://castingquality.com/wp-content/uploads/2009/08/din-1691-1985-e781b0e993b0e99381-flake-graphite-cast-iron-grey-cast-iron-properties.pdf",

@@ -365,7 +365,7 @@ def write_plots(out: Path, materials: dict[str, Any], profiles: dict[str, Therma
         path = figure_dir / f"hot_clearance_vs_piston_temperature_{name}.png"
         fig.savefig(path, dpi=160)
         plt.close(fig)
-        written.append(str(path.relative_to(out)))
+        written.append(path.relative_to(out).as_posix())
 
     # The annulus model's h^3 dependence is useful for fixture sensor sizing.
     clearances = [x * 0.1 for x in range(1, 201)]
@@ -391,7 +391,7 @@ def write_plots(out: Path, materials: dict[str, Any], profiles: dict[str, Therma
     path = figure_dir / "annulus_leakage_vs_hot_clearance.png"
     fig.savefig(path, dpi=160)
     plt.close(fig)
-    written.append(str(path.relative_to(out)))
+    written.append(path.relative_to(out).as_posix())
     return written
 
 
@@ -417,7 +417,8 @@ def main() -> None:
             "assumed": "temperature grids, tolerance distributions, viscosity and representative pressure states",
             "extrapolated": "profile endpoint strain outside source temperature ranges and 8.5/12.5 scale bridge",
         },
-        "materials_file": str(MATERIALS_PATH),
+        # Keep committed metadata portable across Windows/WSL/Linux checkouts.
+        "materials_file": "data/materials/thermal_properties.json",
         "pressure_states": PRESSURE_STATES,
         "temperature_grids_K": {"piston": PISTON_TEMPERATURES_K, "liner": LINER_TEMPERATURES_K},
         "cold_clearance_grid_um": COLD_CLEARANCES_UM,
