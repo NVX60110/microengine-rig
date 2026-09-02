@@ -1,12 +1,14 @@
 # Low-idle feasibility report
 
 Status: integrated technical-lead decision after the Luna A operating map,
-Luna B axial thermal-fit screen, and Luna C independent falsification.
+Luna B axial thermal-fit screen, Luna C independent falsification, and the
+bounded 1,200-rpm 720-CAD gas-exchange preflight.
 
 ## Decision
 
 The present simulator does **not** yet establish a physically stable idle RPM.
-It does establish a reproducible conditional boundary:
+It establishes a reproducible conditional closed-pass boundary, but the first
+valve-enabled 720-CAD case remains unresolved:
 
 > Under the accepted Beta 2.6 closed-cycle state, all three chemistry
 > mechanisms first pass the project screen at approximately **1.11 krpm**.
@@ -31,6 +33,12 @@ the provisional 0.87 retained-mass gate near 1.11 krpm. At 800 rpm, the still
 longer chemical residence time produces a second failure mode: a hot,
 rapid-pressure-rise branch. The model therefore does not support the simple
 claim that “slower is always easier.”
+
+The complete-cycle preflight does not overturn that closed-pass result. It stops
+promotion earlier: the current lumped valve/state wrapper changes mass by 3.19%
+and specific enthalpy by 1.14% after four cycles at 1,200 rpm, so residuals and
+thermal state have not reached a periodic solution. This is an unresolved
+project-model gate, not evidence that the engine fails physically.
 
 ## Provenance
 
@@ -68,6 +76,31 @@ physical `implausible` rows, uses a 720-CAD (`4*pi`) denominator for the
 full-cycle average motor-torque lower-bound proxy, and describes the exported
 event honestly as 1% global inventory conversion—not an independent ignition
 delay.
+
+## 1,200-rpm 720-CAD periodic-state preflight
+
+This bounded experiment is the first complete-cycle check and is intentionally
+not an RPM sweep. The disabled-regression bridge reproduces the canonical
+two-zone trace exactly at the stored precision. With the assumed 1.0 mm²
+half-sine intake/exhaust effective areas, 0.70 discharge coefficient, and
+fixed-speed 1,200-rpm crank, four valve-enabled cycles took approximately
+80.4 s and stopped at `unresolved_periodic_state`:
+
+| gate | final cycle-to-cycle change | result |
+|---|---:|---|
+| mass | 3.19e-2 relative | fail |
+| species | 1.11e-4 max mass fraction | fail |
+| specific enthalpy | 1.14e-2 relative | fail |
+| temperature | 6.65 K | fail |
+| speed | 0 rpm (prescribed) | not tested dynamically |
+
+The staged runner therefore did not enable friction, crank inertia, or motor
+control. Its final open-system bookkeeping reports 1.476 mg intake,
+1.293 mg exhaust, 1.995 bar signed PMEP, and 5.787 bar gas-work MEP. These are
+project-model outputs under an assumed valve closure, not measurements or a
+stable-idle prediction. The first justified follow-up is a nonreacting
+valve/energy/state-mapping test and a bounded valve timing/area check; only a
+closed 1,200-rpm reference cycle should unlock the broader RPM sweep.
 
 ## Nominal speed map
 
@@ -220,25 +253,15 @@ These follow-ups do not change the report's idle classification. They make
 valve-derived residual carry-over and periodic convergence explicit acceptance
 tests for the next simulator layer.
 
-## Simulator improvement exposed by this experiment
+## Simulator gate and next experiment
 
-The next justified model change is not CFD. It is a minimal repeat-cycle
-**720-CAD gas-exchange and crank-dynamics layer**:
-
-1. add intake and exhaust valve mass flow and pumping work;
-2. carry residual species and temperature into the next cycle;
-3. solve crank inertia and instantaneous motor/combustion torque with a stated
-   speed controller;
-4. add a separately sourced friction/motoring-torque bracket;
-5. require periodic mass, species, energy, and speed convergence before using
-   “stable idle.”
-
-The bounded first experiment should run 1,000, 1,200, 1,500, and 2,000 rpm at
-the accepted 2/3/5 µm hot-clearance brackets and all three mechanisms. It
-should first reproduce the closed-pass results when valve/friction terms are
-disabled, then expose the incremental pumping, residual, friction, and motor
-requirements. No coefficient may be tuned merely to preserve the 1,200-rpm
-result.
+The 720-CAD scaffold is now present, but it is not yet a stable-idle model.
+The next justified change is specifically to diagnose the failed 1,200-rpm
+valve stage: isolate nonreacting valve mass/energy mapping, inspect the assumed
+timing/area closure, and then repeat until mass, species, enthalpy and
+temperature close to their declared tolerances. Only after that gate passes
+should friction, crank inertia/motor control, or the 1,000/1,500/2,000-rpm
+campaign be enabled. No coefficient may be tuned merely to preserve 1,200 rpm.
 
 ## External software decisions
 

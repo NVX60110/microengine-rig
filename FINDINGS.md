@@ -137,12 +137,12 @@ CFD-02 changes only the piston/head clearance shape unless stated.
 |---|---|---|---|---|
 | A1 | Retain the motor-driven display-engine architecture | No accepted default two-zone anchor/clearance/eccentricity case paid idealized compressor power; friction and gas exchange remain incomplete | SCREENING decision, not impossibility theorem | `BETA24_REPORT.md` |
 | A2 | Canonical code is `microengine_rig.py` plus experimental `two_zone_model.py`; `microengine_v3.py` is retired | Beta2.5 repository | CONFIRMED project decision | README |
-| A3 | Physical stable idle remains unresolved despite the nominal closed-pass RPM screen | Current model omits the gas-exchange revolution, pumping, residual carry-over, friction, crank inertia, motor controller and cycle variability | OPEN; next justified simulator change is a periodic 720-CAD crank/gas-exchange layer | `OP_IDLE_REPORT.md`, `OP_IDLE_INDEPENDENT_REVIEW.md` |
+| A3 | Physical stable idle remains unresolved despite the nominal closed-pass RPM screen | The first 1,200-rpm valve-enabled 720-CAD preflight changes mass by 3.19% and specific enthalpy by 1.14% after four cycles, failing periodic mass/species/energy/temperature gates before friction or motor dynamics | OPEN; diagnose valve/state energy mapping and close one 1,200-rpm reference cycle before any RPM sweep or stable-idle claim | `OP_IDLE_REPORT.md`, `experiments/CYCLE720_1200_REPORT.md`, `results/cycle720_1200_staged.json` |
 
 ## Open work, in priority order
 
-1. Build the minimal periodic 720-CAD gas-exchange/crank layer exposed by the low-idle campaign: valves and pumping, residual-species carry-over, crank inertia/motor controller, and a separately sourced friction bracket. Require periodic mass/species/energy/speed closure before using “stable idle.”
-2. Run the bounded 1000/1200/1500/2000-rpm repeat-cycle experiment at 2/3/5 µm hot-clearance brackets and all three mechanisms. First reproduce the closed-pass case when new terms are disabled; do not tune coefficients to retain 1200 rpm.
+1. Diagnose and close one 1,200-rpm valve-enabled 720-CAD reference cycle: isolate valve mass/energy mapping and timing/area assumptions, then require periodic mass/species/energy/temperature closure before adding friction or motor dynamics.
+2. After that gate passes, run the bounded 1000/1200/1500/2000-rpm repeat-cycle experiment at 2/3/5 µm hot-clearance brackets and all three mechanisms. First reproduce the closed-pass case when new terms are disabled; do not tune coefficients to retain 1200 rpm.
 3. Prepare the Issue #13 warm direct-flow fixture to measure paired axial temperature/clearance, taper/roundness, lubricant state and flow. This is the first physical test of the modeled low-idle limiter.
 4. Digitize or obtain Burke et al. DME/methane point data and run the direct mechanism gate.
 5. Audit/select Zhao parent pressure-dependent decomposition rates.

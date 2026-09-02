@@ -69,6 +69,13 @@ convention is `-360..+360 CAD`, with firing TDC at `0 CAD`; see
 `experiments/CYCLE720_REPORT.md`. A valve-enabled run is a project-model
 screen, not evidence of a stable idle or calibrated valve flow.
 
+The bounded 1,200-rpm staged gate is reproducible with
+`python scripts/run_cycle720_1200_experiment.py`; it first checks the disabled
+canonical bridge, then tests valve/residual closure and stops before friction
+or motor dynamics if periodic mass/species/enthalpy/temperature gates fail.
+See `experiments/CYCLE720_1200_REPORT.md` and
+`results/cycle720_1200_staged.json` for the recorded unresolved result.
+
 ## Run the mechanism gates
 
 ```bash
