@@ -2,9 +2,13 @@
 """Compare geometry-independent tracer mixing between two CFD histories.
 
 Use only after both histories were regenerated with the current
-postprocess_history.py so the mass-weighted RMS fields are available. The raw
-mass-weighted RMS amplitude ratio is the primary cross-geometry comparison;
-the per-case-initial-normalized ratio is retained as a secondary diagnostic.
+postprocess_history.py so the mass-weighted RMS fields are available.
+
+For cross-geometry transport, the primary amplitude metric is each case's
+mass-weighted tracer RMS normalized by its own initial RMS.  This removes the
+trivial initial-amplitude offset created when the same radial tracer seed
+occupies a different mass/volume fraction in a changed chamber geometry.
+Raw RMS is retained as a secondary physical-amplitude diagnostic.
 """
 from __future__ import annotations
 
@@ -29,6 +33,7 @@ def load(path: Path) -> list[dict[str, float]]:
     required = {
         "crank_angle_deg_atdc",
         "time_s",
+        "tracer_mass_rms",
         "tracer_mass_rms_normalized",
         "tracer_inventory_error_percent",
         "wall_shell_volume_fraction",
@@ -98,12 +103,27 @@ def main() -> None:
 
     reference = load(args.reference)
     candidate = load(args.candidate)
+    ref_initial_rms = reference[0]["tracer_mass_rms"]
+    cand_initial_rms = candidate[0]["tracer_mass_rms"]
+    initial_rms_ratio = (
+        cand_initial_rms / ref_initial_rms if ref_initial_rms > 0 else math.nan
+    )
+
     result: dict[str, object] = {
         "reference": str(args.reference),
         "candidate": str(args.candidate),
         "window_half_width_cad": args.window_cad,
+        "primary_metric": "candidate_over_reference_normalized_rms",
+        "primary_metric_reason": (
+            "each case starts from a different raw tracer RMS when the fixed radial seed occupies "
+            "a different chamber mass/volume fraction; normalize by each case's initial RMS before "
+            "comparing the fraction of segregation remaining"
+        ),
         "targets": {},
         "global": {
+            "reference_initial_rms": ref_initial_rms,
+            "candidate_initial_rms": cand_initial_rms,
+            "candidate_over_reference_initial_rms": initial_rms_ratio,
             "reference_shell_fraction_min": min(r["wall_shell_volume_fraction"] for r in reference),
             "reference_shell_fraction_max": max(r["wall_shell_volume_fraction"] for r in reference),
             "candidate_shell_fraction_min": min(r["wall_shell_volume_fraction"] for r in candidate),
@@ -118,7 +138,7 @@ def main() -> None:
     for target in args.targets:
         ref = summarize(reference, target, args.window_cad)
         cand = summarize(candidate, target, args.window_cad)
-        rms_ratio = (
+        raw_rms_ratio = (
             cand["rms"] / ref["rms"]
             if ref["rms"] > 0 else math.nan
         )
@@ -129,11 +149,13 @@ def main() -> None:
         targets[f"{target:+g}"] = {
             "reference": ref,
             "candidate": cand,
-            "candidate_over_reference_rms": rms_ratio,
+            "candidate_over_reference_rms": raw_rms_ratio,
             "candidate_over_reference_normalized_rms": normalized_rms_ratio,
             "interpretation": (
-                "candidate more mixed" if math.isfinite(rms_ratio) and rms_ratio < 1.0
-                else "candidate less mixed" if math.isfinite(rms_ratio) and rms_ratio > 1.0
+                "candidate has less initial-normalized segregation remaining"
+                if math.isfinite(normalized_rms_ratio) and normalized_rms_ratio < 1.0
+                else "candidate has more initial-normalized segregation remaining"
+                if math.isfinite(normalized_rms_ratio) and normalized_rms_ratio > 1.0
                 else "equal/undefined"
             ),
         }
