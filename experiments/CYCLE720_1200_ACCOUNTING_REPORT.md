@@ -29,12 +29,13 @@ bookkeeping diagnostics, not measurements or a calibrated open-system energy
 model.
 
 The intake-only energy accounting closes to about `1e-9 J` in cycle 1, which
-checks the lumped valve step. With the gas-to-wall sign handled correctly, the
-reacting kernel's internal-energy residual is about `0.0013 J` in that cycle,
-while the exhaust transition residual is about `-0.068 J`; the latter does not
-pass an energy gate. It is retained as a specific state/energy-mapping defect
-to resolve before friction or crank dynamics are enabled, rather than being
-hidden inside a periodicity failure.
+checks the lumped valve step. With the gas-to-wall sign handled correctly and
+the outlet enthalpy taken from the pre-step gas state, the reacting kernel's
+internal-energy residual is about `0.0013 J` in that cycle and the exhaust
+transition residual is approximately `3e-10 J`. The latter is effectively
+closed at this resolution; it is not evidence of a separate exhaust mapping
+defect. The remaining energy residual is step-dependent and is retained as a
+diagnostic until the complete periodic state is closed.
 
 ## Result
 
@@ -77,33 +78,34 @@ no stable-idle promotion.
 
 The observed state drift is consistent with a transient/open-system filling
 and thermal-state problem under the assumed valve and leakage model. It is not
-evidence that the 1,200-rpm concept is stable. The enthalpy/internal-energy
-residual is not yet a passing closure gate; it identifies the next bookkeeping
-task as a more faithful open-system energy/state mapping, especially around the
-aggregated two-zone end state and valve transitions.
+evidence that the 1,200-rpm concept is stable. The energy accounting is
+internally consistent in the bounded diagnostic after the outlet-state and
+wall-heat corrections, but the state remains non-periodic and the residual is
+not yet a passing promotion gate.
 
 ## Quadrature refinement
 
 Fresh one-cycle runs were repeated at 5, 2, 1 and 0.5 CAD. The mass residual
-decreases strongly with step size. The energy residual also decreases strongly,
-but is not yet zero or converged; the exhaust transition residual remains
-nonzero:
+decreases strongly with step size. The total energy residual tracks the
+closed-kernel residual and also decreases; the independently computed intake
+and exhaust transition residuals are near numerical zero after the outlet-state
+correction:
 
 | step | mass residual (mg) | mass residual / cycle start | mass residual / kernel start | total energy residual (J) | closed-kernel energy residual (J) |
 |---:|---:|---:|---:|---:|---:|
-| 5.0 CAD | -8.94e-4 | -4.41e-3 | -5.48e-4 | -6.69e-2 | 1.32e-3 |
-| 2.0 CAD | -9.01e-5 | -4.44e-4 | -5.73e-5 | -1.82e-2 | 6.19e-4 |
-| 1.0 CAD | -2.80e-5 | -1.38e-4 | -1.78e-5 | -8.15e-3 | 2.89e-4 |
-| 0.5 CAD | -1.63e-6 | -8.04e-6 | -1.04e-6 | -3.74e-3 | 2.77e-4 |
+| 5.0 CAD | -8.94e-4 | -4.41e-3 | -5.48e-4 | 1.32e-3 | 1.32e-3 |
+| 2.0 CAD | -9.01e-5 | -4.44e-4 | -5.73e-5 | 6.19e-4 | 6.19e-4 |
+| 1.0 CAD | -2.80e-5 | -1.38e-4 | -1.78e-5 | 2.89e-4 | 2.89e-4 |
+| 0.5 CAD | -1.63e-6 | -8.04e-6 | -1.04e-6 | 2.77e-4 | 2.77e-4 |
 
 Thus the mass trend is consistent with trapezoidal rate-integration error, not
 an unexplained 3.19% state drift. However, even at 0.5 CAD the residual is
 `8.04e-6` relative to the cycle-start mass, above the existing `1e-6` gate; it
 must not be reported as closed without finer resolution or a justified
-numerical tolerance. The closed-kernel energy residual is small after the wall
-sign correction, but the exhaust transition energy residual remains nonzero.
-The open-system state/energy mapping remains an explicit blocker before
-friction, crank dynamics or motor control are enabled.
+numerical tolerance. The energy residual is now the same order as the
+closed-kernel residual, and the isolated intake/exhaust transitions are below
+`1e-9 J` in these checks. The periodic state itself remains an explicit
+blocker before friction, crank dynamics or motor control are enabled.
 
 ## Diagnostic limitations
 

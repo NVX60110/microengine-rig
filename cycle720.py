@@ -220,6 +220,10 @@ def _advance_lumped(c: RigConfig, state: Mapping[str, Any], volume_old: float,
     """Advance an ideal-gas lump with explicit valve mass and energy balance."""
     gas = _state_phase(c, state)
     m0, u0, p0, t0 = float(state["mass_kg"]), gas.int_energy_mass, gas.P, gas.T
+    # Capture the outlet enthalpy before mutating the lumped state.  The
+    # control-volume balance removes mass carrying the pre-step gas state;
+    # using post-step enthalpy here would manufacture an energy residual.
+    h0 = gas.enthalpy_mass
     dm_in = dm_out = 0.0
     if valve is not None and reservoir is not None:
         area = valve.area_at(float(state.get("deg", 0.0)))
@@ -255,7 +259,7 @@ def _advance_lumped(c: RigConfig, state: Mapping[str, Any], volume_old: float,
         "mass_in_kg": dm_in,
         "mass_out_kg": dm_out,
         "enthalpy_in_J": dm_in * (reservoir.enthalpy_mass if reservoir is not None else 0.0),
-        "enthalpy_out_J": dm_out * gas.enthalpy_mass,
+        "enthalpy_out_J": dm_out * h0,
         "work_by_gas_J": p0 * (volume_new - volume_old),
         "internal_energy_in_J": m0 * u0,
         "internal_energy_out_J": m1 * gas.int_energy_mass,
