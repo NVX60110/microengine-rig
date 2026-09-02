@@ -115,8 +115,9 @@ gates: inventory drift is `2.01883e-4` relative and the tracer minimum is
 replacement scheme. No new squish geometry is authorized until a tracer
 treatment passes both conservation and boundedness.
 
-**Issue #10 resolution (2026-09-01).** The inventory loss was an unconverged
-tracer linear solve, not a moving-mesh or wall-flux defect: the shared
+**Issue #10 root cause and fix (2026-09-01; gate closes on merge).** The
+inventory loss was an unconverged tracer linear solve, not a moving-mesh or
+wall-flux defect: the shared
 `"(U|e|tracer).*" relTol 0.01` entry stopped PBiCGStab after one iteration
 per step, and the signed residual removed tracer mass fastest between -30 and
 -13 CAD. Solver-field audits show gas mass constant to `1e-10` and wall
@@ -128,14 +129,24 @@ Courant and mesh checks, and a physical answer that moves by at most
 0.005%. Status: **one bounded, inventory-conserving passive-scalar treatment
 is demonstrated on the existing S2 moving mesh** (`cfd02_s2_tighttol_*`,
 `cfd/results/cfd02_scalar_inventory_audit.json`). The promoted S1 coarse and
-flat fine histories carry the same defect below the gate (`6.8e-5`, `2.4e-5`);
-regenerate flat, S1 and S2 with the converged solve before any cross-geometry
-decision. Boundedness under the function object is real but rests on the
+flat fine histories carried the same defect below the gate (`6.8e-5`,
+`2.4e-5`). Boundedness under the function object is real but rests on the
 solver's small continuity error, because it is solved against the
 thermodynamic density after `postSolve`; a structurally bounded alternative
 (inert species in `multicomponentFluid`) is recorded in the report and is not
-part of this gate. S3 and Cantera coupling remain blocked until the
-regenerated three-geometry comparison exists.
+part of this gate.
+
+**Regeneration under shared numerics (2026-09-01).** Flat coarse/medium/fine
+and S1 coarse were regenerated from the corrected base case
+(`CFD02_REGEN_TIGHT_REPORT.md`, F24-F25): every case conserves tracer
+inventory to `<= 1.5e-11` relative with tracer in `[0, 1]`; flat fine TDC
+`tau_mix` moves 10.655 -> 10.665 ms; and the three-geometry comparison
+reproduces the legacy ratios to `<= 0.001` with all six comparison gates `ok`
+(S1/flat 20%-mass-zone contrast 1.3541 at TDC, S2/flat 1.2608, S2/S1
+normalized RMS 0.9987). Status: the scalar gate is met by every history in
+`cfd/results/*_tight*`; the gate closes for the project when the Issue #10
+branch is merged. Under the B1 rule the regenerated result does not favour
+squish; S3 and S1/S2 Cantera coupling stay blocked pending that review.
 
 ## CFD performance gate
 

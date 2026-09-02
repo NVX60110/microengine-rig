@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "cfd" / "openfoam14" / "squish"))
 sys.path.insert(0, str(ROOT / "cfd"))
 
 import run_s2_cfd  # noqa: E402
+import run_squish_cfd  # noqa: E402
 import audit_scalar_inventory  # noqa: E402
 
 BASE_FVSOLUTION = ROOT / "cfd" / "openfoam14" / "cold_flow_tracer" / "system" / "fvSolution"
@@ -76,6 +77,28 @@ class TracerSolverEntryTests(unittest.TestCase):
             self.assertTrue((case / "-180" / "tracer").exists())
             self.assertTrue((case / "system" / "blockMeshDict").exists())
             self.assertTrue((case / "constant" / "dynamicMeshDict").exists())
+
+
+class S1RunnerOutputTests(unittest.TestCase):
+    def test_sibling_outputs_follow_output_name(self) -> None:
+        history = Path("/x/cfd/results/cfd02_s1_tight_scalar_history.csv")
+        self.assertEqual(
+            run_squish_cfd.sibling_output(history, "_mixing_time.csv").name,
+            "cfd02_s1_tight_mixing_time.csv",
+        )
+        self.assertEqual(
+            run_squish_cfd.sibling_output(history, "_metadata.json").name,
+            "cfd02_s1_tight_metadata.json",
+        )
+
+    def test_prepared_case_inherits_converged_tracer_entry(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            case = Path(tmp) / "s1_coarse"
+            run_squish_cfd.prepare(case, overwrite=False)
+            settings = run_squish_cfd.tracer_solver_settings(case)
+            self.assertEqual(settings["tolerance"], "1e-13")
+            self.assertEqual(settings["relTol"], "0")
+            self.assertEqual(settings["solver"], "PBiCGStab")
 
 
 class InventoryAuditParserTests(unittest.TestCase):

@@ -58,6 +58,27 @@ field use the documented perfect-gas `p/(R T)` fallback.
 `k_mix = pi^2 D/L^2 + C_s |u_p|/B` and writes a `TwoZoneOptions`-compatible
 JSON payload. It does not alter `two_zone_model.py`.
 
+## Converged tracer solve (Issue #10)
+
+`system/fvSolution` carries an exact-keyword `tracer`/`tracerFinal` solver
+entry (`tolerance 1e-13; relTol 0`). Under the shared `"(U|e|tracer).*"`
+entry the passive-scalar PBiCGStab solve stopped after one iteration per step
+and leaked tracer mass (flat fine `2.4e-5`, S1 `6.8e-5`, S2 `1.67e-4`
+relative); the exact entry converges it to the residual floor and removes the
+drift (`~1e-11`) for a few percent more runtime. Every runner inherits the
+entry. See `CFD02_S2_SCALAR_ISOLATION_REPORT.md` for the isolation and
+`CFD02_REGEN_TIGHT_REPORT.md` for the regenerated flat coarse/medium/fine
+histories (`cfd/results/cfd01_scalar_history_*_tight.csv`, run root
+`~/OpenFOAM/cfd01-cold-flow-tracer-v9`). The legacy promoted CFD-01 files are
+kept as the pre-fix record; TDC `tau_mix` changed by at most 0.1%.
+
+Audit any case from its solver-written `rho`, `Vc`, `tracer` and `phi`:
+
+```bash
+python3 cfd/audit_scalar_inventory.py "$CFD01_RUN_ROOT/fine" \
+  --labels flat_fine --output cfd/results/my_audit.json
+```
+
 ## maxDeltaT answer-convergence sweep
 
 Issue #5 step 2 uses the coarse mesh to determine whether the 0.15 CAD

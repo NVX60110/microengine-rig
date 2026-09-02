@@ -1,0 +1,11 @@
+{
+  "mesh_level": "medium",
+  "nominal_spacing_mm": 0.1,
+  "radial_cells": 43,
+  "azimuthal_cells": 3,
+  "axial_cells_bdc": 41,
+  "processors": 1,
+  "status": "ok",
+  "error": "",
+  "runtime_s": 708.871788274
+}

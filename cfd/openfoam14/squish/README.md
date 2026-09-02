@@ -108,10 +108,20 @@ python3 cfd/audit_scalar_inventory.py \
 ```
 
 The promoted S1 coarse and flat fine histories were produced with the
-unconverged solve and carry the same defect below the gate (`6.8e-5` and
-`2.4e-5` relative). Regenerate flat, S1 and S2 with the current base
-`fvSolution` before any cross-geometry decision; the S1 and flat runners
-inherit the entry automatically.
+unconverged solve and carried the same defect below the gate (`6.8e-5` and
+`2.4e-5` relative). They have been regenerated with the current base
+`fvSolution` (`CFD02_REGEN_TIGHT_REPORT.md`): the converged histories are
+`cfd/results/cfd01_scalar_history_{coarse,medium,fine}_tight.csv` and
+`cfd/results/cfd02_s1_tight_*`, the audit is
+`cfd/results/cfd02_scalar_inventory_audit_tight.json`, and the comparisons
+are `cfd/results/*_tight_tracer_mixing.json` and
+`*_tight_mass_zone_mixing.json`. All six comparison gates are `ok` and the
+legacy ratios are reproduced to `<= 0.001`. The legacy promoted files are
+kept unchanged as the record of the pre-fix numerics.
+
+`run_squish_cfd.py` now derives its companion `_mixing_time.csv` and
+`_metadata.json` names from `--output`, so a variant run never overwrites the
+promoted S1 files, and its metadata records the tracer solver entry used.
 
 The one-line `linearUpwind` tracer-scheme check is retained as a failed
 diagnostic. It can be reproduced without overwriting the upwind case:
