@@ -2,7 +2,9 @@
 """Compare geometry-independent tracer mixing between two CFD histories.
 
 Use only after both histories were regenerated with the current
-postprocess_history.py so `tracer_mass_rms_normalized` is available.
+postprocess_history.py so the mass-weighted RMS fields are available. The raw
+mass-weighted RMS amplitude ratio is the primary cross-geometry comparison;
+the per-case-initial-normalized ratio is retained as a secondary diagnostic.
 """
 from __future__ import annotations
 
@@ -73,6 +75,7 @@ def summarize(rows: list[dict[str, float]], target: float, window: float) -> dic
     fit = window_fit(rows, target, window)
     return {
         "sampled_cad": point["crank_angle_deg_atdc"],
+        "rms": point["tracer_mass_rms"],
         "rms_normalized": point["tracer_mass_rms_normalized"],
         "global_tau_point_ms": point.get("tau_global_mix_ms", math.nan),
         "shell_volume_fraction": point["wall_shell_volume_fraction"],
@@ -116,6 +119,10 @@ def main() -> None:
         ref = summarize(reference, target, args.window_cad)
         cand = summarize(candidate, target, args.window_cad)
         rms_ratio = (
+            cand["rms"] / ref["rms"]
+            if ref["rms"] > 0 else math.nan
+        )
+        normalized_rms_ratio = (
             cand["rms_normalized"] / ref["rms_normalized"]
             if ref["rms_normalized"] > 0 else math.nan
         )
@@ -123,6 +130,7 @@ def main() -> None:
             "reference": ref,
             "candidate": cand,
             "candidate_over_reference_rms": rms_ratio,
+            "candidate_over_reference_normalized_rms": normalized_rms_ratio,
             "interpretation": (
                 "candidate more mixed" if math.isfinite(rms_ratio) and rms_ratio < 1.0
                 else "candidate less mixed" if math.isfinite(rms_ratio) and rms_ratio > 1.0

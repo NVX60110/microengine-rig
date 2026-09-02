@@ -68,6 +68,15 @@ used as an apples-to-apples two-zone transport comparison against CFD-01.
 Reprocess CFD-01 and S1 with the global mass-weighted tracer RMS/variance
 metric before running S2.
 
+### CFD-02 S1 comparison status
+
+The stored CFD-01 v8 fine and S1 coarse fields have now been reprocessed with
+the global metric. At TDC, `A_S1/A_flat=0.8354` (raw mass-weighted RMS), while
+the +/-5 CAD fit gives `tau_S1=43.33 ms` versus `tau_flat=39.51 ms`, with
+`R2=0.99952` and `0.99991`. Keep both values: the amplitude indicates a lower
+cumulative contrast, but the local rate does not establish uniformly faster
+mixing. The comparison JSON is the current cross-geometry decision artifact.
+
 ## CFD performance gate
 
 A performance change is accepted only if the physical answer stays inside its

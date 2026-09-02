@@ -39,12 +39,15 @@ medium/fine S1 meshes remain pending.
 The baseline `correctPhi=no` setting was retained. S1 has no continuity or
 mass evidence that would justify reopening that CFD-01 decision.
 
-## Transport result
+## Legacy fixed-radius transport diagnostic
 
 `DeltaC = mean(C_wall) - mean(C_core)` and the local
 `tau_mix = 1/[-d ln(abs(DeltaC))/dt]` are postprocessed from the full history.
 The table compares the nearest S1 sample with the promoted CFD-01 fine-mesh
-flat-piston value. The S1 derivative is a coarse screening diagnostic, not a
+flat-piston value. This table is retained for the CFD-01 regression, but it is
+not an apples-to-apples geometry comparison: the same radial cutoff is about
+16.7% of S1 volume at BDC and 8.65% near TDC, versus 19.84% for flat CFD-01.
+The S1 derivative is therefore a geometry-specific coarse diagnostic, not a
 mesh-converged design value.
 
 | requested CAD | S1 sampled CAD | S1 DeltaC | S1 tau (ms) | CFD-01 flat tau (ms) |
@@ -57,14 +60,41 @@ mesh-converged design value.
 | +45 | +45.008 | 0.23646 | 37.26 | 39.07* |
 | +90 | +90.008 | 0.22607 | undefined | undefined |
 
-`*` CFD-01 +45 is explicitly a lower-bound/unresolved derivative value. S1's
-coarse TDC derivative is not faster than the flat-piston baseline; it is about
-34 ms versus 10.65 ms. That is not yet a geometry verdict because the stepped
-crown is only at the coarse level and the local derivative is noise-sensitive,
-but it gives no reason to promote S1 as the squish winner. The direct S1
-concentration contrast remains positive throughout the cycle; the +90 local
-negative derivative is the same late-expansion plateau artifact seen in
-CFD-01, not physical un-mixing.
+`*` CFD-01 +45 is explicitly a lower-bound/unresolved derivative value. The
+direct S1 concentration contrast remains positive throughout the cycle; the
++90 local negative derivative is the same late-expansion plateau artifact seen
+in CFD-01, not physical un-mixing.
+
+## Cross-geometry mass-weighted RMS result
+
+The updated postprocessor computes the global mass-weighted tracer amplitude
+`A = sqrt(sum(rho*V*(C-Cbar)^2)/sum(rho*V))`. This is the primary comparison
+when the fixed-radius shell fraction changes. The comparison script also fits
+`ln(A/A_initial)` over +/-5 CAD around each target; the fit is invariant to a
+constant amplitude normalisation.
+
+| requested CAD | raw `A` S1 / flat | normalized RMS S1 / flat | S1 fit tau (ms), R2 | flat fit tau (ms), R2 |
+|---:|---:|---:|---:|---:|
+| -90 | 0.9050 | 0.9666 | 51.71, 0.99996 | 62.24, 0.99985 |
+| -45 | 0.8724 | 0.9318 | 42.11, 0.99987 | 68.43, 0.99990 |
+| -20 | 0.8446 | 0.9021 | 35.15, 0.99998 | 50.85, 0.99965 |
+| 0 (TDC) | **0.8354** | 0.8922 | **43.33, 0.99952** | **39.51, 0.99991** |
+| +20 | 0.8473 | 0.9050 | 54.53, 0.99978 | 39.28, 0.99996 |
+| +45 | 0.8750 | 0.9346 | 85.37, 0.99955 | 42.47, 1.00000 |
+| +90 | 0.9497 | 1.0144 | 115.81, 1.00000 | 49.18, 0.99991 |
+
+At TDC, S1's raw global amplitude is 0.8354 of flat CFD-01, satisfying the
+predefined `<1` direction for “more mixed” cumulative contrast. However, the
+local +/-5 CAD exponential fit is slower (43.33 ms versus 39.51 ms), despite
+excellent fit R2. The two diagnostics are not contradictory: S1 can reduce the
+amplitude earlier in compression and then have a weaker local decay rate right
+around TDC. This is evidence of a changed transport history, not proof that
+S1 is a uniformly faster mixer.
+
+Tracer-inventory drift remains below the closed-cylinder gate: 0.002456% for
+flat fine (2.46e-5 relative) and 0.006834% for S1 coarse (6.83e-5 relative).
+The updated histories and full comparison JSON are the authoritative data for
+the next geometry decision.
 
 ## Reproducibility and outputs
 
@@ -76,6 +106,7 @@ WSL case without invoking OpenFOAM. Promoted artifacts are:
 - `cfd/results/cfd02_s1_coarse_scalar_history.csv`
 - `cfd/results/cfd02_s1_coarse_mixing_time.csv`
 - `cfd/results/cfd02_s1_coarse_metadata.json`
+- `cfd/results/cfd01_vs_cfd02_s1_tracer_mixing.json`
 
 The next bounded experiment is S2 coarse. Do not feed this S1 coarse schedule
 into Cantera until a geometry is selected and its transport answer is checked

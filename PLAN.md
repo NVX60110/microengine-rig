@@ -131,10 +131,15 @@ Decision:
   and stop optimizing hidden stirring.
 
 Status update: S1 mild squish coarse is implemented and passes the mesh,
-volume, mass, tracer, Courant, and output-cadence gates. Its coarse local TDC
-`tau_mix` is 34.15 ms versus the promoted flat-piston 10.65 ms, so S1 is not
-yet a faster-mixing candidate. Keep the result as screening evidence only;
-run S2 coarse next, then refine only the geometry that merits refinement.
+volume, mass, tracer, Courant, and output-cadence gates. The fixed-radius
+core/shell diagnostic is not cross-geometry comparable because its shell
+fraction collapses from ~16.7% at BDC to ~8.65% near TDC. The updated global
+mass-weighted RMS gives `A_S1/A_flat = 0.835` at TDC (a lower cumulative
+contrast), while the local +/-5 CAD fit gives 43.33 ms versus 39.51 ms for
+flat. Treat this as a changed but non-uniform transport history, not a
+uniformly faster-mixing claim. S2 remains paused until this evidence is
+reviewed; if the design question requires a monotonic squish trend, one S2
+coarse screen is the next bounded run.
 
 ### B2 - Bore/geometry screen
 

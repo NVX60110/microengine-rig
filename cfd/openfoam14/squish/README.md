@@ -31,3 +31,24 @@ python3 cfd/openfoam14/squish/run_squish_cfd.py \
   --run-root /home/gflip/OpenFOAM/cfd02-squish \
   --validate-only
 ```
+
+To regenerate the geometry-independent comparison from stored CFD-01 v8 fine
+and S1 fields (post-processing only):
+
+```bash
+python3 cfd/openfoam14/cold_flow_tracer/scripts/postprocess_history.py \
+  /home/gflip/OpenFOAM/cfd01-cold-flow-tracer-v8/fine \
+  --output cfd/results/cfd01_scalar_history_fine.csv
+python3 cfd/openfoam14/cold_flow_tracer/scripts/postprocess_history.py \
+  /home/gflip/OpenFOAM/cfd02-squish/s1_coarse \
+  --output cfd/results/cfd02_s1_coarse_scalar_history.csv
+python3 cfd/compare_tracer_mixing.py \
+  cfd/results/cfd01_scalar_history_fine.csv \
+  cfd/results/cfd02_s1_coarse_scalar_history.csv \
+  --targets -90 -45 -20 0 20 45 90 --window-cad 5 \
+  --output cfd/results/cfd01_vs_cfd02_s1_tracer_mixing.json
+```
+
+The comparison reports raw mass-weighted RMS amplitude ratios as the primary
+cross-geometry result and retains per-case-initial-normalized RMS as a
+secondary diagnostic. It also reports the +/-5 CAD log-linear fit and R2.
