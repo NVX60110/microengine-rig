@@ -209,8 +209,10 @@ passes **21/21 tests**.
   8.8986–11.7149 µm (`constant_h`) and 12.7573–15.3984 µm (angle sensitivity).
 * Signed hot gaps are preserved.  Zero/negative station gaps return
   `contact_invalid_annulus` and no flow; no contact gap is silently clamped.
-  A 3 µm cold neutral fit independently reaches 3.1047 µm minimum hot gap at
-  the constant-h periodic path and −0.7698 µm under the angle sensitivity.
+  A **10 µm cold** neutral fit independently reaches 3.1047 µm minimum hot gap
+  at the constant-h periodic path and −0.7698 µm under the angle sensitivity.
+  For comparison, the **3 µm cold** neutral values are −3.9159 and −7.8017 µm
+  respectively (contact).
 * The series-annulus closure reproduces
   `c_eq = [mean(c_i^-3)]^-1/3`; for 2/4/8 µm stations the calculated value is
   2.76072 µm.  This is algebraically consistent with equal-length series
@@ -273,4 +275,21 @@ conditional preheat scan is correctly treated as CTE-only; `minimum_safe` or
 shape/error fit intervals should remain screening envelopes, and the
 state-pairing discrepancy above must be attached to any leakage headline.
 
-Phase-2 Luna B review is complete pending the lead’s Luna A results.
+Luna B review is dispositioned for now; Phase 2 remains open pending the
+lead’s Luna A results.
+
+### Correction disposition for Luna B commit `01f5fd7`
+
+The corrected B commit pairs the leakage forcing state with the same periodic
+row that supplies the worst axial clearance.  Its neutral 8.5 mm constant-h,
+10 µm cold-base CSV row records approximately +60 CAD, 18.5892 bar, 721.66 K,
+and **1.8663 mg/s**; the targeted regression now explicitly checks preservation
+of those source fields and that paired flow exceeds the BDC-state flow.  The
+previous B-C1 discrepancy is therefore **closed by the implementation change**
+(the flow remains an uncalibrated sensitivity, not hardware leakage).
+
+The corrected report now also states 96 candidate rows, matching the committed
+CSV (8 shapes × 3 signed errors × 4 bore/closure cases).  The corrected
+targeted suite passes **22/22 tests**.  The 1200-rpm-only scope and the
+non-1200 hardcoded timing limitation remain as documented above; this
+disposition does not close Phase 2 because Luna A review is still pending.
