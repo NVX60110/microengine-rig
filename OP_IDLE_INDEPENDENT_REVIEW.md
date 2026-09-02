@@ -293,3 +293,109 @@ CSV (8 shapes × 3 signed errors × 4 bore/closure cases).  The corrected
 targeted suite passes **22/22 tests**.  The 1200-rpm-only scope and the
 non-1200 hardcoded timing limitation remain as documented above; this
 disposition does not close Phase 2 because Luna A review is still pending.
+
+## Luna A Phase 2 falsification and disposition (`afe805b`)
+
+### Audit method and artifact counts
+
+I inspected Luna A commit `afe805b` without modifying its worktree, including
+`scripts/op_idle_map.py`, `tests/test_op_idle_map.py`, the report, and every
+compact JSON/CSV pair. The targeted Luna A suite passes **5/5**. I also reran
+the two final Zhao-full boundary points and the LLNL 1500-rpm retry directly
+through `run_job`; the stored headline values reproduced.
+
+The compact artifacts contain these data-row counts (JSON `case_count` and CSV
+data rows agree): baseline **27**, refine **9**, refine2 **9**, refine3 **9**,
+uncertainty **18**, retry **1**. Baseline has **26 `ok` rows and one CVODES
+numerical error**. Its successful rows split into **10 robust, 3 marginal,
+and 13 physically implausible** rows; the numerical-error row is additionally
+labelled `screen_class=implausible` with `limiting_mechanism=numerical_failure`.
+Thus the report's 10/3/13 + 1 split is recoverable, but the compact class
+label does not itself distinguish numerical failure from physical
+implausibility.
+
+### Checks that pass
+
+* Four-stroke timing is dimensionally consistent: `revolution_period_s=60/N`,
+  `four_stroke_period_s=120/N`, and the modeled −180 to +180 CAD segment is
+  one revolution. With `cycle_revolutions=2`, the reported power uses the
+  four-stroke frequency. At the exact 0.125-CAD grid, TDC selection is the
+  actual 0 CAD row, not an interpolated or compression-start state.
+* The `reacting_tdc_*` fields are genuinely evolving two-zone values and are
+  distinct from the −180 CAD compression-start fields. An independent
+  Zhao-full rerun at 1106.0546875 rpm returned 66.00752 bar reacting TDC
+  pressure versus 3.00000 bar at compression start, with 0.87002044 end
+  retention and 3.762295 bar gross IMEP. The lower 1105.859375-rpm rerun
+  returned 0.86999505 retention and 3.763206 bar gross IMEP, matching its
+  marginal/robust transition.
+* The two-zone path requires `ignition_mode=cantera-auto` and advances the
+  reacting network; the configured proxy `tau_ref_ms` is not used by this
+  path. I found no hidden fixed ignition delay. The 1% event is correctly
+  labelled as first global inventory conversion, and CA10/50/90 are based
+  on cumulative heat release.
+* All three declared mechanisms are represented in successful map rows. The
+  1500-rpm LLNL baseline error is retained as numerical failure rather than
+  silently interpreted as extinction. The 0.0625-CAD LLNL retry independently
+  reproduced robust status, 0.829542 bar gross IMEP, 0.906673 retention,
+  856.997 K peak temperature, 2.375536 bar/CAD peak rise, and CA50 +4.20524
+  CAD.
+* The final retention crossing is correctly a campaign-specific numerical
+  screen: Zhao-full is marginal at 1105.859375 rpm (0.86999505 < 0.87) and
+  robust at 1106.0546875 rpm (0.87002044). This is not a chemistry,
+  seal-safety, or physical operability boundary. The aggregate correctly
+  requires all three mechanisms and marks 1500 rpm incomplete because LLNL
+  has no successful baseline row.
+* The uncertainty JSON has 18 one-factor rows at 1105.95703125 rpm. The
+  reported qualitative trends are present, including 3 µm/e=1.0 and 5 µm/e
+  cases with negative gross work, and the 280 K intake case being marginal on
+  retention. No count or unit conversion error was found in the stored
+  pressure (bar), temperature (K), time (s), angle (CAD), mass (mg), work
+  (mJ), power (W), and torque (N·m) fields.
+
+### Discrepancies and unresolved interpretation
+
+1. **Ignition wording is broader than the exported observable.** The report
+   says each row stores “ignition/conversion,” but the map result contains no
+   `ignition_1pct_deg_atdc` or reaction-start field. It stores only the
+   explicitly labelled first 1% global inventory-conversion angle. The
+   evolving Cantera path is real, but ignition delay remains unresolved and
+   should not be inferred from that conversion event.
+
+2. **Numerical/physical class ambiguity.** The one 1500-rpm baseline CVODES
+   error has `screen_class=implausible`, although its limiter is
+   `numerical_failure` and the report separates it from 13 physical
+   implausible rows. Any consumer counting `screen_class` directly obtains
+   14 implausible rows. The numerical result must remain excluded from a
+   physical boundary statement.
+
+3. **Motor-torque proxy denominator is under-specified and inconsistent with
+   four-stroke power if read as engine torque.** The script computes
+   `max(0,-gross_work_mJ)` and divides the converted work by **2π**, which is
+   the average torque over the modeled 360-CAD segment. Reported power uses
+   `work × rpm/(60×2)` for a four-stroke cycle; corresponding crankshaft
+   average torque would divide by **4π**. Therefore the published proxy is a
+   factor of two high if interpreted as four-stroke motor torque. It is
+   acceptable only as a clearly named one-revolution lower-bound work proxy;
+   it is not motor torque, brake torque, friction, or pumping work.
+
+4. **One sensitivity prose omission.** The uncertainty table also has the
+   5 µm/e=0 case at negative gross work (−95.499 mJ); the report names 5 µm/e
+   =0.5 and 1.0 and 3 µm/e=1.0, but omits the 5 µm/e=0 row. This does not
+   change the qualitative sensitivity conclusion.
+
+### Final Luna A disposition
+
+The numerical artifacts, mechanism aggregation, final narrow retention
+crossing, actual reacting-TDC bookkeeping, and LLNL retry are reproducible.
+The result supports only a bounded closed-cycle reacting screen and the
+listed one-factor sensitivities. It does **not** support stable idle,
+brake/motor torque, friction or pumping, intake/exhaust gas exchange,
+residual/EGR behavior, cycle-to-cycle stability, lubrication or contact
+life, or spark-assisted operation. Keep the four discrepancies above
+attached to any Luna A headline; in particular, retain the numerical-vs-
+physical distinction and do not promote the 1106-rpm retention crossing to a
+physical operating boundary.
+
+Luna A is therefore **conditionally reproducible with reporting caveats**;
+the substantive Phase 2 falsification is complete, while the physical claims
+listed above remain unresolved.
