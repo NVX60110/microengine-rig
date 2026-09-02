@@ -33,12 +33,14 @@ nonreacting transport run without a reason.
 | Gate | Requirement | Notes |
 |---|---:|---|
 | Max Courant | Default <= 1.0 for screening; tighten if answer changes | PIMPLE is implicit; accuracy, not mere stability, sets the useful limit |
-| Output sampling | <= 5 CAD for broad transport screening; <= 0.5 CAD when differentiating local `k_mix` near TDC or comparing to reacting phasing | Local derivatives need denser output than integrated decay |
+| Output sampling | <= 5 CAD for broad transport screening; <= 0.5 CAD when differentiating local rates near TDC or comparing to reacting phasing | Local derivatives need denser output than integrated decay |
 | Tracer boundedness | Report min/max tracer and reject material overshoot/undershoot | Passive scalar must remain physical |
+| Tracer inventory conservation | Mass-weighted mean tracer drift <= 1e-4 relative for a closed no-flux case | Boundedness alone does not prove the transported scalar is conserved |
 | Zone-volume stability | Boundary-zone fraction stable to <= 0.5% relative unless geometry intentionally changes it | Prevent zone definition from manufacturing apparent mixing |
+| Cross-geometry mixing metric | If the core/shell volume fraction changes materially between geometries or through the cycle, use global mass-weighted tracer RMS/variance decay as the primary comparison; fixed-radius `DeltaC/tau_mix` becomes a geometry-specific diagnostic | A squish land can change the Eulerian shell volume even when the CFD is correct, making the original CFD-01 two-zone metric non-equivalent |
 | `tau_mix` promotion | Positive local derivative plus mesh/time-step convergence at the requested crank angle | Late-cycle flat/noisy derivatives must not be converted into huge finite times |
-| Mass conservation | Mandatory before CFD-02 | `correctPhi` is currently a known moving-mesh concern |
-| Answer convergence table | For each requested CAD, report coarse/medium/fine `DeltaC`, `k_mix`, and `tau_mix` | CFD-01's generic mesh CSV did not contain this check |
+| Mass conservation | Required for every changed timestep, mesh, or geometry | `correctPhi=no` is accepted only conditionally where continuity has been demonstrated |
+| Answer convergence table | At requested CAD, report direct scalar amplitude plus any differentiated rate used for promotion | Do not promote a derivative while its underlying scalar metric is changing materially |
 
 ### CFD-01 known status
 
@@ -56,6 +58,16 @@ nonreacting transport run without a reason.
 - maxDeltaT sweep: 0.15 CAD is the recommended cap; 0.25 CAD passes the 5%
   answer gate but was not faster, while 0.35/0.45 CAD fail max Co.
 
+### CFD-02 S1 metric warning
+
+S1 coarse passes the mesh, Courant, volume, mass, and tracer-bounds gates, but
+its inherited fixed-radius shell is not a constant ~20%-volume zone. From the
+stored promoted history it is ~16.7% of chamber volume at BDC and ~8.65% near
+TDC. Therefore S1's reported fixed-radius `DeltaC/tau_mix` cannot by itself be
+used as an apples-to-apples two-zone transport comparison against CFD-01.
+Reprocess CFD-01 and S1 with the global mass-weighted tracer RMS/variance
+metric before running S2.
+
 ## CFD performance gate
 
 A performance change is accepted only if the physical answer stays inside its
@@ -65,7 +77,7 @@ For `maxDeltaT` or MPI sweeps record:
 - wall-clock runtime;
 - accepted timesteps;
 - max Courant;
-- TDC `tau_mix`;
+- TDC mixing metric;
 - +20 and +45 CAD values where resolvable;
 - volume and mass closure.
 
