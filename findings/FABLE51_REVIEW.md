@@ -82,6 +82,45 @@ Before promotion:
 4. perturb wall temperature, residual fraction and EGR fraction and require the feedback sign to remain stabilizing;
 5. only then test the concept in the two-zone/repeated-cycle model.
 
+## 10. RPM-envelope audit: hypothesis status and corrected quantities
+
+The attached full-envelope audit is useful as a hypothesis generator, not as a
+new design baseline. Several headline quantities require correction before
+they can enter a result table:
+
+- At speed `N` rpm, one revolution is `60/N` seconds and one four-stroke
+  720-degree cycle is `120/N` seconds. Thus the four-stroke period is 100 ms at
+  1200 rpm and 4.8 ms at 25,000 rpm (the one-revolution values are 50 ms and
+  2.4 ms). Any `Lambda`, leakage-fraction or Damkohler map must use the stated
+  event duration consistently.
+- `mu*U/W` with `W` as force is not dimensionless Hersey number; lubrication
+  regime needs a defined pressure/geometry load parameter and, ideally, a
+  film-thickness-to-roughness ratio. `tau_piston/t_cycle` is a thermal
+  timescale ratio, not Stanton number.
+- Reynolds number, Fourier number and a Woschni-shaped heat-transfer closure do
+  not establish a universal laminar/turbulent or combustion-mode boundary at a
+  particular rpm. The transition must be evaluated from the self-consistent
+  pressure, temperature, viscosity and flow state.
+- Positive thermal/leakage feedback suggests a stability question, not a
+  proven saddle or bistability. A coupled fixed-point/Jacobian calculation must
+  include the stabilizing possibility that a tighter gap increases piston-to-
+  liner heat rejection. Ringed-vs-ringless remains a testable hypothesis, not a
+  promoted architecture.
+- At low speed, mixed/boundary lubrication is more likely to occupy more of the
+  cycle; “no oil or gas film exists” is not established. Likewise,
+  compression-ignition failure and a hard CI-to-spark switch are hypotheses
+  until RPM-dependent TDC states and ignition delays are computed.
+- For an 8.5 mm bore with `R=4.25 mm`, a steel-piston temperature-only
+  sensitivity is approximately `-R*alpha_steel = -52 nm/K`; near-cancellation
+  occurs only when piston and liner temperatures co-vary with matched CTE, not
+  when piston temperature changes alone.
+
+The revised queue is therefore: (1) an RPM/chemistry regime map using actual
+TDC `P,T` and Cantera ignition delays, (2) a 1-D axial piston/liner thermal
+profile and `c_hot(z)`, (3) coupled stability-envelope analysis, and (4) a
+first-order ringed/ringless leakage screen. No numerical RPM boundary,
+clearance architecture or mode-switch rpm is promoted by this audit.
+
 ## Routing
 
 Immediate active work remains:

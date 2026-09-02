@@ -271,6 +271,23 @@ network. A manufacturer ABC reference supports intentional cold taper
 qualitatively, but no quantitative ringless skirt-to-liner conductance, oil-film
 resistance or taper profile has been recovered.
 
+#### RPM-envelope audit (hypothesis routing only)
+
+The external RPM audit is retained as a hypothesis generator. Before any of
+its regime or architecture claims can be promoted, all event-time quantities
+must use `t_rev = 60/N` and the four-stroke period `t_4stroke = 120/N` seconds;
+at 1200 rpm these are 50 and 100 ms, while at 25,000 rpm they are 2.4 and
+4.8 ms. The audit's `mu U/W` and `tau_piston/t_cycle` labels are not accepted
+as Hersey or Stanton numbers, and Reynolds/Fourier crossings are not universal
+RPM boundaries.
+
+The next bounded study is an RPM/chemistry map of self-consistent TDC pressure,
+temperature and ignition delay, followed by a 1-D axial thermal-clearance
+profile, a coupled fixed-point/Jacobian stability screen, and only then a
+ringed-versus-ringless leakage comparison. No saddle, hard CI-to-spark switch,
+“no film” lubrication claim or material architecture is promoted from the
+audit.
+
 Hypothesis: if manufactured radial clearance is roughly independent of bore,
 then annular leak area scales approximately with `B*c` while displacement
 scales with `B^2*S`, so leakage-per-displacement can deteriorate rapidly as
