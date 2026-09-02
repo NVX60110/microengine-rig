@@ -1,0 +1,178 @@
+{
+  "fine_dt0p25_co0p45": {
+    "case": "/home/gflip/OpenFOAM/cfd01-timestep-fine/dt_0p250_co_0p45/fine",
+    "field": "tracer",
+    "output_times": 2531,
+    "first_written_crank_angle_deg_atdc": -179.5,
+    "initial_tracer_mass_fraction": 0.19835197553737294,
+    "max_abs_mass_drift_rel": 8.34393953930146e-09,
+    "max_abs_tracer_inventory_drift_rel": 1.8777424060090198e-11,
+    "final_tracer_inventory_drift_rel": -1.814870476124497e-11,
+    "largest_tracer_increment_rel": 4.162830340596915e-12,
+    "largest_tracer_increment_crank_angle_deg_atdc": -157.63224648,
+    "tracer_min": 2.95448415778e-79,
+    "tracer_max": 0.999999997455,
+    "max_abs_patch_phi_kg_per_s": {
+      "piston": 6.61744490042e-24,
+      "liner": 3.00926553811e-36,
+      "cylinderHead": 0.0,
+      "axisCore": 1.53823374279e-24,
+      "symmetryMinus": 8.30865258915e-21,
+      "symmetryPlus": 8.2190224451e-21
+    },
+    "at_targets": [
+      {
+        "requested_crank_angle_deg_atdc": -90.0,
+        "sampled_crank_angle_deg_atdc": -90.05532609303,
+        "mass_drift_rel": -4.801524844388894e-09,
+        "tracer_inventory_drift_rel": -1.6535661728767082e-12,
+        "tracer_min": 1.77571554854e-15,
+        "tracer_max": 0.791217055183
+      },
+      {
+        "requested_crank_angle_deg_atdc": -45.0,
+        "sampled_crank_angle_deg_atdc": -45.08647834216,
+        "mass_drift_rel": -4.808064169026238e-09,
+        "tracer_inventory_drift_rel": 4.944711307075522e-12,
+        "tracer_min": 1.46885008037e-11,
+        "tracer_max": 0.698283203367
+      },
+      {
+        "requested_crank_angle_deg_atdc": -20.0,
+        "sampled_crank_angle_deg_atdc": -20.16807838565,
+        "mass_drift_rel": -4.807712228327432e-09,
+        "tracer_inventory_drift_rel": 5.0388582195637355e-12,
+        "tracer_min": 9.85476082674e-11,
+        "tracer_max": 0.648383919175
+      },
+      {
+        "requested_crank_angle_deg_atdc": 0.0,
+        "sampled_crank_angle_deg_atdc": 0.07005420516174,
+        "mass_drift_rel": -4.830355226914662e-09,
+        "tracer_inventory_drift_rel": 5.38857847232066e-12,
+        "tracer_min": 4.32457991292e-10,
+        "tracer_max": 0.607813641706
+      },
+      {
+        "requested_crank_angle_deg_atdc": 20.0,
+        "sampled_crank_angle_deg_atdc": 19.94418906211,
+        "mass_drift_rel": -4.846685386361571e-09,
+        "tracer_inventory_drift_rel": 6.654898854208113e-12,
+        "tracer_min": 9.02975444695e-10,
+        "tracer_max": 0.573752113174
+      },
+      {
+        "requested_crank_angle_deg_atdc": 45.0,
+        "sampled_crank_angle_deg_atdc": 44.96501398651,
+        "mass_drift_rel": -4.866680280990465e-09,
+        "tracer_inventory_drift_rel": 7.503331289626658e-12,
+        "tracer_min": 3.53573083891e-09,
+        "tracer_max": 0.541946713805
+      },
+      {
+        "requested_crank_angle_deg_atdc": 90.0,
+        "sampled_crank_angle_deg_atdc": 90.03414566719,
+        "mass_drift_rel": -4.920188700907602e-09,
+        "tracer_inventory_drift_rel": 4.5499159995188165e-12,
+        "tracer_min": 9.32350331424e-08,
+        "tracer_max": 0.502128781946
+      },
+      {
+        "requested_crank_angle_deg_atdc": 180.0,
+        "sampled_crank_angle_deg_atdc": 179.9463820416,
+        "mass_drift_rel": -8.34393953930146e-09,
+        "tracer_inventory_drift_rel": -1.814870476124497e-11,
+        "tracer_min": 3.73163454414e-05,
+        "tracer_max": 0.445764310248
+      }
+    ]
+  },
+  "fine_dt0p25_co0p30": {
+    "case": "/home/gflip/OpenFOAM/cfd01-timestep-fine/dt_0p250_co_0p30/fine",
+    "field": "tracer",
+    "output_times": 2614,
+    "first_written_crank_angle_deg_atdc": -179.5,
+    "initial_tracer_mass_fraction": 0.19835197553737294,
+    "max_abs_mass_drift_rel": 2.200960302900512e-09,
+    "max_abs_tracer_inventory_drift_rel": 1.3814949184620673e-11,
+    "final_tracer_inventory_drift_rel": -1.2982614983059193e-11,
+    "largest_tracer_increment_rel": -3.924748845394564e-12,
+    "largest_tracer_increment_crank_angle_deg_atdc": -168.2981313324,
+    "tracer_min": 2.95448415778e-79,
+    "tracer_max": 0.999999997455,
+    "max_abs_patch_phi_kg_per_s": {
+      "piston": 6.61744490042e-24,
+      "liner": 1.50463276905e-36,
+      "cylinderHead": 0.0,
+      "axisCore": 1.61781104567e-24,
+      "symmetryMinus": 4.99209591387e-21,
+      "symmetryPlus": 4.93675843747e-21
+    },
+    "at_targets": [
+      {
+        "requested_crank_angle_deg_atdc": -90.0,
+        "sampled_crank_angle_deg_atdc": -89.92230335435,
+        "mass_drift_rel": -1.3005945209698666e-09,
+        "tracer_inventory_drift_rel": -1.6981971384666394e-12,
+        "tracer_min": 3.06299717871e-15,
+        "tracer_max": 0.791897465878
+      },
+      {
+        "requested_crank_angle_deg_atdc": -45.0,
+        "sampled_crank_angle_deg_atdc": -44.9307420342,
+        "mass_drift_rel": -1.2714289621129637e-09,
+        "tracer_inventory_drift_rel": 7.86748444170371e-12,
+        "tracer_min": 6.54677821747e-11,
+        "tracer_max": 0.698209653771
+      },
+      {
+        "requested_crank_angle_deg_atdc": -20.0,
+        "sampled_crank_angle_deg_atdc": -19.93504491898,
+        "mass_drift_rel": -1.2894330048141e-09,
+        "tracer_inventory_drift_rel": 8.948175533873837e-12,
+        "tracer_min": 8.95842303263e-10,
+        "tracer_max": 0.647640074869
+      },
+      {
+        "requested_crank_angle_deg_atdc": 0.0,
+        "sampled_crank_angle_deg_atdc": -0.1043473698498,
+        "mass_drift_rel": -1.2363616797017585e-09,
+        "tracer_inventory_drift_rel": 9.519274257741017e-12,
+        "tracer_min": 2.10296361788e-09,
+        "tracer_max": 0.607479557791
+      },
+      {
+        "requested_crank_angle_deg_atdc": 20.0,
+        "sampled_crank_angle_deg_atdc": 20.07408333011,
+        "mass_drift_rel": -1.279753636396208e-09,
+        "tracer_inventory_drift_rel": 1.1769030194841434e-11,
+        "tracer_min": 3.63199989117e-09,
+        "tracer_max": 0.572549614705
+      },
+      {
+        "requested_crank_angle_deg_atdc": 45.0,
+        "sampled_crank_angle_deg_atdc": 45.0329910008,
+        "mass_drift_rel": -1.297394636168292e-09,
+        "tracer_inventory_drift_rel": 1.2449152819726805e-11,
+        "tracer_min": 9.16316214551e-09,
+        "tracer_max": 0.541240569601
+      },
+      {
+        "requested_crank_angle_deg_atdc": 90.0,
+        "sampled_crank_angle_deg_atdc": 90.03597040788,
+        "mass_drift_rel": -1.319963915946687e-09,
+        "tracer_inventory_drift_rel": -8.104628079763643e-15,
+        "tracer_min": 1.70596913095e-07,
+        "tracer_max": 0.501014787729
+      },
+      {
+        "requested_crank_angle_deg_atdc": 180.0,
+        "sampled_crank_angle_deg_atdc": 179.9796046847,
+        "mass_drift_rel": -2.1949402295717846e-09,
+        "tracer_inventory_drift_rel": -1.2982614983059193e-11,
+        "tracer_min": 0.000168929354726,
+        "tracer_max": 0.445168818618
+      }
+    ]
+  }
+}

@@ -93,9 +93,18 @@ python3 cfd/openfoam14/cold_flow_tracer/scripts/run_timestep_sweep.py \
   --sweep-root "$CFD01_TIMESTEP_ROOT"
 ```
 
-The sweep holds `maxCo=0.15` fixed and changes only `maxDeltaT`. Output cadence
-is adjusted automatically so the maximum nominal sampling gap stays at or
-below 0.5 CAD. Each run records runtime, accepted steps, maximum Courant,
+The sweep holds `maxCo=0.15` fixed by default and changes only `maxDeltaT`.
+Output cadence is adjusted automatically so the maximum nominal sampling gap
+stays at or below 0.5 CAD. It also accepts `--mesh {coarse,medium,fine}`,
+`--max-co` (gate maximum 0.5) and `--reference-history <csv>` to judge a
+candidate against an existing gate-clean history instead of rerunning the
+0.15/0.15 baseline; every run must also pass the tracer-inventory gate.
+
+Before spending Courant headroom, read `CFD01_TIMESTEP_FINE_REPORT.md`: the
+step on every mesh is set by a spurious axis-core velocity, not by the
+physical flow, and raising `maxCo` enlarges that artifact instead of the
+step. The tracer function object now carries its own write control so the
+field is written at the snapshot cadence rather than every step. Each run records runtime, accepted steps, maximum Courant,
 volume error, closed-cylinder mass drift, tracer bounds, and `DeltaC/k_mix/tau`
 at -20, 0, +20, and +45 CAD.
 
