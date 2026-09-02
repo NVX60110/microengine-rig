@@ -75,8 +75,10 @@ iteration count with decreasing deltas is an unresolved map convergence, not a
 periodic-state proof. The branch and chemistry outputs remain one-revolution
 two-zone screening values.
 
-The endpoint screen was bounded to 8 iterations, with decreasing deltas and no
-observed branch drift:
+The endpoint screen was bounded to 8 iterations. Both residual fractions show
+large overall reductions in map deltas and no observed branch drift; the 5%
+composition and temperature deltas rise slightly on the final iterate, so the
+history is not claimed to be monotonically convergent:
 
 | `f_res` | branch at final iterate | final `max |delta Y|` | final `|delta T|` | final Tmax | final gross IMEP | gates |
 |---:|---|---:|---:|---:|---:|---|
@@ -103,10 +105,12 @@ species ordering and matching statuses/key outputs for the committed run.
 
 Thus the cool branch is bounded over these eight map applications. Neither
 endpoint met both fixed-point tolerances by iteration 8 in the committed
-artifact, although both showed decreasing deltas (the 5% case was within
-`1.5e-7` in composition and `4.8e-4 K` in temperature). The correct conclusion
-is **unresolved but trending toward convergence at both endpoints**; there is
-no evidence here for drift to extinction or runaway. The mixed intake
+artifact. The 30% row continues to decrease through the last iterate; the 5%
+row reaches `3.8e-8`/`1.7e-4 K` on iteration 7 before rising to
+`1.5e-7`/`4.8e-4 K` on iteration 8, consistent with a small deterministic
+oscillation or numerical floor. The correct conclusion is **unresolved but
+approaching a narrow neighborhood at both endpoints**; there is no evidence
+here for drift to extinction or runaway. The mixed intake
 tracked-fuel/O2 proxy falls from 1.0 on the cold-start map input to 0.975 at
 `f_res=0.05` and 0.842 at `f_res=0.30`; this also demonstrates why
 `phi_fresh=0.40` must not be read as the whole mixed-charge equivalence ratio.
