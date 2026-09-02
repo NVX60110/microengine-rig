@@ -15,7 +15,7 @@ project-model assumptions and are exposed in dataclasses.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 import json
 import math
 from pathlib import Path
@@ -98,6 +98,13 @@ class Cycle720Options:
     friction_enabled: bool = False
     crank_dynamics_enabled: bool = False
     motor_enabled: bool = False
+    # The accepted closed-pass model settings.  Keeping this as an explicit
+    # option prevents the 720 wrapper from silently substituting a new mixing
+    # closure during the regression bridge.
+    two_zone_options: TwoZoneOptions = field(default_factory=lambda: TwoZoneOptions(
+        mixing_model="diffusion-strain", mixing_length_mm=1.0,
+        molecular_diffusivity_m2_s=3.0e-6, piston_strain_coefficient=1.0,
+        integrator_rtol=1.0e-9, integrator_atol=1.0e-15))
     # The full cycle is -360..+360 CAD: intake TDC=-360, firing TDC=0.
     intake_valve: ValveConfig = ValveConfig(-360.0, -160.0)
     exhaust_valve: ValveConfig = ValveConfig(160.0, 360.0)
@@ -268,7 +275,7 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
     options.validate(c)
     if not options.valves_enabled and not options.friction_enabled and not options.motor_enabled:
         closed_rows, closed_summary = simulate_two_zone(
-            c, TwoZoneOptions(integrator_rtol=1e-9, integrator_atol=1e-15), initial_state=initial_state)
+            c, options.two_zone_options, initial_state=initial_state)
         rows = [dict(row, phase="compression" if row["deg"] < 0 else
                      "combustion-expansion", cycle_deg=row["deg"])
                 for row in closed_rows]
@@ -346,7 +353,7 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
     closed_c = replace(c, intake_temperature_K=state["T_K"], intake_pressure_bar=state["P_bar"],
                        step_deg=options.step_deg)
     closed_rows, closed_summary = simulate_two_zone(
-        closed_c, TwoZoneOptions(integrator_rtol=1e-9, integrator_atol=1e-15),
+        closed_c, options.two_zone_options,
         initial_state={"Y": state["Y"], "T_K": state["T_K"], "P_bar": state["P_bar"],
                        "source": "720-intake-close"})
     for cr in closed_rows:
@@ -452,7 +459,16 @@ def iterate_periodic_720(c: RigConfig, options: Cycle720Options = Cycle720Option
         metrics = _state_metrics(state, out) if state is not None and "mass_kg" in state else {
             "mass_rel": math.inf, "species_max": math.inf, "enthalpy_rel": math.inf,
             "temperature_K": math.inf, "speed_rpm": math.inf}
-        history.append({"cycle": cycle, **metrics, "state_hash": serialize_cycle_state(out)})
+        summary = result.get("summary", {})
+        history.append({"cycle": cycle, **metrics,
+                        "state_hash": serialize_cycle_state(out),
+                        "intake_mass_mg": summary.get("intake_mass_mg"),
+                        "exhaust_mass_mg": summary.get("exhaust_mass_mg"),
+                        "pumping_work_mJ": summary.get("pumping_work_mJ"),
+                        "friction_work_mJ": summary.get("friction_work_mJ"),
+                        "gas_work_mJ": summary.get("gross_work_mJ", summary.get("gross_indicated_work_mJ")),
+                        "motor_torque_peak_Nm": summary.get("motor_torque_peak_Nm"),
+                        "motor_torque_rms_Nm": summary.get("motor_torque_rms_Nm")})
         state = out
         if all((metrics["mass_rel"] <= options.mass_tolerance_rel,
                 metrics["species_max"] <= options.species_tolerance,
