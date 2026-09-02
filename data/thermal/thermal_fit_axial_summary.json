@@ -1,0 +1,130 @@
+{
+  "campaign": "bounded axial thermally developed piston/liner-fit feasibility",
+  "status": "screening_only",
+  "history": "data/thermal/engine_history_proxy.csv",
+  "history_classification": "calculated microengine_rig proxy; no measured wall heat flux or piston/liner temperatures",
+  "materials": {
+    "piston": "al_4032_t6",
+    "liner": "steel_4140"
+  },
+  "stations": [
+    {
+      "z_mm": 0.0,
+      "label": "crown"
+    },
+    {
+      "z_mm": 2.0,
+      "label": "upper_piston"
+    },
+    {
+      "z_mm": 4.0,
+      "label": "ringland_or_mid_skirt"
+    },
+    {
+      "z_mm": 6.0,
+      "label": "lower_skirt"
+    },
+    {
+      "z_mm": 8.0,
+      "label": "skirt_end"
+    }
+  ],
+  "screening_envelope_um": {
+    "liner_taper_amplitude": [
+      -2.0,
+      2.0
+    ],
+    "piston_taper_amplitude": [
+      -2.0,
+      2.0
+    ],
+    "piston_barrel_amplitude": [
+      -2.0,
+      2.0
+    ],
+    "machining_error": [
+      -1.0,
+      1.0
+    ]
+  },
+  "summaries": [
+    {
+      "bore_mm": 8.5,
+      "h_model": "constant_h",
+      "rc_periodic_min_path_hot_clearance_3um": -3.9159473032581715,
+      "rc_warmup_min_path_hot_clearance_3um": 1.3218145382136726,
+      "rc_periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 5.4569682106375694e-12,
+        "cycle_gas_energy_J": 1.3366387248625196,
+        "cycle_external_energy_J": -1.3366387248740812,
+        "cycle_energy_balance_residual_J": -1.1561640533841455e-11,
+        "cycle_energy_balance_relative": 8.649787200375054e-12
+      },
+      "candidate_count": 24
+    },
+    {
+      "bore_mm": 8.5,
+      "h_model": "angle_correlation",
+      "rc_periodic_min_path_hot_clearance_3um": -7.801718475432651,
+      "rc_warmup_min_path_hot_clearance_3um": -0.46854652792571727,
+      "rc_periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 1.944044925039634e-11,
+        "cycle_gas_energy_J": 2.0301125678369685,
+        "cycle_external_energy_J": -2.030112567828519,
+        "cycle_energy_balance_residual_J": 8.449685395817141e-12,
+        "cycle_energy_balance_relative": 4.162175797384506e-12
+      },
+      "candidate_count": 24
+    },
+    {
+      "bore_mm": 12.5,
+      "h_model": "constant_h",
+      "rc_periodic_min_path_hot_clearance_3um": -11.874161750337286,
+      "rc_warmup_min_path_hot_clearance_3um": -2.7696508756527294,
+      "rc_periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 9.833911462919787e-12,
+        "cycle_gas_energy_J": 1.8914981607961716,
+        "cycle_external_energy_J": -1.8914981607885024,
+        "cycle_energy_balance_residual_J": 7.669198609505656e-12,
+        "cycle_energy_balance_relative": 4.05456308045128e-12
+      },
+      "candidate_count": 24
+    },
+    {
+      "bore_mm": 12.5,
+      "h_model": "angle_correlation",
+      "rc_periodic_min_path_hot_clearance_3um": -18.643924941935452,
+      "rc_warmup_min_path_hot_clearance_3um": -7.673866671035867,
+      "rc_periodic_info": {
+        "periodic_fixed_point_requested": true,
+        "periodic_fixed_point_solved": true,
+        "periodic_residual_K": 2.6147972675971687e-11,
+        "cycle_gas_energy_J": 2.790290965371722,
+        "cycle_external_energy_J": -2.7902909653797505,
+        "cycle_energy_balance_residual_J": -8.028688824879282e-12,
+        "cycle_energy_balance_relative": 2.8773661688037262e-12
+      },
+      "candidate_count": 24
+    }
+  ],
+  "model_classification": {
+    "literature_derived_calculation": "material strain profiles/conductivity only; ringed literature is not injected",
+    "project_model_result": "RC node temperatures, axial interpolation, signed clearance and series annulus sensitivity",
+    "inference": "illustrative taper/barrel envelopes and 1 um contact margin",
+    "unknowns": "local axial temperatures, ABC taper magnitude, machining error/roundness, contact pressure, oil film, ringless heat transfer and calibrated flow"
+  },
+  "ringless_path": "positive-clearance axial annulus sensitivity only",
+  "ringed_path": "not coupled; ring Cd/heat-path literature remains ringed-only and requires ring geometry/measurement",
+  "radial_convention": "all clearances are radial; bore/piston dimensions are diameters; hot gap <= 0 is contact, never flow",
+  "rpm_note": "Only 1200 rpm is run; other RPM thermal effects are unsupported proxy forcing until speed-dependent history is supplied",
+  "files": [
+    "thermal_fit_axial_candidates.csv",
+    "thermal_fit_axial_profiles.csv"
+  ]
+}

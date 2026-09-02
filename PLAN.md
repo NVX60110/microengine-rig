@@ -9,6 +9,31 @@ coarse about everything else.
 
 ---
 
+## Current phase — low-idle feasibility
+
+The immediate target is a physically credible low idle, not a 25,000-rpm
+redline. The completed closed-pass screen finds a nominal all-mechanism window
+of approximately 1.11–2.0 krpm under the accepted Beta 2.6 state. The lower
+crossing is controlled by the campaign-specific 0.87 retained-mass condition;
+it is not a physical stable-idle prediction. At 1,200 rpm the nominal screen
+passes, but `OP_IDLE_REPORT.md` classifies hardware idle as **possible but
+fragile** because sealing is uncalibrated and the model omits the gas-exchange
+revolution, pumping, residuals, friction, inertia, motor control and cycle
+variability.
+
+The next simulator change is therefore narrowly justified: add a periodic
+720-CAD gas-exchange/crank layer and require mass/species/energy/speed closure.
+Do not add CFD, lubrication, ring-pack or general thermal complexity to that
+branch unless the repeat-cycle experiment exposes a decision-limiting need.
+
+The parallel sealing result is an axial feasibility envelope, not a drawing:
+8.5 mm Al-4032/4140 requires about 8.90–11.71 µm cold radial under constant h
+or 12.76–15.40 µm under the angle sensitivity to retain 2–5 µm hot in the
+neutral proxy. Preheat is not assumed monotonic and no safe-cranking
+temperature is claimed.
+
+---
+
 ## Where things stand
 
 ### Chemistry
@@ -367,17 +392,22 @@ model for checkable quantities:
 | C1 calibrated-flow exponent and extrapolation put 3 micrometre clearance outside demonstrated practice | Bore/seal architecture must change before packaging optimization |
 | Small-engine hardware leakage is far worse than the annulus bracket | Recalibrate sealing model before any power conclusions |
 | +45 CAD remains unconverged after refinement | Treat late-expansion tau only as a bound; do not tune the two-zone model to it |
+| A 720-CAD repeat-cycle row does not reach periodic mass/species/energy/speed closure | Record it as numerical/transient; do not call it stable idle |
+| 1,200 rpm loses positive net work or speed control after independently sourced friction/pumping are added | Move the candidate commissioning band upward; do not retune chemistry or leakage to save 1,200 rpm |
+| Warm direct-flow data materially disagrees with the annulus clearance trend | Recalibrate or replace the ringless leakage architecture before promoting an idle boundary |
 
 ---
 
 ## Immediate order
 
-1. Close the +45 CAD mesh-convergence hole using the retained 0.15-CAD cap.
-2. Run B1 squish.
-3. In parallel, digitize/obtain Burke DME/CH4 data and run the direct mechanism gate.
-4. Use the thermal-state output to specify the warm direct-flow fixture on a
-   10–15 mm reference cylinder; keep calculated annulus flows separate from
-   measured leakage records.
-5. Start calibrated C1 only with direct or convertible leakage data.
-6. Audit Zhao pressure-dependent decomposition before treating a chemistry
-  transition as final.
+1. Implement the minimal 720-CAD gas-exchange/residual/crank layer, preserving
+   the closed-pass reference when new terms are disabled.
+2. Run 1,000/1,200/1,500/2,000 rpm at 2/3/5 µm hot-clearance brackets and all
+   three mechanisms; require periodic mass/species/energy/speed convergence.
+3. In parallel, digitize/obtain Burke DME/CH4 data and run the direct mechanism
+   gate, then audit Zhao pressure-dependent decomposition.
+4. Prepare the Issue #13 10–15 mm warm direct-flow experiment to measure the
+   current low-idle limiter: paired axial temperature/clearance and flow.
+5. Measure motoring torque versus crank angle/RPM when complete hardware exists.
+6. Keep CFD on the accepted wedge reference; no S3 or new CFD campaign is
+   justified by the low-idle result.
