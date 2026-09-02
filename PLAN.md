@@ -52,9 +52,11 @@ Established:
   CH4/DME, 600-1600 K, 7-41 atm, and phi 0.3-2.0.
 
 Open:
-- The Burke point data still needs to be obtained or digitized with facility,
-  uncertainty, and ignition-criterion metadata, then passed through
-  `mechanism_gate.py`.
+- The Burke 2015 point table is still not machine-readable in the recovered
+  Galway material. A separate Zinner (2008) thesis appendix has now been
+  ingested as measured 80/20 and 60/40 blend rows; it is a related upstream
+  dataset, not a substitute for the Burke 2015 supplement. The next chemistry
+  step is to run the direct gate on each dataset only with its own provenance.
 - Zhao parent pressure-dependent DME decomposition-rate selection remains
   unaudited for the project's 25-90 bar in-cylinder range.
 
@@ -116,8 +118,8 @@ Open:
 
 | # | Task | Why | Gate / output |
 |---|---|---|---|
-| A1 | Obtain or digitize Burke et al. 80/20 and 60/40 CH4/DME ignition-delay points | Direct validation is now available; ReSpecTh is not the only path | Preserve facility, pressure, phi, uncertainty, and the paper's ignition criterion |
-| A2 | Run `mechanism_gate.py` on the Burke set for Zhao sk39/full and LLNL | Replaces cross-fuel inference with direct DME/methane evidence | Report sim/exp distributions, nonignitions, and low-T subset; do not collapse to one engine error bar |
+| A1 | Obtain or digitize Burke et al. 80/20 and 60/40 CH4/DME ignition-delay points; use Zinner rows as a separate upstream validation set | Direct validation is now available; ReSpecTh is not the only path | Preserve facility, pressure, phi, uncertainty, and the paper's ignition criterion; do not merge Zinner into Burke |
+| A2 | Run `mechanism_gate.py` on the Burke and Zinner sets for Zhao sk39/full and LLNL where compatible | Replaces cross-fuel inference with direct DME/methane evidence | Report sim/exp distributions, nonignitions, and low-T subset; keep dataset provenance and ignition criteria separate |
 | A3 | Audit Zhao pressure-dependent decomposition reactions | Source header requires rate selection by pressure | Document selected channels/rates for 25-90 bar and rerun transition anchors if changed |
 | A4 | Map max-dP/dt ignition-delay sensitivity around the accepted island | Quantifies how sharp the chemistry boundary is | Report local slopes and transition intervals, not universal percent uncertainty |
 
@@ -415,7 +417,9 @@ The bounded preflight exposed two useful constraints before that larger model:
 1. Diagnose and close one 1,200-rpm valve-enabled 720-CAD reference cycle:
    isolate valve mass/energy mapping and timing/area assumptions, then require
    periodic mass/species/energy/temperature closure before adding friction or
-   motor dynamics.
+   motor dynamics. The first accounting pass is classified as a
+   transient/unresolved state with step-dependent residuals; it is not a stable
+   idle claim.
 2. After that gate passes, run 1,000/1,200/1,500/2,000 rpm at 2/3/5 µm
    hot-clearance brackets and all three mechanisms; require periodic
    mass/species/energy/speed convergence.
