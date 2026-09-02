@@ -1,9 +1,9 @@
 {
-  "reference": "cfd\\results\\cfd02_s1_coarse_scalar_history.csv",
-  "candidate": "cfd\\results\\cfd02_s2_coarse_scalar_history.csv",
+  "reference": "cfd/results/cfd02_s1_coarse_scalar_history.csv",
+  "candidate": "cfd/results/cfd02_s2_coarse_scalar_history.csv",
   "window_half_width_cad": 5.0,
-  "primary_metric": "candidate_over_reference_normalized_rms",
-  "primary_metric_reason": "each case starts from a different raw tracer RMS when the fixed radial seed occupies a different chamber mass/volume fraction; normalize by each case's initial RMS before comparing the fraction of segregation remaining",
+  "primary_metric": "candidate_over_reference_mf_zone_delta_c_normalized",
+  "primary_metric_reason": "each history uses a nominal 20% outer zone selected by cumulative mass from the liner inward at every crank angle; normalize its zone contrast by that case's initial contrast",
   "status": "gate_failed",
   "gate_failures": [
     "candidate tracer inventory gate failed"
@@ -21,12 +21,11 @@
         "mf_zone_tau_point_ms": 27.236532095577555,
         "shell_volume_fraction": 0.16046941422149802,
         "mf_zone_shell_mass_fraction": 0.2000000000000001,
-        "mf_zone_shell_volume_fraction": 0.19998071712676269,
         "tracer_inventory_error_percent": -0.0014421349161186647,
         "fit_n": 22,
-        "fit_k_1_s": 19.34038095770228,
-        "fit_tau_ms": 51.70528968312547,
-        "fit_r2": 0.9999640753597616
+        "fit_k_1_s": 36.6622937155087,
+        "fit_tau_ms": 27.275980268986416,
+        "fit_r2": 0.9997677450568742
       },
       "candidate": {
         "sampled_cad": -89.99959413625,
@@ -38,18 +37,17 @@
         "mf_zone_tau_point_ms": 30.68554020827891,
         "shell_volume_fraction": 0.18271669603217688,
         "mf_zone_shell_mass_fraction": 0.19999999999999993,
-        "mf_zone_shell_volume_fraction": 0.19997807334594644,
         "tracer_inventory_error_percent": -0.0024539015465729896,
         "fit_n": 23,
-        "fit_k_1_s": 16.173185228497335,
-        "fit_tau_ms": 61.830739330060275,
-        "fit_r2": 0.9999578755430981
+        "fit_k_1_s": 32.64042341761204,
+        "fit_tau_ms": 30.636857469821376,
+        "fit_r2": 0.9997224305795454
       },
       "candidate_over_reference_rms": 1.1236017236192588,
       "candidate_over_reference_normalized_rms": 1.062694070733705,
       "candidate_over_reference_mf_zone_delta_c_normalized": 0.9727014891601145,
-      "candidate_over_reference_primary": 1.062694070733705,
-      "interpretation": "candidate has more initial-normalized segregation remaining"
+      "candidate_over_reference_primary": 0.9727014891601145,
+      "interpretation": "candidate has less initial-normalized segregation remaining"
     },
     "-45": {
       "reference": {
@@ -62,12 +60,11 @@
         "mf_zone_tau_point_ms": 14.389964183219442,
         "shell_volume_fraction": 0.13805365717921983,
         "mf_zone_shell_mass_fraction": 0.20000000000000004,
-        "mf_zone_shell_volume_fraction": 0.1999381219586006,
         "tracer_inventory_error_percent": -0.00215023349816601,
         "fit_n": 22,
-        "fit_k_1_s": 23.746847182680433,
-        "fit_tau_ms": 42.11085338222674,
-        "fit_r2": 0.9998727799953553
+        "fit_k_1_s": 53.54882485273844,
+        "fit_tau_ms": 18.67454613149855,
+        "fit_r2": 0.9536893576791463
       },
       "candidate": {
         "sampled_cad": -44.99959413625,
@@ -79,18 +76,17 @@
         "mf_zone_tau_point_ms": 15.882488109415172,
         "shell_volume_fraction": 0.14915071523029844,
         "mf_zone_shell_mass_fraction": 0.19999999999999993,
-        "mf_zone_shell_volume_fraction": 0.19992934907994556,
         "tracer_inventory_error_percent": -0.003932831959851946,
         "fit_n": 23,
-        "fit_k_1_s": 25.298129208951526,
-        "fit_tau_ms": 39.528614615746314,
-        "fit_r2": 0.9989924284969042
+        "fit_k_1_s": 49.36843891866846,
+        "fit_tau_ms": 20.25585620901321,
+        "fit_r2": 0.9513836005219733
       },
       "candidate_over_reference_rms": 1.138617611938355,
       "candidate_over_reference_normalized_rms": 1.0768959851203281,
       "candidate_over_reference_mf_zone_delta_c_normalized": 0.990180453836314,
-      "candidate_over_reference_primary": 1.0768959851203281,
-      "interpretation": "candidate has more initial-normalized segregation remaining"
+      "candidate_over_reference_primary": 0.990180453836314,
+      "interpretation": "candidate has less initial-normalized segregation remaining"
     },
     "-20": {
       "reference": {
@@ -103,12 +99,11 @@
         "mf_zone_tau_point_ms": 10.357611454008365,
         "shell_volume_fraction": 0.10610205714225078,
         "mf_zone_shell_mass_fraction": 0.1999999999999995,
-        "mf_zone_shell_volume_fraction": 0.19990366602881007,
         "tracer_inventory_error_percent": -0.0029844221070995935,
         "fit_n": 22,
-        "fit_k_1_s": 28.448510727261592,
-        "fit_tau_ms": 35.15122494766384,
-        "fit_r2": 0.9999791049448593
+        "fit_k_1_s": 29.55459138958225,
+        "fit_tau_ms": 33.83569025936497,
+        "fit_r2": 0.6516300660865395
       },
       "candidate": {
         "sampled_cad": -19.79959413625,
@@ -120,17 +115,16 @@
         "mf_zone_tau_point_ms": NaN,
         "shell_volume_fraction": 0.10016400452473027,
         "mf_zone_shell_mass_fraction": 0.2,
-        "mf_zone_shell_volume_fraction": 0.19988460619062542,
         "tracer_inventory_error_percent": -0.009677251507911322,
         "fit_n": 22,
-        "fit_k_1_s": 42.9700109625511,
-        "fit_tau_ms": 23.27204433044042,
-        "fit_r2": 0.9995291211020981
+        "fit_k_1_s": 39.589049239940096,
+        "fit_tau_ms": 25.2595103746804,
+        "fit_r2": 0.7748270554772462
       },
       "candidate_over_reference_rms": 1.1068212109706048,
       "candidate_over_reference_normalized_rms": 1.046823187910425,
       "candidate_over_reference_mf_zone_delta_c_normalized": 1.0342478203755388,
-      "candidate_over_reference_primary": 1.046823187910425,
+      "candidate_over_reference_primary": 1.0342478203755388,
       "interpretation": "candidate has more initial-normalized segregation remaining"
     },
     "+0": {
@@ -144,12 +138,11 @@
         "mf_zone_tau_point_ms": 64.90424918524768,
         "shell_volume_fraction": 0.08652057893702715,
         "mf_zone_shell_mass_fraction": 0.20000000000000007,
-        "mf_zone_shell_volume_fraction": 0.19998356281928778,
         "tracer_inventory_error_percent": -0.005545916879134971,
         "fit_n": 33,
-        "fit_k_1_s": 23.081174057733357,
-        "fit_tau_ms": 43.325352406193986,
-        "fit_r2": 0.999524263018182
+        "fit_k_1_s": 13.821266402418477,
+        "fit_tau_ms": 72.3522701092729,
+        "fit_r2": 0.6749704158651801
       },
       "candidate": {
         "sampled_cad": -0.007512091199157,
@@ -161,17 +154,16 @@
         "mf_zone_tau_point_ms": NaN,
         "shell_volume_fraction": 0.07127730917738102,
         "mf_zone_shell_mass_fraction": 0.19999999999999998,
-        "mf_zone_shell_volume_fraction": 0.19997899168499192,
         "tracer_inventory_error_percent": -0.016510760765131582,
         "fit_n": 54,
-        "fit_k_1_s": 36.93725033042342,
-        "fit_tau_ms": 27.072941029840237,
-        "fit_r2": 0.9991639271080274
+        "fit_k_1_s": 1.220330406264445,
+        "fit_tau_ms": 819.4502037043405,
+        "fit_r2": 0.01331937700612873
       },
       "candidate_over_reference_rms": 1.0559259102649854,
       "candidate_over_reference_normalized_rms": 0.9986867947818592,
       "candidate_over_reference_mf_zone_delta_c_normalized": 0.9311477202058385,
-      "candidate_over_reference_primary": 0.9986867947818592,
+      "candidate_over_reference_primary": 0.9311477202058385,
       "interpretation": "candidate has less initial-normalized segregation remaining"
     },
     "+20": {
@@ -185,12 +177,11 @@
         "mf_zone_tau_point_ms": NaN,
         "shell_volume_fraction": 0.1061114064462862,
         "mf_zone_shell_mass_fraction": 0.1999999999999999,
-        "mf_zone_shell_volume_fraction": 0.2000323240068137,
         "tracer_inventory_error_percent": -0.0059672385237519165,
         "fit_n": 42,
-        "fit_k_1_s": 18.338203953465975,
-        "fit_tau_ms": 54.53096729306454,
-        "fit_r2": 0.9997815724292898
+        "fit_k_1_s": 32.12201530719576,
+        "fit_tau_ms": 31.131297038389327,
+        "fit_r2": 0.843336334598326
       },
       "candidate": {
         "sampled_cad": 19.97982349976,
@@ -202,18 +193,17 @@
         "mf_zone_tau_point_ms": 5.987956513385747,
         "shell_volume_fraction": 0.10057469368470379,
         "mf_zone_shell_mass_fraction": 0.19999999999999993,
-        "mf_zone_shell_volume_fraction": 0.2000184129306168,
         "tracer_inventory_error_percent": -0.015690550783942214,
         "fit_n": 86,
-        "fit_k_1_s": 21.683192962160845,
-        "fit_tau_ms": 46.1186690421974,
-        "fit_r2": 0.9995151041934829
+        "fit_k_1_s": 49.329482967201294,
+        "fit_tau_ms": 20.271852447042484,
+        "fit_r2": 0.9629496218480105
       },
       "candidate_over_reference_rms": 1.031509792781013,
       "candidate_over_reference_normalized_rms": 0.9755942142569942,
       "candidate_over_reference_mf_zone_delta_c_normalized": 1.0138785529932324,
-      "candidate_over_reference_primary": 0.9755942142569942,
-      "interpretation": "candidate has less initial-normalized segregation remaining"
+      "candidate_over_reference_primary": 1.0138785529932324,
+      "interpretation": "candidate has more initial-normalized segregation remaining"
     },
     "+45": {
       "reference": {
@@ -226,12 +216,11 @@
         "mf_zone_tau_point_ms": NaN,
         "shell_volume_fraction": 0.1382345743783201,
         "mf_zone_shell_mass_fraction": 0.2,
-        "mf_zone_shell_volume_fraction": 0.20000489677285263,
         "tracer_inventory_error_percent": -0.005751862706904198,
         "fit_n": 23,
-        "fit_k_1_s": 11.714373400796251,
-        "fit_tau_ms": 85.36521466287115,
-        "fit_r2": 0.9995511147022337
+        "fit_k_1_s": 13.567676054278492,
+        "fit_tau_ms": 73.70458993857356,
+        "fit_r2": 0.5024130858843376
       },
       "candidate": {
         "sampled_cad": 45.09986973871,
@@ -243,17 +232,16 @@
         "mf_zone_tau_point_ms": 22.098190849396097,
         "shell_volume_fraction": 0.14929137653634147,
         "mf_zone_shell_mass_fraction": 0.19999999999999984,
-        "mf_zone_shell_volume_fraction": 0.19997752441682584,
         "tracer_inventory_error_percent": -0.01577455230686864,
         "fit_n": 26,
-        "fit_k_1_s": 18.263069208086634,
-        "fit_tau_ms": 54.755309121711804,
-        "fit_r2": 0.9995105271510887
+        "fit_k_1_s": 66.18537241569598,
+        "fit_tau_ms": 15.109078690669243,
+        "fit_r2": 0.9629120907932013
       },
       "candidate_over_reference_rms": 1.0115089771174532,
       "candidate_over_reference_normalized_rms": 0.9566775930301784,
       "candidate_over_reference_mf_zone_delta_c_normalized": 0.8692950940599861,
-      "candidate_over_reference_primary": 0.9566775930301784,
+      "candidate_over_reference_primary": 0.8692950940599861,
       "interpretation": "candidate has less initial-normalized segregation remaining"
     },
     "+90": {
@@ -267,12 +255,11 @@
         "mf_zone_tau_point_ms": NaN,
         "shell_volume_fraction": 0.16051331570591124,
         "mf_zone_shell_mass_fraction": 0.2000000000000001,
-        "mf_zone_shell_volume_fraction": 0.19997834967238998,
         "tracer_inventory_error_percent": -0.005535152086977302,
         "fit_n": 23,
-        "fit_k_1_s": 8.634962702479127,
-        "fit_tau_ms": 115.80825933537578,
-        "fit_r2": 0.9999986691541876
+        "fit_k_1_s": -0.048383691335042,
+        "fit_tau_ms": NaN,
+        "fit_r2": 0.052803900572296225
       },
       "candidate": {
         "sampled_cad": 89.99536377072,
@@ -284,17 +271,16 @@
         "mf_zone_tau_point_ms": 258.56782649316926,
         "shell_volume_fraction": 0.1827152534631879,
         "mf_zone_shell_mass_fraction": 0.2000000000000001,
-        "mf_zone_shell_volume_fraction": 0.19994429035161063,
         "tracer_inventory_error_percent": -0.014914431216217494,
         "fit_n": 23,
-        "fit_k_1_s": 11.207332808787159,
-        "fit_tau_ms": 89.22729583045357,
-        "fit_r2": 0.9999107261339544
+        "fit_k_1_s": 4.198161978683169,
+        "fit_tau_ms": 238.19947993375627,
+        "fit_r2": 0.9925330160280206
       },
       "candidate_over_reference_rms": 0.9852860817656983,
       "candidate_over_reference_normalized_rms": 0.9318761755688224,
       "candidate_over_reference_mf_zone_delta_c_normalized": 0.7675177011424024,
-      "candidate_over_reference_primary": 0.9318761755688224,
+      "candidate_over_reference_primary": 0.7675177011424024,
       "interpretation": "candidate has less initial-normalized segregation remaining"
     }
   },

@@ -49,18 +49,23 @@ def nearest(rows: list[dict[str, float]], target: float) -> dict[str, float]:
     return min(rows, key=lambda row: abs(row["crank_angle_deg_atdc"] - target))
 
 
-def window_fit(rows: list[dict[str, float]], target: float, half_width_cad: float) -> dict[str, float]:
+def window_fit(
+    rows: list[dict[str, float]],
+    target: float,
+    half_width_cad: float,
+    amplitude_key: str,
+) -> dict[str, float]:
     chosen = [
         row for row in rows
         if abs(row["crank_angle_deg_atdc"] - target) <= half_width_cad
-        and row["tracer_mass_rms_normalized"] > 0
-        and math.isfinite(row["tracer_mass_rms_normalized"])
+        and row[amplitude_key] > 0
+        and math.isfinite(row[amplitude_key])
     ]
     if len(chosen) < 3:
         return {"n": len(chosen), "k_1_s": math.nan, "tau_ms": math.nan, "r2": math.nan}
 
     xs = [row["time_s"] for row in chosen]
-    ys = [math.log(row["tracer_mass_rms_normalized"]) for row in chosen]
+    ys = [math.log(row[amplitude_key]) for row in chosen]
     xbar = sum(xs) / len(xs)
     ybar = sum(ys) / len(ys)
     sxx = sum((x - xbar) ** 2 for x in xs)
@@ -76,15 +81,30 @@ def window_fit(rows: list[dict[str, float]], target: float, half_width_cad: floa
     return {"n": len(chosen), "k_1_s": k, "tau_ms": tau, "r2": r2}
 
 
-def summarize(rows: list[dict[str, float]], target: float, window: float) -> dict[str, float]:
+def summarize(
+    rows: list[dict[str, float]],
+    target: float,
+    window: float,
+    metric: str,
+) -> dict[str, float]:
     point = nearest(rows, target)
-    fit = window_fit(rows, target, window)
+    amplitude_key = (
+        "tracer_mass_rms_normalized"
+        if metric == "normalized_rms"
+        else "mf_zone_delta_c_normalized"
+    )
+    fit = window_fit(rows, target, window, amplitude_key)
     return {
         "sampled_cad": point["crank_angle_deg_atdc"],
         "rms": point["tracer_mass_rms"],
         "rms_normalized": point["tracer_mass_rms_normalized"],
+        "mf_zone_delta_c": point.get("mf_zone_delta_c", math.nan),
+        "mf_zone_delta_c_normalized": point.get("mf_zone_delta_c_normalized", math.nan),
         "global_tau_point_ms": point.get("tau_global_mix_ms", math.nan),
+        "mf_zone_tau_point_ms": point.get("tau_mf_zone_mix_ms", math.nan),
         "shell_volume_fraction": point["wall_shell_volume_fraction"],
+        "mf_zone_shell_mass_fraction": point.get("mf_zone_shell_mass_fraction", math.nan),
+        "mf_zone_shell_volume_fraction": point.get("mf_zone_shell_volume_fraction", math.nan),
         "tracer_inventory_error_percent": point["tracer_inventory_error_percent"],
         "fit_n": fit["n"],
         "fit_k_1_s": fit["k_1_s"],
@@ -99,11 +119,23 @@ def main() -> None:
     parser.add_argument("candidate", type=Path, help="squish/candidate history")
     parser.add_argument("--targets", nargs="+", type=float, default=list(DEFAULT_TARGETS))
     parser.add_argument("--window-cad", type=float, default=5.0)
+    parser.add_argument(
+        "--metric",
+        choices=("normalized_rms", "mass_fraction_zone"),
+        default="normalized_rms",
+        help="primary cross-geometry amplitude metric",
+    )
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
     reference = load(args.reference)
     candidate = load(args.candidate)
+    if args.metric == "mass_fraction_zone":
+        required_zone = {"mf_zone_delta_c_normalized", "mf_zone_shell_mass_fraction"}
+        for label, rows in (("reference", reference), ("candidate", candidate)):
+            missing = sorted(required_zone - set(rows[0]))
+            if missing:
+                raise ValueError(f"{label} history lacks mass-fraction zone fields: {missing}")
     ref_initial_rms = reference[0]["tracer_mass_rms"]
     cand_initial_rms = candidate[0]["tracer_mass_rms"]
     initial_rms_ratio = (
@@ -148,12 +180,19 @@ def main() -> None:
             "candidate_max_tracer_inventory_error_percent": candidate_max_inventory,
         },
     }
+    if args.metric == "mass_fraction_zone":
+        result["primary_metric"] = "candidate_over_reference_mf_zone_delta_c_normalized"
+        result["primary_metric_reason"] = (
+            "each history uses a nominal 20% outer zone selected by cumulative mass "
+            "from the liner inward at every crank angle; normalize its zone contrast "
+            "by that case's initial contrast"
+        )
 
     targets = result["targets"]
     assert isinstance(targets, dict)
     for target in args.targets:
-        ref = summarize(reference, target, args.window_cad)
-        cand = summarize(candidate, target, args.window_cad)
+        ref = summarize(reference, target, args.window_cad, args.metric)
+        cand = summarize(candidate, target, args.window_cad, args.metric)
         raw_rms_ratio = (
             cand["rms"] / ref["rms"]
             if ref["rms"] > 0 else math.nan
@@ -162,16 +201,25 @@ def main() -> None:
             cand["rms_normalized"] / ref["rms_normalized"]
             if ref["rms_normalized"] > 0 else math.nan
         )
+        mf_zone_ratio = (
+            cand["mf_zone_delta_c_normalized"] / ref["mf_zone_delta_c_normalized"]
+            if ref["mf_zone_delta_c_normalized"] > 0 else math.nan
+        )
+        primary_ratio = (
+            normalized_rms_ratio if args.metric == "normalized_rms" else mf_zone_ratio
+        )
         targets[f"{target:+g}"] = {
             "reference": ref,
             "candidate": cand,
             "candidate_over_reference_rms": raw_rms_ratio,
             "candidate_over_reference_normalized_rms": normalized_rms_ratio,
+            "candidate_over_reference_mf_zone_delta_c_normalized": mf_zone_ratio,
+            "candidate_over_reference_primary": primary_ratio,
             "interpretation": (
                 "candidate has less initial-normalized segregation remaining"
-                if math.isfinite(normalized_rms_ratio) and normalized_rms_ratio < 1.0
+                if math.isfinite(primary_ratio) and primary_ratio < 1.0
                 else "candidate has more initial-normalized segregation remaining"
-                if math.isfinite(normalized_rms_ratio) and normalized_rms_ratio > 1.0
+                if math.isfinite(primary_ratio) and primary_ratio > 1.0
                 else "equal/undefined"
             ),
         }

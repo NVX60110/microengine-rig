@@ -42,13 +42,34 @@ CAD (1.0468) and effectively unchanged at TDC (0.9987). Because the scalar
 inventory gate failed, even these trends remain diagnostic rather than a
 geometry decision.
 
+## Constant-mass-fraction zone audit
+
+The fixed-radius shell was also replaced by a nominal 20% outer zone selected
+by cumulative mass at each output. Under that zone-style diagnostic, S2/flat
+normalized core/shell contrast is 1.179 at -20 CAD and 1.261 at TDC; S2 retains
+more contrast, not less. The +/-5 CAD S2 TDC fit has poor log-linearity
+(`R2=0.013`), so it is not a promoted timescale. The zone result reinforces
+that the prior fixed-radius/global-only squish conclusion cannot be used as a
+validated two-zone design result.
+
+## Tracer-scheme check
+
+A separate S2 coarse rerun with `div(phi,tracer) Gauss linearUpwind grad(tracer)`
+was performed under `/home/gflip/OpenFOAM/cfd02-squish-linearupwind`. It also
+fails: inventory drift is `0.0201883%` (`2.01883e-4` relative), and tracer
+undershoot reaches `-0.0192431`. Mesh, gas mass, volume, and Courant checks
+remain clean, so this one-line change is not an acceptable fix. The variant is
+retained as an explicit failed diagnostic; no cubic scheme or further squish
+run is authorized yet.
+
 ## Decision
 
-Do not spend medium/fine CFD on S2, do not run S3, and do not feed S2 into
-Cantera. The next useful work is to determine whether the S2 scalar-inventory
-loss is a correctable numerical treatment issue (e.g. scalar solver/mesh
-resolution) before considering any new squish geometry. Until then, S1's
-initial-normalized history remains the only promoted squish comparison.
+Do not spend medium/fine CFD on S2, do not run S3, and do not feed S1/S2 into
+Cantera. The constant-mass-fraction audit invalidates the earlier S1
+two-zone/global-only promotion, and the S2 scalar-inventory loss remains a
+correctable numerical-treatment question (e.g. scalar solver or mesh
+resolution). No squish transport result is promoted until a geometry-independent
+metric passes both conservation and boundedness gates.
 
 ## Artifacts
 
@@ -57,3 +78,8 @@ initial-normalized history remains the only promoted squish comparison.
 - `cfd/results/cfd02_s2_coarse_metadata.json`
 - `cfd/results/cfd01_vs_cfd02_s2_tracer_mixing.json`
 - `cfd/results/cfd02_s1_vs_s2_tracer_mixing.json`
+- `cfd/results/cfd01_vs_cfd02_s2_mass_zone_mixing.json`
+- `cfd/results/cfd02_s1_vs_s2_mass_zone_mixing.json`
+- `cfd/results/cfd02_s2_linearupwind_metadata.json`
+- `cfd/results/cfd02_s2_linearupwind_scalar_history.csv`
+- `cfd/results/cfd02_s2_linearupwind_mixing_time.csv`

@@ -58,6 +58,11 @@ MAX_COURANT_GATE = 0.5
 MAX_VOLUME_ERROR_PERCENT = 0.2
 MAX_OUTPUT_GAP_CAD = 0.5
 MAX_TRACER_INVENTORY_DRIFT_REL = 1e-4
+TRACER_SCHEMES = {
+    "upwind": "upwind",
+    "linearUpwind": "linearUpwind grad(tracer)",
+    "cubic": "cubic",
+}
 
 
 def clearance_height() -> float:
@@ -219,7 +224,7 @@ boundary
 '''
 
 
-def prepare(case: Path, overwrite: bool) -> None:
+def prepare(case: Path, overwrite: bool, tracer_scheme: str) -> None:
     if case.exists():
         if not overwrite:
             raise FileExistsError(f"{case} exists; use --overwrite")
@@ -229,6 +234,13 @@ def prepare(case: Path, overwrite: bool) -> None:
     for item in ("constant", "system"):
         shutil.copytree(FLAT_ROOT / item, case / item)
     (case / "system" / "blockMeshDict").write_text(block_mesh_dict())
+    schemes_path = case / "system" / "fvSchemes"
+    schemes_text = schemes_path.read_text()
+    old_entry = "div(phi,tracer) Gauss upwind;"
+    new_entry = f"div(phi,tracer) Gauss {TRACER_SCHEMES[tracer_scheme]};"
+    if old_entry not in schemes_text:
+        raise ValueError(f"expected tracer scheme entry missing in {schemes_path}")
+    schemes_path.write_text(schemes_text.replace(old_entry, new_entry, 1))
 
 
 def validate_case(case: Path, output: Path) -> tuple[list[dict[str, float]], dict[str, object], list[str]]:
@@ -330,11 +342,26 @@ def write_target_summary(history: list[dict[str, float]], path: Path) -> None:
             })
 
 
+def sibling_output(path: Path, suffix: str) -> Path:
+    """Derive a companion output without clobbering a named scheme variant."""
+    name = path.name
+    marker = "_scalar_history.csv"
+    if name.endswith(marker):
+        return path.with_name(name[:-len(marker)] + suffix)
+    return path.with_name(path.stem + suffix)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-root", type=Path, default=Path("/home/gflip/OpenFOAM/cfd02-squish"))
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--validate-only", action="store_true", help="validate an existing s2_coarse run without rerunning OpenFOAM")
+    parser.add_argument(
+        "--tracer-scheme",
+        choices=tuple(TRACER_SCHEMES),
+        default="upwind",
+        help="finite-volume convection scheme for tracer (default: upwind)",
+    )
     parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "cfd/results/cfd02_s2_coarse_scalar_history.csv")
     args = parser.parse_args()
     if shutil.which("foamRun") is None:
@@ -347,7 +374,7 @@ def main() -> None:
         if not case.exists():
             raise SystemExit(f"existing case not found: {case}")
     else:
-        prepare(case, args.overwrite)
+        prepare(case, args.overwrite, args.tracer_scheme)
 
     started = time.monotonic()
     previous_metadata: dict[str, object] = {}
@@ -360,6 +387,9 @@ def main() -> None:
 
     status = "failed"
     error = ""
+    output_path = args.output.resolve()
+    mixing_output = sibling_output(output_path, "_mixing_time.csv")
+    metadata_output = sibling_output(output_path, "_metadata.json")
     try:
         if not args.validate_only:
             run(["blockMesh"], case, "log.blockMesh")
@@ -368,10 +398,10 @@ def main() -> None:
             run(["foamRun"], case, "log.foamRun")
             run(["checkMesh", "-time", "0"], case, "log.checkMesh_tdc")
             run(["checkMesh", "-time", "180"], case, "log.checkMesh_after_motion")
-        history, metrics, failures = validate_case(case, args.output.resolve())
+        history, metrics, failures = validate_case(case, output_path)
         write_target_summary(
             history,
-            args.output.resolve().with_name("cfd02_s2_coarse_mixing_time.csv"),
+            mixing_output,
         )
         status = "ok" if not failures else "gate_failed"
         error = "; ".join(failures)
@@ -388,6 +418,7 @@ def main() -> None:
     )
     metadata = {
         "case": "CFD-02 S2 medium squish coarse",
+        "tracer_scheme": args.tracer_scheme,
         "geometry": geometry_summary(),
         "radial_cells": BOWL_RADIAL_CELLS + LAND_RADIAL_CELLS,
         "azimuthal_cells": AZIMUTHAL_CELLS,
@@ -398,11 +429,11 @@ def main() -> None:
         "error": error,
         "runtime_s": solver_runtime,
         "validation_runtime_s": validation_runtime if args.validate_only else None,
-        "output": str(args.output.resolve()),
+        "output": str(output_path),
         **metrics,
     }
     metadata_path.write_text(json.dumps(metadata, indent=2) + "\n")
-    args.output.resolve().with_name("cfd02_s2_coarse_metadata.json").write_text(
+    metadata_output.write_text(
         json.dumps(metadata, indent=2) + "\n"
     )
     if status != "ok":

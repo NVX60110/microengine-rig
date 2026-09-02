@@ -89,6 +89,8 @@ CFD-02 changes only the piston/head clearance shape unless stated.
 
 | F17 | S2 medium squish coarse fails the closed-cylinder tracer-inventory gate despite passing mesh, gas-mass, volume, Courant, and tracer-bounds gates | 3.00 mm bowl, 1.25 mm squish, 0.35 mm gap, 2,823 cells; max tracer-inventory drift 0.0167264% = 1.67264e-4 relative | NUMERICAL FAILURE; do not promote transport or refine | `cfd/results/cfd02_s2_coarse_metadata.json`, `CFD02_S2_REPORT.md` |
 | F18 | S2 does not meet the predeclared ~5% additional normalized-RMS reduction versus S1 through -20 to TDC, even as a failed-run diagnostic | S2/S1 normalized RMS 1.0468 at -20 CAD and 0.9987 at TDC; S2/flat is 0.8910 at TDC | SCREENING diagnostic only; no S2 geometry promotion | `cfd/results/cfd01_vs_cfd02_s2_tracer_mixing.json`, `cfd/results/cfd02_s1_vs_s2_tracer_mixing.json`, `CFD02_S2_REPORT.md` |
+| F19 | The fixed 20% cumulative-mass outer-zone reprocessing reverses the earlier S1 two-zone interpretation: S1 retains more normalized core/shell contrast than flat at every requested comparison angle, including 1.3545x at TDC | At every saved angle, the dynamically selected shell contains exactly 20% of total mass; S1/flat normalized zone contrast is 1.1401 at -20 CAD, 1.3545 at TDC, 1.6299 at +20 CAD, and 1.7418 at +45 CAD. S1 local fits have weak R2 (0.50-0.84) | METHOD CORRECTION; no S1 transport promotion or Cantera coupling | `cfd/results/cfd01_vs_cfd02_s1_mass_zone_mixing.json`, `CFD02_S1_REPORT.md`, `GATES.md` |
+| F20 | Replacing S2's upwind tracer convection with `linearUpwind grad(tracer)` does not repair the scalar-conservation defect and introduces boundedness failure | Same S2 coarse geometry and controls; max tracer-inventory drift 0.0201883% = 2.01883e-4 relative and tracer minimum -0.0192431, while gas mass drift remains 5.9826e-7 relative and max Co 0.190825 | NUMERICAL FAILURE; scheme variant is not an acceptable drop-in | `cfd/results/cfd02_s2_linearupwind_metadata.json`, `CFD02_S2_REPORT.md`, `cfd/openfoam14/squish/README.md` |
 
 ## Architecture decision
 
@@ -99,8 +101,8 @@ CFD-02 changes only the piston/head clearance shape unless stated.
 
 ## Open work, in priority order
 
-1. Decide whether the S2 scalar-inventory failure merits an isolated numerical treatment check; do not run another squish geometry until that is resolved.
-2. Do not refine S2 or couple squish schedules into Cantera; S2 missed the predeclared S1 improvement threshold and failed a conservation gate.
+1. Isolate and repair the S2 scalar-transport/conservation treatment before any new squish geometry; both upwind and the tested linearUpwind variant fail the tracer gate.
+2. Do not refine S1/S2, run S3, or couple squish schedules into Cantera until a bounded, inventory-conserving transport scheme is demonstrated.
 3. Digitize or obtain Burke et al. DME/methane point data and run the direct mechanism gate.
 4. Audit/select Zhao parent pressure-dependent decomposition rates.
 5. Build a calibrated leakage scaling dataset; exclude uncalibrated leak-down percentages from quantitative regression.

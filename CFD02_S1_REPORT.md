@@ -106,7 +106,32 @@ transport history, not proof that S1 is uniformly faster.
 
 Tracer-inventory drift remains below the closed-cylinder gate: 0.002456% for
 flat fine (2.46e-5 relative) and 0.006834% for S1 coarse (6.83e-5 relative).
-The updated histories and comparison JSON are the current decision data.
+The updated histories and comparison JSON are the current global-RMS decision
+data.
+
+## Constant-mass-fraction zone audit
+
+Because the fixed radial cutoff sweeps through a changing bowl clearance, the
+stored fields were reprocessed with a nominal 20% outer zone selected by
+cumulative mass from the liner inward at every output. The shell mass fraction
+is 0.200000 throughout both histories (with fractional weighting of the last
+cell), so this is the comparable two-zone diagnostic; the old fixed-radius
+`DeltaC/tau_mix` remains only as a legacy field.
+
+| requested CAD | S1 / flat normalized zone contrast | S1 zone-fit tau (ms), R2 | flat zone-fit tau (ms), R2 |
+|---:|---:|---:|---:|
+| -20 | 1.1401 | 33.84, 0.652 | 10.97, 1.000 |
+| 0 (TDC) | **1.3545** | 72.35, 0.675 | 10.75, 1.000 |
+| +20 | 1.6299 | 31.13, 0.843 | 14.20, 0.999 |
+| +45 | 1.7418 | 73.70, 0.502 | 39.14, 0.993 |
+
+Under this zone definition the prior global-RMS conclusion does **not**
+survive as a two-zone mixing result: S1 retains more normalized core/shell
+contrast than flat at TDC and throughout the listed points. The S1 window fits
+are themselves poorly log-linear (R2 0.50--0.84), so they should not be used as
+precise instantaneous timescales. The amplitude reversal is nevertheless large
+enough to invalidate the earlier “S1 more mixed” claim for this zone-style
+comparison. No S1 refinement or chemistry coupling should be based on it.
 
 ## Reproducibility and outputs
 
@@ -119,7 +144,10 @@ WSL case without invoking OpenFOAM. Promoted artifacts are:
 - `cfd/results/cfd02_s1_coarse_mixing_time.csv`
 - `cfd/results/cfd02_s1_coarse_metadata.json`
 - `cfd/results/cfd01_vs_cfd02_s1_tracer_mixing.json`
+- `cfd/results/cfd01_vs_cfd02_s1_mass_zone_mixing.json`
 
-The next bounded experiment is one S2 coarse run. Do not refine S1/S2 or feed a
-squish schedule into Cantera until S2 is compared against both flat and S1 with
-the same initial-normalized RMS and local-fit diagnostics.
+S2 is retained as an explicit gate-failed diagnostic, and the fixed-mass zone
+audit invalidates using the earlier global-RMS result as a promoted two-zone
+design conclusion. Do not refine S1/S2, run S3, or feed a squish schedule into
+Cantera until scalar conservation/boundedness and a geometry-independent metric
+are both demonstrated.

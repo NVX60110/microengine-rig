@@ -29,6 +29,10 @@ WEDGE_SCALE = 360.0 / WEDGE_DEG
 AIR_MOL_WEIGHT_KG_PER_KMOL = 28.965
 R_UNIVERSAL_J_PER_KMOL_K = 8314.46261815324
 R_AIR = R_UNIVERSAL_J_PER_KMOL_K / AIR_MOL_WEIGHT_KG_PER_KMOL
+# CFD-01 was initialized as a nominal 20%-volume outer shell.  Use the same
+# fraction as a mass-defined zone for cross-geometry comparisons; the flat
+# finite-volume mesh realizes 0.1984 because of cell-centre/axis regularisation.
+TARGET_SHELL_MASS_FRACTION = 0.20
 
 
 def values(
@@ -117,6 +121,51 @@ def _log_decay_rate(rows: list[dict[str, float]], index: int, key: str) -> float
     return -(math.log(b) - math.log(a)) / (right["time_s"] - left["time_s"])
 
 
+def _mass_fraction_zone(
+    cells: list[tuple[float, float, float, float]],
+    total_volume: float,
+    total_mass: float,
+) -> dict[str, float]:
+    """Measure a fixed-mass outer zone without using a geometry-specific radius.
+
+    Cells are ranked from the liner inward.  The last cell is fractionally
+    weighted when necessary so the shell contains exactly the target mass
+    fraction.  This is a two-zone diagnostic, not a replacement for the global
+    RMS metric; the legacy fixed-radius fields remain in every history.
+    """
+    target_mass = TARGET_SHELL_MASS_FRACTION * total_mass
+    shell_mass = shell_volume = shell_tracer_mass = 0.0
+    remaining = target_mass
+    for radius, cell_volume, cell_mass, scalar in sorted(cells, key=lambda item: item[0], reverse=True):
+        if remaining <= 0.0:
+            break
+        if cell_mass <= 0.0:
+            continue
+        weight = min(1.0, remaining / cell_mass)
+        shell_mass += weight * cell_mass
+        shell_volume += weight * cell_volume
+        shell_tracer_mass += weight * scalar * cell_mass
+        remaining -= weight * cell_mass
+    core_mass = total_mass - shell_mass
+    core_volume = total_volume - shell_volume
+    core_tracer_mass = 0.0
+    # The total scalar inventory is reconstructed from the cell list so the
+    # complementary core has exactly the same discretized mass balance.
+    total_tracer_mass = sum(cell_mass * scalar for _, _, cell_mass, scalar in cells)
+    core_tracer_mass = total_tracer_mass - shell_tracer_mass
+    shell_mean = shell_tracer_mass / shell_mass
+    core_mean = core_tracer_mass / core_mass
+    return {
+        "mf_zone_core_mean": core_mean,
+        "mf_zone_shell_mean": shell_mean,
+        "mf_zone_delta_c": shell_mean - core_mean,
+        "mf_zone_shell_mass_fraction": shell_mass / total_mass,
+        "mf_zone_shell_volume_fraction": shell_volume / total_volume,
+        "mf_zone_core_volume_mm3": core_volume * WEDGE_SCALE * 1e9,
+        "mf_zone_shell_volume_mm3": shell_volume * WEDGE_SCALE * 1e9,
+    }
+
+
 def process(case: Path, output: Path) -> list[dict[str, float]]:
     rows: list[dict[str, float]] = []
     for angle, directory in times(case):
@@ -133,10 +182,12 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
         wedge_mass = 0.0
         tracer_mass_1 = tracer_mass_2 = 0.0
         tracer_vol_1 = tracer_vol_2 = 0.0
+        cells: list[tuple[float, float, float, float]] = []
 
         for scalar, cell_volume, centre, density_value in zip(tracer, volume, centres, rho):
             radius = math.hypot(centre[0], centre[1])
             cell_mass = density_value * cell_volume
+            cells.append((radius, cell_volume, cell_mass, scalar))
             if radius <= CORE_RADIUS_M:
                 core_v += cell_volume
                 core_cv += scalar * cell_volume
@@ -161,6 +212,7 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
         mass_variance = max(0.0, tracer_mass_2 / wedge_mass - mass_mean**2)
         volume_mean = tracer_vol_1 / total_wedge
         volume_variance = max(0.0, tracer_vol_2 / total_wedge - volume_mean**2)
+        mf_zone = _mass_fraction_zone(cells, total_wedge, wedge_mass)
 
         rows.append({
             "crank_angle_deg_atdc": angle,
@@ -186,6 +238,7 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
             "tracer_volume_mean": volume_mean,
             "tracer_volume_variance": volume_variance,
             "tracer_volume_rms": math.sqrt(volume_variance),
+            **mf_zone,
         })
 
     if not rows:
@@ -195,10 +248,13 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
     initial_tracer_mass_mean = rows[0]["tracer_mass_mean"]
     initial_mass_rms = rows[0]["tracer_mass_rms"]
     initial_volume_rms = rows[0]["tracer_volume_rms"]
+    initial_mf_delta = rows[0]["mf_zone_delta_c"]
     if initial_mass <= 0:
         raise ValueError("Initial integrated mass is not positive")
     if initial_mass_rms <= 0 or initial_volume_rms <= 0:
         raise ValueError("Initial tracer variance is not positive")
+    if initial_mf_delta <= 0:
+        raise ValueError("Initial mass-fraction zone contrast is not positive")
 
     for row in rows:
         row["mass_error_percent"] = 100.0 * (row["mass_mg"] / initial_mass - 1.0)
@@ -207,6 +263,7 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
         )
         row["tracer_mass_rms_normalized"] = row["tracer_mass_rms"] / initial_mass_rms
         row["tracer_volume_rms_normalized"] = row["tracer_volume_rms"] / initial_volume_rms
+        row["mf_zone_delta_c_normalized"] = abs(row["mf_zone_delta_c"]) / abs(initial_mf_delta)
 
     for index, row in enumerate(rows):
         # Legacy fixed-radius core/shell decay. Keep for CFD-01 regression, but
@@ -232,6 +289,14 @@ def process(case: Path, output: Path) -> list[dict[str, float]]:
         row["tau_global_mix_ms"] = (
             1000.0 / global_rate
             if math.isfinite(global_rate) and global_rate > 0
+            else float("nan")
+        )
+
+        mf_rate = _log_decay_rate(rows, index, "mf_zone_delta_c_normalized")
+        row["k_mf_zone_mix_1_s"] = mf_rate
+        row["tau_mf_zone_mix_ms"] = (
+            1000.0 / mf_rate
+            if math.isfinite(mf_rate) and mf_rate > 0
             else float("nan")
         )
 

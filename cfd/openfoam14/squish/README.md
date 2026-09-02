@@ -1,11 +1,11 @@
 # CFD-02 constant-CR squish campaign
 
 CFD-02 compares stepped-bowl squish geometries while holding bore, stroke,
-compression ratio, rpm, initial state and solver controls fixed.  Cross-geometry
-mixing is judged primarily with each case's mass-weighted tracer RMS normalized
-by that case's own initial RMS.  Raw RMS is retained as a secondary amplitude
-because the same radial tracer seed occupies a different initial mass/volume
-fraction when the chamber shape changes.
+compression ratio, rpm, initial state and solver controls fixed. The whole-domain
+mass-weighted tracer RMS normalized by each case's own initial RMS is retained
+as a global diagnostic. For a two-zone core/shell comparison, use the separate
+mass-fraction zone metric: a nominal 20% outer zone selected by cumulative mass
+at every output. Raw fixed-radius shell fields are legacy diagnostics only.
 
 ## S1 mild squish — complete
 
@@ -72,6 +72,20 @@ Consequently its mixing history is diagnostic only and is not eligible for
 refinement or Cantera coupling. See `CFD02_S2_REPORT.md` for the comparison
 and decision record.
 
+The one-line `linearUpwind` tracer-scheme check is also retained as a failed
+diagnostic. It can be reproduced without overwriting the upwind case:
+
+```bash
+python3 cfd/openfoam14/squish/run_s2_cfd.py \
+  --run-root /home/gflip/OpenFOAM/cfd02-squish-linearupwind \
+  --tracer-scheme linearUpwind \
+  --output cfd/results/cfd02_s2_linearupwind_scalar_history.csv \
+  --overwrite
+```
+
+That variant overshot tracer (`min=-0.01924`) and failed inventory
+conservation, so it is not an acceptable drop-in scheme.
+
 ## Cross-geometry comparison
 
 Regenerate the current flat/S1 comparison if required:
@@ -90,7 +104,7 @@ python3 cfd/compare_tracer_mixing.py \
   --output cfd/results/cfd01_vs_cfd02_s1_tracer_mixing.json
 ```
 
-After S2 completes, compare it both to flat and to S1:
+The global-RMS comparison can be regenerated as follows:
 
 ```bash
 python3 cfd/compare_tracer_mixing.py \
@@ -106,11 +120,32 @@ python3 cfd/compare_tracer_mixing.py \
   --output cfd/results/cfd02_s1_vs_s2_tracer_mixing.json
 ```
 
-Interpret the initial-normalized RMS ratio as the primary cumulative mixing
-metric.  A ratio below 1 means the candidate has a smaller fraction of its own
-initial segregation remaining at that crank angle.  Also retain the +/-5 CAD
-log-linear decay fit and R2: S1 already showed that cumulative mixing can improve
-while the local TDC decay rate becomes slower.
+For the CFD-01-style two-zone result, use the constant-mass-fraction metric:
+
+```bash
+python3 cfd/compare_tracer_mixing.py \
+  cfd/results/cfd01_scalar_history_fine.csv \
+  cfd/results/cfd02_s1_coarse_scalar_history.csv \
+  --metric mass_fraction_zone --targets -90 -45 -20 0 20 45 90 --window-cad 5 \
+  --output cfd/results/cfd01_vs_cfd02_s1_mass_zone_mixing.json
+
+python3 cfd/compare_tracer_mixing.py \
+  cfd/results/cfd01_scalar_history_fine.csv \
+  cfd/results/cfd02_s2_coarse_scalar_history.csv \
+  --metric mass_fraction_zone --targets -90 -45 -20 0 20 45 90 --window-cad 5 \
+  --output cfd/results/cfd01_vs_cfd02_s2_mass_zone_mixing.json
+
+python3 cfd/compare_tracer_mixing.py \
+  cfd/results/cfd02_s1_coarse_scalar_history.csv \
+  cfd/results/cfd02_s2_coarse_scalar_history.csv \
+  --metric mass_fraction_zone --targets -90 -45 -20 0 20 45 90 --window-cad 5 \
+  --output cfd/results/cfd02_s1_vs_s2_mass_zone_mixing.json
+```
+
+For the mass-fraction zone comparison, a ratio below 1 means the candidate has
+a smaller fraction of its own initial core/shell contrast remaining. Retain the
+global RMS result separately, and only interpret the +/-5 CAD fit when its R2
+supports a local exponential approximation.
 
 Do not refine S1 or S2 and do not couple either schedule into Cantera until the
 S2 coarse history has been reviewed against both references.

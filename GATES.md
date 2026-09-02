@@ -37,7 +37,7 @@ nonreacting transport run without a reason.
 | Tracer boundedness | Report min/max tracer and reject material overshoot/undershoot | Passive scalar must remain physical |
 | Tracer inventory conservation | Mass-weighted mean tracer drift <= 1e-4 relative for a closed no-flux case | Boundedness alone does not prove the transported scalar is conserved |
 | Zone-volume stability | Boundary-zone fraction stable to <= 0.5% relative unless geometry intentionally changes it | Prevent zone definition from manufacturing apparent mixing |
-| Cross-geometry mixing metric | If geometry changes the initial raw tracer RMS or the fixed-radius shell fraction, compare **mass-weighted tracer RMS normalized by each case's own initial RMS** as the primary cumulative mixing metric; retain raw RMS and fixed-radius `DeltaC/tau_mix` as secondary diagnostics | A changed chamber can alter the seeded tracer inventory/amplitude before any mixing occurs, so raw RMS alone can manufacture an apparent advantage |
+| Cross-geometry mixing metric | Use whole-domain mass-weighted tracer RMS normalized by each case's own initial RMS for a global diagnostic; for a two-zone core/shell answer, also use a nominal 20% outer zone selected by cumulative mass at every output and normalize its zone contrast by its own initial contrast. Retain raw RMS and fixed-radius `DeltaC/tau_mix` as secondary diagnostics | A changed chamber alters both the seeded amplitude and the fixed-radius shell fraction; the zone-style result must hold the compared mass fraction constant rather than use a geometry-specific radial window |
 | `tau_mix` promotion | Positive local derivative plus mesh/time-step convergence at the requested crank angle | Late-cycle flat/noisy derivatives must not be converted into huge finite times |
 | Mass conservation | Required for every changed timestep, mesh, or geometry | `correctPhi=no` is accepted only conditionally where continuity has been demonstrated |
 | Answer convergence table | At requested CAD, report direct normalized scalar amplitude plus any differentiated rate used for promotion | Do not promote a derivative while its underlying scalar metric is changing materially |
@@ -91,9 +91,11 @@ remaining than flat, but its local TDC decay rate is slower. The history shows
 faster decay earlier in compression and weaker decay around/after TDC. This is
 a changed transport history, not uniformly faster mixing.
 
-One bounded S2 coarse screen is authorized. Do not refine S1/S2 or feed either
-schedule into Cantera until S2 is compared against both flat and S1 with the
-same normalized-RMS and local-fit diagnostics.
+The constant-mass-fraction reprocessing reverses the earlier S1 zone-style
+interpretation: S1/flat normalized zone contrast is 1.3545 at TDC (greater
+than one), with poor S1 local-fit R2. Keep the global RMS and mass-fraction
+zone diagnostics separate; neither justifies S1 refinement or Cantera coupling
+without a geometry-independent decision.
 
 ### CFD-02 S2 coarse status
 
@@ -105,6 +107,12 @@ inventory drift was `0.0167264%` (`1.67264e-4` relative), above the `0.01%`
 Cantera coupling, or a geometry promotion. Its normalized-RMS comparison to S1
 also misses the predeclared ~5% improvement threshold through -20 to TDC
 (1.0468 at -20 CAD and 0.9987 at TDC).
+
+A same-control `linearUpwind grad(tracer)` S2 rerun also fails the scalar
+gates: inventory drift is `2.01883e-4` relative and the tracer minimum is
+`-0.0192431`. This variant is retained as a numerical diagnostic, not as a
+replacement scheme. No new squish geometry is authorized until a tracer
+treatment passes both conservation and boundedness.
 
 ## CFD performance gate
 

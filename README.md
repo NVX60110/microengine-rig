@@ -100,6 +100,16 @@ degradation trends, but does not set an absolute 8.5 mm leak area. Direct
 DME/methane ignition data at 600-1600 K, 7-41 atm and phi .3-2.0 has been
 identified for the next chemistry gate. See [`BETA26_REPORT.md`](BETA26_REPORT.md).
 
+## CFD transport status
+
+The OpenFOAM 14 cold-flow case and squish-screen tooling live under
+`cfd/openfoam14/`. The current CFD-01 flat-piston histories and CFD-02 S1/S2
+diagnostics are committed under `cfd/results/`. Read
+[`CFD02_ZONE_REPROCESS_REPORT.md`](CFD02_ZONE_REPROCESS_REPORT.md) before
+interpreting a squish comparison: the constant-mass-fraction audit invalidated
+the earlier global-only S1 two-zone conclusion, and both tested S2 tracer
+schemes currently fail scalar gates. No reacting coupling is included.
+
 ## Limits
 
 This is a screening model, not CFD or a calibrated engine. The two-zone mixing
