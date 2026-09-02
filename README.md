@@ -118,3 +118,7 @@ validated quench closure, valve train, 720-degree friction model, oil film,
 piston rock dynamics, or brake-power prediction. Direct DME experimental
 point-data ingestion, CFD calibration of radial exchange, a multi-volume ring
 labyrinth, and eventual hot leak-down hardware remain open.
+
+The current sealing thermal-state screen is documented in
+[`THERMAL_STATE_REPORT.md`](THERMAL_STATE_REPORT.md); its calculated proxy
+temperatures are not hardware measurements.

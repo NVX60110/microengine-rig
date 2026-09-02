@@ -1,0 +1,750 @@
+{
+  "campaign": "thermal state -> hot clearance -> annulus leakage",
+  "status": "screening_only",
+  "history_file": "data/thermal/engine_history_proxy.csv",
+  "history_classification": "calculated proxy from microengine_rig.py; replace with measured/CFD history when available",
+  "rpm": 1200.0,
+  "modeled_history_span_deg": [
+    -180.0,
+    180.0
+  ],
+  "four_stroke_period_ms": 100.0,
+  "modeled_pass_ms": 50.00000000000018,
+  "idle_duration_ms": 50.0,
+  "nodes": [
+    "piston_crown",
+    "piston_skirt",
+    "rod_crank",
+    "liner_tdc",
+    "liner_lower",
+    "head_deck",
+    "block"
+  ],
+  "closures": {
+    "constant_h": "existing repository closure, h=600 W/m2-K",
+    "angle_correlation": "Woschni-shaped pressure/temperature/piston-speed sensitivity; assumed, not validated"
+  },
+  "material_pairs": [
+    [
+      "al_4032_t6",
+      "steel_4140"
+    ],
+    [
+      "al_2618_t61",
+      "steel_4140"
+    ],
+    [
+      "al_4032_t6",
+      "gray_iron_gjl250"
+    ],
+    [
+      "al_2618_t61",
+      "gray_iron_gjl250"
+    ],
+    [
+      "al_4032_t6",
+      "al_6061_t6"
+    ],
+    [
+      "steel_4140",
+      "steel_4140"
+    ],
+    [
+      "si3n4_sn201b",
+      "steel_4140"
+    ],
+    [
+      "si3n4_sn201b",
+      "gray_iron_gjl250"
+    ]
+  ],
+  "node_capacities_J_K": {
+    "piston_crown": 0.40499999999999997,
+    "piston_skirt": 0.7200000000000001,
+    "rod_crank": 0.35,
+    "liner_tdc": 0.2,
+    "liner_lower": 0.4,
+    "head_deck": 0.5,
+    "block": 1.7
+  },
+  "conductive_links_W_K_reference": [
+    {
+      "node_a": "piston_crown",
+      "node_b": "piston_skirt",
+      "conductance_W_K": 0.75
+    },
+    {
+      "node_a": "piston_skirt",
+      "node_b": "rod_crank",
+      "conductance_W_K": 0.25
+    },
+    {
+      "node_a": "rod_crank",
+      "node_b": "block",
+      "conductance_W_K": 0.1
+    },
+    {
+      "node_a": "liner_tdc",
+      "node_b": "liner_lower",
+      "conductance_W_K": 0.6
+    },
+    {
+      "node_a": "liner_lower",
+      "node_b": "block",
+      "conductance_W_K": 1.2
+    },
+    {
+      "node_a": "head_deck",
+      "node_b": "block",
+      "conductance_W_K": 1.0
+    }
+  ],
+  "conductivity_scaling": "piston and liner links scale linearly with selected k relative to the Al-4032/4140 reference pair; link geometry remains an engineering bracket",
+  "base_case_count": 16,
+  "uncertainty_case_count": 54,
+  "base_cases": [
+    {
+      "case": {
+        "piston_material": "al_4032_t6",
+        "liner_material": "steel_4140",
+        "h_model": "constant_h",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 328.1089472423725,
+      "piston_skirt_max_K": 328.4243274097682,
+      "liner_tdc_min_K": 333.30474146862286,
+      "liner_tdc_max_K": 334.4317881037828,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 2.816284662483055,
+        "upper_bound_um": 5.781495937114638,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 0.8063173926983868,
+      "final_node_temperatures_K": {
+        "piston_crown": 332.7351816452448,
+        "piston_skirt": 328.56280003935444,
+        "rod_crank": 323.2471386038975,
+        "liner_tdc": 333.75158653832176,
+        "liner_lower": 329.4390142963367,
+        "head_deck": 328.60945369736805,
+        "block": 325.80172052801237
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "al_4032_t6",
+        "liner_material": "steel_4140",
+        "h_model": "angle_correlation",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 349.2016977486665,
+      "piston_skirt_max_K": 349.7100795515495,
+      "liner_tdc_min_K": 351.3848326021807,
+      "liner_tdc_max_K": 353.0439191313676,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 3.6259711688841785,
+        "upper_bound_um": 6.572780374941712,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 1.7208753651307804,
+      "final_node_temperatures_K": {
+        "piston_crown": 357.8823778070053,
+        "piston_skirt": 349.9746048586993,
+        "rod_crank": 339.9921130737711,
+        "liner_tdc": 352.1316301089307,
+        "liner_lower": 346.43163603196297,
+        "head_deck": 347.5607497206139,
+        "block": 341.8269441911115
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "al_2618_t61",
+        "liner_material": "steel_4140",
+        "h_model": "constant_h",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 328.13557632521224,
+      "piston_skirt_max_K": 328.4514000863774,
+      "liner_tdc_min_K": 333.2849989950823,
+      "liner_tdc_max_K": 334.4118869852501,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 3.2502315954144225,
+        "upper_bound_um": 6.21890200333583,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 1.2394222865627327,
+      "final_node_temperatures_K": {
+        "piston_crown": 332.96455402103527,
+        "piston_skirt": 328.5903218851053,
+        "rod_crank": 323.0755241988566,
+        "liner_tdc": 333.7313613106106,
+        "liner_lower": 329.4166463424164,
+        "head_deck": 328.586926357878,
+        "block": 325.7763714311826
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "al_2618_t61",
+        "liner_material": "steel_4140",
+        "h_model": "angle_correlation",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 349.2385854775851,
+      "piston_skirt_max_K": 349.7477315114257,
+      "liner_tdc_min_K": 351.3482936971599,
+      "liner_tdc_max_K": 353.00717231772614,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 4.321344560622236,
+        "upper_bound_um": 7.272628524315632,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 2.912950239095434,
+      "final_node_temperatures_K": {
+        "piston_crown": 358.3012926852615,
+        "piston_skirt": 350.01308660072976,
+        "rod_crank": 339.66422532203325,
+        "liner_tdc": 352.09423241958643,
+        "liner_lower": 346.3901475979127,
+        "head_deck": 347.51919599284156,
+        "block": 341.7797718908237
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "al_4032_t6",
+        "liner_material": "gray_iron_gjl250",
+        "h_model": "constant_h",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 328.1943355290044,
+      "piston_skirt_max_K": 328.5108418118337,
+      "liner_tdc_min_K": 333.03854102845787,
+      "liner_tdc_max_K": 334.25129809490693,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 2.904759170054381,
+        "upper_bound_um": 5.867714105796775,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 0.884721888456292,
+      "final_node_temperatures_K": {
+        "piston_crown": 332.8094159744601,
+        "piston_skirt": 328.6505138308061,
+        "rod_crank": 323.4446587764651,
+        "liner_tdc": 333.49513082766,
+        "liner_lower": 329.66293547417337,
+        "head_deck": 329.15757028902647,
+        "block": 326.38626114801394
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "al_4032_t6",
+        "liner_material": "gray_iron_gjl250",
+        "h_model": "angle_correlation",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 349.3251387560772,
+      "piston_skirt_max_K": 349.83516653524117,
+      "liner_tdc_min_K": 351.18446217113734,
+      "liner_tdc_max_K": 352.9694591157361,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 3.744981398111121,
+        "upper_bound_um": 6.6883905914655095,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 1.8959434184911959,
+      "final_node_temperatures_K": {
+        "piston_crown": 357.9885779153273,
+        "piston_skirt": 350.1014526516751,
+        "rod_crank": 340.2829020124727,
+        "liner_tdc": 351.9503948170048,
+        "liner_lower": 346.87413088777936,
+        "head_deck": 348.3691240344764,
+        "block": 342.6976458075703
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "al_2618_t61",
+        "liner_material": "gray_iron_gjl250",
+        "h_model": "constant_h",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 328.2197216441818,
+      "piston_skirt_max_K": 328.53666035337557,
+      "liner_tdc_min_K": 333.0179697550781,
+      "liner_tdc_max_K": 334.23057811551945,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 3.339635438075797,
+        "upper_bound_um": 6.306062732045495,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 1.344539484330581,
+      "final_node_temperatures_K": {
+        "piston_crown": 333.0370863538902,
+        "piston_skirt": 328.67676936635667,
+        "rod_crank": 323.2756421974766,
+        "liner_tdc": 333.4740766330196,
+        "liner_lower": 329.64010183599817,
+        "head_deck": 329.135101366669,
+        "block": 326.36097670939137
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "al_2618_t61",
+        "liner_material": "gray_iron_gjl250",
+        "h_model": "angle_correlation",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 349.36023410791415,
+      "piston_skirt_max_K": 349.8710097290894,
+      "liner_tdc_min_K": 351.14628000095445,
+      "liner_tdc_max_K": 352.9310910201885,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 4.441697123359693,
+        "upper_bound_um": 7.389601843259159,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 3.1631748624660054,
+      "final_node_temperatures_K": {
+        "piston_crown": 358.40501820111876,
+        "piston_skirt": 350.13810764244624,
+        "rod_crank": 339.95887506395405,
+        "liner_tdc": 351.91135144152463,
+        "liner_lower": 346.83167102523026,
+        "head_deck": 348.3275900543486,
+        "block": 342.65048978192726
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "al_4032_t6",
+        "liner_material": "al_6061_t6",
+        "h_model": "constant_h",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 327.88273096669474,
+      "piston_skirt_max_K": 328.1928861510974,
+      "liner_tdc_min_K": 324.20541807257126,
+      "liner_tdc_max_K": 324.9233195499963,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 1.748167474515624,
+        "upper_bound_um": 4.699227327221772,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 0.19285259409038472,
+      "final_node_temperatures_K": {
+        "piston_crown": 332.55311843491694,
+        "piston_skirt": 328.3258962869177,
+        "rod_crank": 322.52914020164366,
+        "liner_tdc": 324.59624420338173,
+        "liner_lower": 323.7242335662504,
+        "head_deck": 326.24344879394596,
+        "block": 323.1444524802815
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "al_4032_t6",
+        "liner_material": "al_6061_t6",
+        "h_model": "angle_correlation",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 348.8008056340475,
+      "piston_skirt_max_K": 349.300526305247,
+      "liner_tdc_min_K": 338.4290387672113,
+      "liner_tdc_max_K": 339.482983721376,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 2.0470522601936367,
+        "upper_bound_um": 4.974501441268162,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 0.30964435587578454,
+      "final_node_temperatures_K": {
+        "piston_crown": 357.558708039655,
+        "piston_skirt": 349.5559545171518,
+        "rod_crank": 338.760985139072,
+        "liner_tdc": 339.0683712604835,
+        "liner_lower": 337.9819133697981,
+        "head_deck": 343.59720265877473,
+        "block": 337.3665518279001
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "steel_4140",
+        "liner_material": "steel_4140",
+        "h_model": "constant_h",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 345.6431578467276,
+      "piston_skirt_max_K": 346.12996925135434,
+      "liner_tdc_min_K": 333.1313028052543,
+      "liner_tdc_max_K": 334.2583336153567,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 2.6423343167709796,
+        "upper_bound_um": 5.606904513673548,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 0.6659470097448434,
+      "final_node_temperatures_K": {
+        "piston_crown": 361.07019449232445,
+        "piston_skirt": 346.3226649816841,
+        "rod_crank": 323.0600032372839,
+        "liner_tdc": 333.57680369509205,
+        "liner_lower": 329.25574901686946,
+        "head_deck": 328.4235011787371,
+        "block": 325.61057738073254
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "steel_4140",
+        "liner_material": "steel_4140",
+        "h_model": "angle_correlation",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 378.1646781839653,
+      "piston_skirt_max_K": 378.9226493030145,
+      "liner_tdc_min_K": 351.02990795462676,
+      "liner_tdc_max_K": 352.68861084444774,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 3.4355617966069683,
+        "upper_bound_um": 6.385722219943913,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 1.4637593158636966,
+      "final_node_temperatures_K": {
+        "piston_crown": 406.0383721603573,
+        "piston_skirt": 379.28634407325137,
+        "rod_crank": 338.673378204757,
+        "liner_tdc": 351.7722595443123,
+        "liner_lower": 346.0469555872142,
+        "head_deck": 347.17359840933455,
+        "block": 341.4127638700417
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "si3n4_sn201b",
+        "liner_material": "steel_4140",
+        "h_model": "constant_h",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 333.0697737402195,
+      "piston_skirt_max_K": 333.4820772081884,
+      "liner_tdc_min_K": 332.736762891078,
+      "liner_tdc_max_K": 333.85727429044,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 0.37150814724075,
+        "upper_bound_um": 3.3176944643153536,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 0.0018508933919663777,
+      "final_node_temperatures_K": {
+        "piston_crown": 356.35960973960965,
+        "piston_skirt": 333.6710170358303,
+        "rod_crank": 316.7960482487315,
+        "liner_tdc": 333.1656182307046,
+        "liner_lower": 328.777047479512,
+        "head_deck": 327.94411666116224,
+        "block": 325.03049806071544
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "si3n4_sn201b",
+        "liner_material": "steel_4140",
+        "h_model": "angle_correlation",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 356.406009818689,
+      "piston_skirt_max_K": 357.0660703537545,
+      "liner_tdc_min_K": 350.3376535873225,
+      "liner_tdc_max_K": 351.9875975159075,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": -0.2951352860019484,
+        "upper_bound_um": 2.6254615614119103,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": null,
+      "final_node_temperatures_K": {
+        "piston_crown": 399.29030852105717,
+        "piston_skirt": 357.4199684243611,
+        "rod_crank": 327.686395042978,
+        "liner_tdc": 351.0523255108515,
+        "liner_lower": 345.20781413258766,
+        "head_deck": 346.3374021860613,
+        "block": 340.39536039599614
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "si3n4_sn201b",
+        "liner_material": "gray_iron_gjl250",
+        "h_model": "constant_h",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 333.11174250282835,
+      "piston_skirt_max_K": 333.52469261324336,
+      "liner_tdc_min_K": 332.443173257744,
+      "liner_tdc_max_K": 333.6495997521638,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": 0.4538250140711469,
+        "upper_bound_um": 3.397650037196675,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": 0.0033739734999897455,
+      "final_node_temperatures_K": {
+        "piston_crown": 356.3790241537318,
+        "piston_skirt": 333.7143265046387,
+        "rod_crank": 317.1031442480828,
+        "liner_tdc": 332.8815710129894,
+        "liner_lower": 328.98596385798834,
+        "head_deck": 328.4958618186903,
+        "block": 325.6192525311114
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    },
+    {
+      "case": {
+        "piston_material": "si3n4_sn201b",
+        "liner_material": "gray_iron_gjl250",
+        "h_model": "angle_correlation",
+        "h_scale": 1.0,
+        "cooling_scale": 1.0,
+        "temperature_offset_K": 0.0,
+        "initial_temperature_K": 300.0
+      },
+      "converged": false,
+      "cycles_completed": 60,
+      "piston_skirt_min_K": 356.46678354751555,
+      "piston_skirt_max_K": 357.12779009572745,
+      "liner_tdc_min_K": 350.0830037253222,
+      "liner_tdc_max_K": 351.859371629835,
+      "required_cold_clearance_for_hot_2_to_5_um": {
+        "lower_bound_um": -0.18464742824779112,
+        "upper_bound_um": 2.732458348732487,
+        "feasible": true
+      },
+      "cold_static_mdot_mg_s_at_lower_bound": null,
+      "final_node_temperatures_K": {
+        "piston_crown": 399.3175630734312,
+        "piston_skirt": 357.4827084664977,
+        "rod_crank": 328.1380611601959,
+        "liner_tdc": 350.8163285515644,
+        "liner_lower": 345.6187443623248,
+        "head_deck": 347.1493762377186,
+        "block": 341.2701099918856
+      },
+      "model_classification": {
+        "measured": "none",
+        "literature_derived": "material CTE/conductivity inputs only",
+        "calculated": "RC temperatures and thermal-clearance inversion",
+        "assumed": "node masses/cp, conductances, gas-area partition, h closures and history use",
+        "extrapolated": "steady-state envelope from repeated modeled closed-cycle history"
+      }
+    }
+  ],
+  "uncertainty_envelope": {
+    "required_cold_lower_p05_um": 2.6586727669378587,
+    "required_cold_lower_p95_um": 3.9707324083911484,
+    "required_cold_upper_p05_um": 5.632233421328219,
+    "required_cold_upper_p95_um": 6.905737282738277,
+    "engineering_assumption_label": "95% percentile envelope of bounded sensitivity cases, not a confidence interval"
+  },
+  "model_classification": {
+    "measured": "none",
+    "literature_derived": "material CTE/conductivity inputs in data/materials",
+    "calculated": "RC node temperatures, inverse hot-fit bounds and annulus sensitivity",
+    "assumed": "node masses/cp, conductances, area partition, h sensitivity and proxy history",
+    "extrapolated": "four-stroke idle segment and thermal steady state from repeated cycles"
+  },
+  "plots": [
+    "figures/thermal_state_cycle_warmup.png",
+    "figures/thermal_state_hot_clearance_trajectory.png",
+    "figures/thermal_state_fit_sensitivity.png"
+  ]
+}

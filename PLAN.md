@@ -48,7 +48,8 @@ Open:
 
 ### CFD-01 flat-piston transport
 
-CFD-01 lives on `cfd01-cold-flow-tracer` until merged to main.
+CFD-01 is merged to main; the accepted flat reference uses the single-cell
+`wedge` axis treatment from Issue #17.
 
 - Geometry: 8.5 x 7.0 mm, CR 7.75, 1200 rpm, cold closed cylinder, passive
   tracer, flat piston.
@@ -102,7 +103,7 @@ is no longer a project blocker.
 
 ## Track B - CFD
 
-### B0 - CFD-01 cleanup before new physics
+### B0 - CFD-01 cleanup before new physics (complete)
 
 1. Recompute/report mesh convergence **on tau_mix at requested crank angles**.
 2. Rerun +45 CAD on at least one finer mesh.
@@ -130,18 +131,13 @@ Decision:
 - If it does not, accept flat-piston molecular diffusion as the transport scale
   and stop optimizing hidden stirring.
 
-Status update: S1 mild squish coarse is implemented and passes its mesh,
-volume, mass, tracer, Courant, and output-cadence gates, but its fixed-radius
-core/shell diagnostic is not cross-geometry comparable: the shell fraction
-collapses from ~16.7% at BDC to ~8.65% near TDC. The stored flat/S1/S2 fields
-were reprocessed with a nominal 20% cumulative-mass outer zone. That audit
-reverses the earlier two-zone S1 interpretation: S1/flat normalized zone
-contrast is 1.3545 at TDC, with weak local-fit R2. S2 also fails the tracer
-inventory gate (`1.6726e-4` relative), and its `linearUpwind` variant fails both
-inventory (`2.0188e-4`) and boundedness (minimum tracer -0.01924). Do not
-refine S1/S2, run S3, or couple either squish schedule into Cantera until a
-scalar treatment passes conservation and boundedness and the geometry-
-independent metric is reproducible.
+Status update: the original fixed-radius shell diagnostic was not
+cross-geometry comparable (the shell fraction collapsed from ~16.7% at BDC to
+~8.65% near TDC).  The corrected solver and regenerated histories now pass
+the scalar inventory/boundedness gates, and the fixed 20%-mass-zone audit gives
+S1/flat 1.354x and S2/flat 1.261x zone contrast at TDC; whole-domain normalized
+RMS is 0.892 and 0.891.  Neither tested squish geometry delivers the declared
+transport gain, so do not run S3 or couple S1/S2 schedules into Cantera.
 
 Issue #10 resolution (2026-09-01): the S2 inventory loss was the tracer linear
 solve stopping after one PBiCGStab iteration under the shared `relTol 0.01`
@@ -161,19 +157,17 @@ ratios reproduce legacy to `<= 0.001` with all comparison gates `ok`
 fixed 20%-mass-zone contrast at TDC is 1.354x flat for S1 and 1.261x for S2
 (F25).
 
-Issue #10 is merged and closed. Issue #17 (axis-core artifact) has a
-candidate fix on record: the single-cell `wedge` axis removes the artifact
-on every flat mesh, runs the fine case in 229 s instead of 1,882 s, and
-keeps fine-mesh transport observables within 1.6% of the converged sector
-baseline (F28, `CFD01_WEDGE_AXIS_REPORT.md`).
+Issue #10 is merged and closed. Issue #17 is also merged and closed: the
+single-cell `wedge` axis removes the artifact on every flat mesh, runs the
+fine case in 229 s instead of 1,882 s, and keeps fine-mesh transport
+observables within 1.6% of the converged sector baseline (F28,
+`CFD01_WEDGE_AXIS_REPORT.md`).
 
 Next actions, in order:
-1. Review F28 and, if accepted, make `wedge` the CFD-01 default, promote the
-   `_wedge` histories as the flat references, and convert the S1/S2 mesh
-   generators to the same axis treatment before any further squish
-   comparison. This is cheap performance and hygiene work, not an
-   engine-design blocker; it should not displace the sealing and chemistry
-   lanes.
+1. Treat the accepted `wedge` CFD-01 case and `_wedge` histories as the flat
+   references; convert any future squish generator to the same axis treatment
+   before a new comparison. This is cheap performance and hygiene work, not
+   an engine-design blocker; it should not displace sealing and chemistry.
 2. Decide the B1 question from F25. Recommendation: accept the flat-piston
    `tau(theta)` scale from the converged CFD-01 fine history as the transport
    baseline, run no S3, and couple no S1/S2 schedule into the two-zone model.
@@ -212,6 +206,27 @@ for a 3–5 µm hot target at 500/450 K, and the answer remains highly sensitive
 to independent temperature error.  The next C1 step is a warm, direct-flow
 fixture on a 10–15 mm reference cylinder with axial fit/taper and independent
 piston/liner temperature measurements.
+
+#### C1 thermal-state RC follow-up (completed screening step)
+
+`physics/thermal_state.py` and `scripts/thermal_state_rc.py` now provide a
+seven-node, inspectable piston/liner thermal RC screen.  It consumes the only
+existing heat-transfer input—a calculated `microengine_rig.py` history with
+constant `h=600 W/(m² K)`—and carries the solids through repeated modeled
+100 ms cycles (360° pass plus an explicit idle segment).  A separately labeled
+angle-dependent pressure/temperature/speed closure is sensitivity only; there
+is no crank-angle heat-flux correlation or measured wall temperature in the
+repository yet.
+
+The primary Al-4032/4140 screen gives 328–328.4 K piston skirt and 333.3–334.4
+K liner TDC for constant h, with a 2.82–5.78 µm cold-fit intersection for a
+2–5 µm hot target.  The angle sensitivity gives 349.2–349.7 K and 351.4–353.0
+K, moving the intersection to 3.63–6.57 µm.  The 54-case bounded sensitivity
+envelope is lower 2.66–3.97 µm and upper 5.63–6.91 µm (p05–p95; not a
+confidence interval).  These low proxy temperatures are not a hardware
+prediction.  The next C1 action is a warm direct-flow fixture that measures
+the piston/liner temperature difference and leakage together; do not promote
+a ringless, ringed or material architecture from this RC screen alone.
 
 Hypothesis: if manufactured radial clearance is roughly independent of bore,
 then annular leak area scales approximately with `B*c` while displacement
@@ -300,6 +315,9 @@ model for checkable quantities:
 1. Close the +45 CAD mesh-convergence hole using the retained 0.15-CAD cap.
 2. Run B1 squish.
 3. In parallel, digitize/obtain Burke DME/CH4 data and run the direct mechanism gate.
-4. Start C1 only with calibrated/convertible leakage data.
-5. Audit Zhao pressure-dependent decomposition before treating a chemistry
+4. Use the thermal-state output to specify the warm direct-flow fixture on a
+   10–15 mm reference cylinder; keep calculated annulus flows separate from
+   measured leakage records.
+5. Start calibrated C1 only with direct or convertible leakage data.
+6. Audit Zhao pressure-dependent decomposition before treating a chemistry
   transition as final.
