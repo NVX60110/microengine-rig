@@ -1,0 +1,61 @@
+{
+  "experiment": "cycle720-1200-accounting-quadrature-refinement",
+  "provenance": {
+    "literature_derived": false,
+    "measured": false,
+    "note": "Fresh one-cycle valve-enabled runs; no friction, crank dynamics, motor, CFD or chemistry retuning.",
+    "project_model_assumptions": true
+  },
+  "records": [
+    {
+      "closed_energy_balance_residual_J": 0.0013190026618959405,
+      "closed_kernel_mass_balance_residual_mg": -0.0008937391837719117,
+      "energy_balance_residual_J": 0.0013190038688905975,
+      "exhaust_energy_balance_residual_J": 2.8184604650149936e-10,
+      "intake_energy_balance_residual_J": 7.398572310357565e-10,
+      "mass_balance_residual_mg": -0.0008937391837711309,
+      "mass_balance_residual_rel_closed_kernel": -0.000547816623831248,
+      "mass_balance_residual_rel_cycle_start": -0.004406007611313845,
+      "runtime_s": 7.479279599850997,
+      "step_deg": 5.0
+    },
+    {
+      "closed_energy_balance_residual_J": 0.0006190719829923252,
+      "closed_kernel_mass_balance_residual_mg": -9.012005228708709e-05,
+      "energy_balance_residual_J": 0.0006190730628782386,
+      "exhaust_energy_balance_residual_J": 8.701911413666608e-10,
+      "intake_energy_balance_residual_J": 8.007006169208353e-11,
+      "mass_balance_residual_mg": -9.012005228744443e-05,
+      "mass_balance_residual_rel_closed_kernel": -5.728995077650081e-05,
+      "mass_balance_residual_rel_cycle_start": -0.00044427909564739827,
+      "runtime_s": 13.17803019983694,
+      "step_deg": 2.0
+    },
+    {
+      "closed_energy_balance_residual_J": 0.0002892262730304629,
+      "closed_kernel_mass_balance_residual_mg": -2.8010285535668638e-05,
+      "energy_balance_residual_J": 0.00028922791115317675,
+      "exhaust_energy_balance_residual_J": 6.010576480974805e-10,
+      "intake_energy_balance_residual_J": 9.315705984391798e-10,
+      "mass_balance_residual_mg": -2.8010285534689254e-05,
+      "mass_balance_residual_rel_closed_kernel": -1.7819650453127446e-05,
+      "mass_balance_residual_rel_cycle_start": -0.00013808674107827721,
+      "runtime_s": 23.75147689995356,
+      "step_deg": 1.0
+    },
+    {
+      "closed_energy_balance_residual_J": 0.0002765634535664696,
+      "closed_kernel_mass_balance_residual_mg": -1.6314677997138982e-06,
+      "energy_balance_residual_J": 0.00027656452655353686,
+      "exhaust_energy_balance_residual_J": 3.4821739935964047e-10,
+      "intake_energy_balance_residual_J": 6.201181235176989e-10,
+      "mass_balance_residual_mg": -1.631467800335938e-06,
+      "mass_balance_residual_rel_closed_kernel": -1.0388901668665116e-06,
+      "mass_balance_residual_rel_cycle_start": -8.042905219353538e-06,
+      "runtime_s": 43.17755330004729,
+      "step_deg": 0.5
+    }
+  ],
+  "runtime_s": 87.58635300002061,
+  "status": "diagnostic_only"
+}

@@ -187,6 +187,10 @@ def serialize_cycle_state(state: Mapping[str, Any]) -> str:
              "P_bar": float(state["P_bar"]), "speed_rpm": float(state.get("speed_rpm", 0.0)),
              "h_J_kg": float(state.get("h_J_kg", 0.0)),
              "Y": {str(k): float(v) for k, v in sorted(state["Y"].items())}}
+    if "u_J_kg" in state:
+        clean["u_J_kg"] = float(state["u_J_kg"])
+    if "volume_m3" in state:
+        clean["volume_m3"] = float(state["volume_m3"])
     return json.dumps(clean, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
@@ -194,6 +198,13 @@ def _state_phase(c: RigConfig, state: Mapping[str, Any]) -> ct.Solution:
     path, phase = _mechanism(c)
     gas = ct.Solution(path, phase) if phase else ct.Solution(path)
     gas.TPY = float(state["T_K"]), float(state["P_bar"]) * 1e5, dict(state["Y"])
+    # A two-zone end state can preserve its directly aggregated internal
+    # energy.  Reconstructing only from mass-weighted h at an effective
+    # pressure can otherwise create an artificial energy jump at the exhaust
+    # valve.  ``volume_m3`` is deliberately explicit so this path cannot be
+    # mistaken for a generic hidden state variable.
+    if "u_J_kg" in state and "volume_m3" in state:
+        gas.UV = float(state["u_J_kg"]), float(state["volume_m3"]) / max(float(state["mass_kg"]), 1e-30)
     return gas
 
 
@@ -204,10 +215,15 @@ def _state_enthalpy(c: RigConfig, state: Mapping[str, Any]) -> float:
 
 def _advance_lumped(c: RigConfig, state: Mapping[str, Any], volume_old: float,
                     volume_new: float, dt: float, valve: ValveConfig | None,
-                    reservoir: ct.Solution | None, direction: str) -> tuple[dict[str, Any], float]:
+                    reservoir: ct.Solution | None, direction: str,
+                    return_details: bool = False):
     """Advance an ideal-gas lump with explicit valve mass and energy balance."""
     gas = _state_phase(c, state)
     m0, u0, p0, t0 = float(state["mass_kg"]), gas.int_energy_mass, gas.P, gas.T
+    # Capture the outlet enthalpy before mutating the lumped state.  The
+    # control-volume balance removes mass carrying the pre-step gas state;
+    # using post-step enthalpy here would manufacture an energy residual.
+    h0 = gas.enthalpy_mass
     dm_in = dm_out = 0.0
     if valve is not None and reservoir is not None:
         area = valve.area_at(float(state.get("deg", 0.0)))
@@ -231,10 +247,25 @@ def _advance_lumped(c: RigConfig, state: Mapping[str, Any], volume_old: float,
           - dm_out * gas.enthalpy_mass) / m1
     gas.TPY = max(150.0, min(5000.0, t0)), max(1.0, p0), y1
     gas.UV = u1, volume_new / m1
-    return {"mass_kg": m1, "T_K": gas.T, "P_bar": gas.P / 1e5,
+    next_state = {"mass_kg": m1, "T_K": gas.T, "P_bar": gas.P / 1e5,
             "Y": {n: float(y) for n, y in zip(gas.species_names, gas.Y)},
             "speed_rpm": float(state.get("speed_rpm", c.rpm)),
-            "h_J_kg": gas.enthalpy_mass}, (dm_in - dm_out) / dt
+            "h_J_kg": gas.enthalpy_mass, "u_J_kg": gas.int_energy_mass,
+            "volume_m3": volume_new}
+    net = (dm_in - dm_out) / dt
+    if not return_details:
+        return next_state, net
+    return next_state, net, {
+        "mass_in_kg": dm_in,
+        "mass_out_kg": dm_out,
+        "enthalpy_in_J": dm_in * (reservoir.enthalpy_mass if reservoir is not None else 0.0),
+        "enthalpy_out_J": dm_out * h0,
+        "work_by_gas_J": p0 * (volume_new - volume_old),
+        "internal_energy_in_J": m0 * u0,
+        "internal_energy_out_J": m1 * gas.int_energy_mass,
+        "species_mass_in_kg": (dm_in * reservoir.Y).tolist() if reservoir is not None else [],
+        "species_mass_out_kg": (dm_out * y0).tolist(),
+    }
 
 
 def _gas_torque(c: RigConfig, pressure_bar: float, theta_deg: float) -> float:
@@ -321,8 +352,15 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
     exhaust.TP = c.crankcase_temperature_K, (options.exhaust_pressure_bar or c.crankcase_pressure_bar) * 1e5
     state = dict(initial_state) if initial_state and "mass_kg" in initial_state else _fresh_state(c, g.volume(0.0))
     state.setdefault("speed_rpm", c.rpm)
+    cycle_initial_state = dict(state)
     rows: list[dict[str, Any]] = []
     total_in = total_out = 0.0
+    valve_enthalpy_in = valve_enthalpy_out = 0.0
+    valve_work = 0.0
+    intake_enthalpy_in = intake_enthalpy_out = intake_work = 0.0
+    exhaust_enthalpy_in = exhaust_enthalpy_out = exhaust_work = 0.0
+    valve_species_in: list[float] | None = None
+    valve_species_out: list[float] | None = None
     work_by_phase = {p: 0.0 for p in PHASES}
     motor_torque = []
     n = int(round(720.0 / options.step_deg))
@@ -337,16 +375,31 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
         if i:
             previous = intake_rows[-1]
             state["deg"] = previous["cycle_deg"]
-            state, net = _advance_lumped(
+            state, net, details = _advance_lumped(
                 c, state, g.volume(math.radians(previous["cycle_deg"])),
                 g.volume(math.radians(deg)), dt,
-                options.intake_valve if options.valves_enabled else None, fresh, "in")
+                options.intake_valve if options.valves_enabled else None, fresh, "in",
+                return_details=True)
+            valve_enthalpy_in += details["enthalpy_in_J"]
+            valve_enthalpy_out += details["enthalpy_out_J"]
+            valve_work += details["work_by_gas_J"]
+            intake_enthalpy_in += details["enthalpy_in_J"]
+            intake_enthalpy_out += details["enthalpy_out_J"]
+            intake_work += details["work_by_gas_J"]
+            if details["species_mass_in_kg"]:
+                if valve_species_in is None:
+                    valve_species_in = [0.0] * len(details["species_mass_in_kg"])
+                valve_species_in = [a + b for a, b in zip(valve_species_in, details["species_mass_in_kg"])]
+            if valve_species_out is None:
+                valve_species_out = [0.0] * len(details["species_mass_out_kg"])
+            valve_species_out = [a + b for a, b in zip(valve_species_out, details["species_mass_out_kg"])]
             total_in += max(0.0, net * dt); total_out += max(0.0, -net * dt)
         intake_rows.append({"cycle_deg": deg, "phase": "intake", "pressure_bar": state["P_bar"],
                             "temperature_K": state["T_K"], "mass_kg": state["mass_kg"],
                             "valve_mass_flow_kg_s": net if i else 0.0,
                             "speed_rpm": state.get("speed_rpm", c.rpm), "motor_torque_Nm": 0.0})
     rows.extend(intake_rows)
+    intake_close_state = dict(state)
 
     # Compression through expansion is always the accepted one-revolution
     # model.  Its -180..+180 angles map to 180..540 in the four-stroke cycle.
@@ -363,10 +416,15 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
                          temperature_K=cr["coreTemperature_K"], mass_kg=(cr["coreMass_mg"] + cr["boundaryMass_mg"]) * 1e-6,
                          valve_mass_flow_kg_s=0.0, speed_rpm=state.get("speed_rpm", c.rpm), motor_torque_Nm=0.0))
     end = closed_summary["end_state"]
-    state = {"mass_kg": closed_summary["initial_trapped_mass_mg"] * 1e-6 * closed_summary["mass_retained_end_fraction"],
+    closed_initial_mass_kg = closed_summary["initial_trapped_mass_mg"] * 1e-6
+    closed_final_mass_kg = closed_initial_mass_kg * closed_summary["mass_retained_end_fraction"]
+    state = {"mass_kg": closed_final_mass_kg,
              "T_K": end["T_K"], "P_bar": end["P_bar"], "Y": end["Y"],
              "speed_rpm": state.get("speed_rpm", c.rpm),
-             "h_J_kg": _state_enthalpy(c, end)}
+             "h_J_kg": _state_enthalpy(c, end),
+             "u_J_kg": closed_summary.get("final_internal_energy_J", 0.0) / max(closed_final_mass_kg, 1e-30),
+             "volume_m3": g.volume(math.pi)}
+    post_closed_state = dict(state)
 
     # Exhaust: BDC (+180) to intake TDC (+360), using post-combustion state.
     exhaust_rows = []
@@ -374,10 +432,23 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
         deg = 180.0 + j * options.step_deg
         previous = exhaust_rows[-1] if exhaust_rows else rows[-1]
         state["deg"] = previous["cycle_deg"]
-        state, net = _advance_lumped(
+        state, net, details = _advance_lumped(
             c, state, g.volume(math.radians(previous["cycle_deg"])),
             g.volume(math.radians(deg)), dt,
-            options.exhaust_valve if options.valves_enabled else None, exhaust, "out")
+            options.exhaust_valve if options.valves_enabled else None, exhaust, "out",
+            return_details=True)
+        valve_enthalpy_in += details["enthalpy_in_J"]
+        valve_enthalpy_out += details["enthalpy_out_J"]
+        valve_work += details["work_by_gas_J"]
+        exhaust_enthalpy_in += details["enthalpy_in_J"]
+        exhaust_enthalpy_out += details["enthalpy_out_J"]
+        exhaust_work += details["work_by_gas_J"]
+        if valve_species_in is None:
+            valve_species_in = [0.0] * len(details["species_mass_in_kg"])
+        valve_species_in = [a + b for a, b in zip(valve_species_in, details["species_mass_in_kg"])]
+        if valve_species_out is None:
+            valve_species_out = [0.0] * len(details["species_mass_out_kg"])
+        valve_species_out = [a + b for a, b in zip(valve_species_out, details["species_mass_out_kg"])]
         total_in += max(0.0, net * dt); total_out += max(0.0, -net * dt)
         exhaust_rows.append({"cycle_deg": deg, "phase": "exhaust", "pressure_bar": state["P_bar"],
                              "temperature_K": state["T_K"], "mass_kg": state["mass_kg"],
@@ -402,6 +473,40 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
         motor_torque.append(tm)
     out = {"mass_kg": state["mass_kg"], "T_K": state["T_K"], "P_bar": state["P_bar"],
            "Y": state["Y"], "speed_rpm": speed, "h_J_kg": state.get("h_J_kg", _specific_enthalpy(state))}
+    def total_internal_energy(snapshot: Mapping[str, Any]) -> float:
+        gas = _state_phase(c, snapshot)
+        return float(snapshot["mass_kg"]) * gas.int_energy_mass
+
+    closed_in_kg = closed_summary.get("blowby_mass_in_mg", 0.0) * 1e-6
+    closed_out_kg = closed_summary.get("blowby_mass_out_mg", 0.0) * 1e-6
+    closed_h_in = closed_summary.get("blowby_enthalpy_in_J", 0.0)
+    closed_h_out = closed_summary.get("blowby_enthalpy_out_J", 0.0)
+    closed_work = closed_summary.get("gross_indicated_work_mJ", 0.0) * 1e-3
+    closed_wall_heat = closed_summary.get("wall_energy_gas_to_wall_mJ", 0.0) * 1e-3
+    closed_u0 = closed_summary.get("initial_internal_energy_J", total_internal_energy(intake_close_state))
+    closed_u1 = closed_summary.get("final_internal_energy_J", total_internal_energy(state))
+    # ``wall_energy_gas_to_wall`` is positive for heat leaving the gas.  It is
+    # therefore subtracted from the gas internal-energy balance.
+    closed_energy_residual = closed_u1 - (closed_u0 + closed_h_in - closed_h_out
+                                          - closed_work - closed_wall_heat)
+    cycle_initial_mass = float(cycle_initial_state["mass_kg"])
+    cycle_final_mass = float(out["mass_kg"])
+    cycle_mass_residual = (cycle_initial_mass + total_in + closed_in_kg
+                           - total_out - closed_out_kg - cycle_final_mass)
+    cycle_u0 = total_internal_energy(cycle_initial_state)
+    cycle_u1 = total_internal_energy(out)
+    cycle_energy_residual = cycle_u1 - (
+        cycle_u0 + valve_enthalpy_in - valve_enthalpy_out + closed_h_in - closed_h_out
+        - valve_work - closed_work - closed_wall_heat
+    )
+    intake_energy_residual = (
+        total_internal_energy(intake_close_state) - total_internal_energy(cycle_initial_state)
+        - (intake_enthalpy_in - intake_enthalpy_out - intake_work)
+    )
+    exhaust_energy_residual = (
+        total_internal_energy(out) - total_internal_energy(post_closed_state)
+        - (exhaust_enthalpy_in - exhaust_enthalpy_out - exhaust_work)
+    )
     summary = {"model": "minimum-viable-720-CAD-wrapper", "phase_names": PHASES,
                "cycle_start_convention": "-360 CAD intake TDC; 0 CAD firing TDC; +360 CAD exhaust end",
                "one_revolution_period_s": 60.0 / c.rpm,
@@ -414,6 +519,45 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
                                          for row in rows) * 1e3,
                "motor_torque_peak_Nm": max((abs(x) for x in motor_torque), default=0.0),
                "motor_torque_rms_Nm": math.sqrt(sum(x*x for x in motor_torque) / max(1, len(motor_torque))),
+               "cycle_accounting": {
+                   "initial_mass_mg": cycle_initial_mass * 1e6,
+                   "final_mass_mg": cycle_final_mass * 1e6,
+                   "initial_pressure_bar": float(cycle_initial_state["P_bar"]),
+                   "final_pressure_bar": float(out["P_bar"]),
+                   "initial_temperature_K": float(cycle_initial_state["T_K"]),
+                   "final_temperature_K": float(out["T_K"]),
+                   "integrated_intake_mass_in_mg": total_in * 1e6,
+                   "integrated_exhaust_mass_out_mg": total_out * 1e6,
+                   "closed_kernel_initial_mass_mg": closed_initial_mass_kg * 1e6,
+                   "closed_kernel_final_mass_mg": closed_final_mass_kg * 1e6,
+                   "closed_kernel_blowby_in_mg": closed_in_kg * 1e6,
+                   "closed_kernel_blowby_out_mg": closed_out_kg * 1e6,
+                   "mass_balance_residual_mg": cycle_mass_residual * 1e6,
+                   "mass_balance_residual_rel_cycle_start": cycle_mass_residual / max(cycle_initial_mass, 1e-30),
+                   "mass_balance_residual_rel_closed_kernel": cycle_mass_residual / max(closed_initial_mass_kg, 1e-30),
+                   "closed_kernel_mass_balance_residual_mg": closed_summary.get("mass_balance_residual_mg"),
+                   "closed_kernel_mass_balance_residual_rel": (
+                       closed_summary.get("mass_balance_residual_mg", 0.0) * 1e-6
+                       / max(closed_initial_mass_kg, 1e-30)
+                   ),
+                   "valve_enthalpy_in_J": valve_enthalpy_in,
+                   "valve_enthalpy_out_J": valve_enthalpy_out,
+                   "closed_blowby_enthalpy_in_J": closed_h_in,
+                   "closed_blowby_enthalpy_out_J": closed_h_out,
+                   "initial_total_enthalpy_J": cycle_initial_mass * _state_phase(c, cycle_initial_state).enthalpy_mass,
+                   "final_total_enthalpy_J": cycle_final_mass * _state_phase(c, out).enthalpy_mass,
+                   "closed_energy_balance_residual_J": closed_energy_residual,
+                   "energy_balance_residual_J": cycle_energy_residual,
+                   "intake_and_exhaust_combined_energy_residual_J": (
+                       cycle_energy_residual - closed_energy_residual
+                   ),
+                   "intake_energy_balance_residual_J": intake_energy_residual,
+                   "exhaust_energy_balance_residual_J": exhaust_energy_residual,
+                   "energy_terms_are_screening_accounting": True,
+                   "species_basis": "Cantera species order; valve vectors include both directions",
+                   "valve_species_in_kg": valve_species_in or [],
+                   "valve_species_out_kg": valve_species_out or [],
+               },
                "cycle_state_out": out, "cycle_state_in": initial_state,
                "note": "Valve flow, friction and motor values are project-model assumptions; gas exchange is lumped.",
                "options": asdict(options)}
@@ -460,8 +604,17 @@ def iterate_periodic_720(c: RigConfig, options: Cycle720Options = Cycle720Option
             "mass_rel": math.inf, "species_max": math.inf, "enthalpy_rel": math.inf,
             "temperature_K": math.inf, "speed_rpm": math.inf}
         summary = result.get("summary", {})
+        accounting = summary.get("cycle_accounting", {})
+        homologous_state = {
+            "mass_kg": float(out["mass_kg"]),
+            "T_K": float(out["T_K"]),
+            "P_bar": float(out["P_bar"]),
+            "Y": {str(name): float(value) for name, value in out["Y"].items()},
+        }
         history.append({"cycle": cycle, **metrics,
                         "state_hash": serialize_cycle_state(out),
+                        "homologous_end_state": homologous_state,
+                        "accounting": accounting,
                         "intake_mass_mg": summary.get("intake_mass_mg"),
                         "exhaust_mass_mg": summary.get("exhaust_mass_mg"),
                         "pumping_work_mJ": summary.get("pumping_work_mJ"),

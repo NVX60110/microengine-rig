@@ -66,6 +66,19 @@ class Cycle720Tests(unittest.TestCase):
         self.assertEqual(net, 0.0)
         self.assertGreater(next_state["T_K"], 0.0)
 
+    def test_lumped_valve_step_can_return_accounting_details(self):
+        config = RigConfig(fuel_profile="methane", intake_temperature_K=300.0,
+                           intake_pressure_bar=1.2, equivalence_ratio=0.4)
+        geometry = build_geometry(config)
+        state = _fresh_state(config, geometry.volume(0.0))
+        next_state, net, details = _advance_lumped(
+            config, state, geometry.volume(0.0), geometry.volume(0.01),
+            1e-5, None, None, "in", return_details=True)
+        self.assertEqual(net, 0.0)
+        self.assertEqual(details["mass_in_kg"], 0.0)
+        self.assertEqual(details["mass_out_kg"], 0.0)
+        self.assertTrue(details["internal_energy_out_J"] != 0.0)
+
     def test_option_validation_rejects_bad_valve_and_motor(self):
         config = RigConfig()
         with self.assertRaises(ValueError):
