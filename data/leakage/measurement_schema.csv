@@ -1,0 +1,51 @@
+field,type,required,units,description
+record_id,string,yes,,Unique measurement row identifier
+run_id,string,yes,,Acquisition run identifier shared by repeats
+reference_cylinder_id,string,yes,,Fixture/test article identifier
+timestamp_utc,string,yes,,ISO-8601 acquisition timestamp
+mode,enum,yes,,static_direct | static_differential | dynamic_blowby
+repeat_number,integer,yes,,Repeat index within a stabilized condition
+stabilization_criterion,string,yes,,Human-readable criterion and duration used before recording
+bore_diameter_cold_mm,float,yes,mm,Cold bore diameter at this axial station; diameter not radius
+piston_diameter_cold_mm,float,yes,mm,Cold piston diameter at the matching axial station; diameter not radius
+stroke_mm,float,no,mm,Reference-cylinder stroke used only for optional CdA per displacement normalization
+cold_radial_clearance_um,float,no,um,Optional independently reported radial clearance; checked against diameters
+measurement_axial_position_mm,float,yes,mm,Axial station measured from the declared datum
+thrust_orientation,enum,no,,thrust | anti_thrust | neutral | not_applicable
+bore_roundness_um,float,no,um,Measured roundness at the station
+bore_taper_um_per_mm,float,no,um/mm,Local axial taper estimate; preserve sign convention in notes
+piston_material,string,yes,,Material id from data/materials/thermal_properties.json or documented custom id
+liner_material,string,yes,,Material id from data/materials/thermal_properties.json or documented custom id
+piston_reference_temperature_K,float,no,K,Temperature at which the reported piston diameter is referenced; defaults to 293.15 K when omitted
+liner_reference_temperature_K,float,no,K,Temperature at which the reported bore is referenced; defaults to 293.15 K when omitted
+piston_cte_per_K,float,no,1/K,Optional constant CTE override when material id is custom
+liner_cte_per_K,float,no,1/K,Optional constant CTE override when material id is custom
+lubricant,string,yes,,Lubricant identity and grade
+lubricant_condition,string,yes,,Identity, quantity, wetting and run-in condition
+piston_temperature_K,float,yes,K,Piston temperature at the same axial station as the diameter pair
+liner_temperature_K,float,yes,K,Liner temperature at the same axial station as the diameter pair
+chamber_gas_temperature_K,float,yes,K,Gas temperature used for flow reduction
+upstream_pressure_bar_abs,float,yes,bar abs,Upstream/chamber absolute pressure
+downstream_pressure_bar_abs,float,yes,bar abs,Downstream or crankcase absolute pressure
+ambient_pressure_bar_abs,float,yes,bar abs,Ambient absolute pressure
+mass_flow_kg_s,float,no,kg/s,Direct mass-flow measurement; mutually useful with volumetric flow
+volume_flow_L_min,float,no,L/min,Volumetric flow measurement
+flow_meter_reference_pressure_bar_abs,float,no,bar abs,Pressure at which volume flow is reported
+flow_meter_reference_temperature_K,float,no,K,Temperature at which volume flow is reported
+gas,string,yes,,Gas identity, normally air or nitrogen for this fixture
+gas_constant_J_kgK,float,no,J/(kg K),Gas constant override; defaults are air/nitrogen values
+gamma,float,no,,Specific-heat ratio override for effective-CdA conversion
+viscosity_Pa_s,float,no,Pa s,Gas viscosity at chamber gas temperature; otherwise Sutherland estimate
+axial_flow_length_mm,float,yes,mm,Annulus flow length used for comparison
+eccentricity,float,yes,,Dimensionless radial eccentricity factor in the annulus model
+piston_temperature_uncertainty_K,float,no,K,One-standard-deviation engineering uncertainty
+liner_temperature_uncertainty_K,float,no,K,One-standard-deviation engineering uncertainty
+bore_diameter_uncertainty_mm,float,no,mm,One-standard-deviation diameter uncertainty
+piston_diameter_uncertainty_mm,float,no,mm,One-standard-deviation diameter uncertainty
+upstream_pressure_uncertainty_bar,float,no,bar,One-standard-deviation pressure uncertainty
+downstream_pressure_uncertainty_bar,float,no,bar,One-standard-deviation pressure uncertainty
+mass_flow_uncertainty_kg_s,float,no,kg/s,One-standard-deviation mass-flow uncertainty
+volume_flow_uncertainty_L_min,float,no,L/min,One-standard-deviation volumetric-flow uncertainty
+viscosity_uncertainty_fraction,float,no,,One-standard-deviation relative viscosity uncertainty
+source_url,string,no,,Instrument/run-book/source URL
+notes,string,yes,,Free-form provenance, calibration, safety and anomaly notes

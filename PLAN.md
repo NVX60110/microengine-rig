@@ -233,6 +233,24 @@ action is a warm direct-flow fixture that measures local piston/liner
 temperature difference and leakage together; do not promote a ringless,
 ringed or material architecture from this RC screen alone.
 
+#### C1 warm-flow experiment readiness (completed preparation step)
+
+`data/leakage/measurement_schema.csv`,
+`scripts/reduce_leakdown_experiment.py`,
+`experiments/WARM_LEAKDOWN_FIXTURE.md` and
+`C1_EXPERIMENT_READINESS_REPORT.md` now define the physical validation path.
+The reducer pairs piston and liner temperatures at each axial station, retains
+signed hot clearance and contact, evaluates the existing annulus equation only
+for positive-clearance static rows, keeps dynamic blow-by separate, fits a free
+clearance exponent, and propagates explicit channel uncertainties. Synthetic
+rows are test-only and never enter `data/leakage/records.csv`.
+
+This preparation does **not** close calibrated C1 and supplies no new leakage
+measurement. The next action is a pressure-rated 10–15 mm reference-cylinder
+campaign with at least three repeats at 2, 4 and 6.5 bar absolute across cold
+and safe warm states, with local fit/taper, paired temperatures, lubricant
+condition, pressure, gas state and direct flow recorded together.
+
 Hypothesis: if manufactured radial clearance is roughly independent of bore,
 then annular leak area scales approximately with `B*c` while displacement
 scales with `B^2*S`, so leakage-per-displacement can deteriorate rapidly as
