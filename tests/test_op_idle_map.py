@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch
+import math
 
 from scripts.op_idle_map import (
     RPM_GRID,
@@ -103,9 +104,19 @@ class OpIdleMapTests(unittest.TestCase):
         self.assertAlmostEqual(result["reacting_tdc_core_temperature_K"], 900.0)
         self.assertAlmostEqual(result["reacting_tdc_boundary_temperature_K"], 850.0)
         self.assertAlmostEqual(result["minimum_motor_work_proxy_mJ"], 2.0)
-        self.assertGreater(result["minimum_motor_torque_proxy_Nm"], 0.0)
+        self.assertAlmostEqual(result["minimum_motor_torque_proxy_Nm"], 2.0e-3 / (4.0 * math.pi))
         self.assertEqual(result["transition_step_deg"], STRICT_STEP_DEG)
         self.assertEqual(result["stable_idle_status"], "unresolved")
+
+    @patch("scripts.op_idle_map.simulate_two_zone", side_effect=RuntimeError("synthetic solver failure"))
+    def test_numerical_failure_is_not_a_physical_screen_class(self, _simulate):
+        result = run_job({
+            "identity": {"case": "test", "mechanism_case": "dme_zhao_sk39", "uncertainty_factor": "none"},
+            "config_patch": {"rpm": 1200.0},
+        })
+        self.assertEqual(result["status"], "error")
+        self.assertEqual(result["screen_class"], "numerical_failure")
+        self.assertEqual(result["limiting_mechanism"], "numerical_failure")
 
 
 if __name__ == "__main__":

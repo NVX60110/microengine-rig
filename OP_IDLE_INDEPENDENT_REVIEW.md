@@ -399,3 +399,23 @@ physical operating boundary.
 Luna A is therefore **conditionally reproducible with reporting caveats**;
 the substantive Phase 2 falsification is complete, while the physical claims
 listed above remain unresolved.
+
+### Sol-lead integration disposition
+
+The four Luna A reporting/bookkeeping findings were corrected after the
+independent review without rerunning or retuning chemistry:
+
+* the report now calls the exported event the evolving-path 1% global
+  inventory-conversion onset and explicitly says no independent ignition-delay
+  observable is exported;
+* solver-error rows now use `screen_class=numerical_failure`, separate from
+  physical `implausible` rows;
+* the motor-torque lower-bound proxy now divides modeled negative work by
+  `4*pi`, the full 720-CAD four-stroke rotation, while assigning zero load to
+  the unmodeled revolution; and
+* the sensitivity prose now includes the negative-work 5 µm/e=0 row.
+
+Regression tests cover the numerical-failure class and 720-CAD torque
+denominator. The underlying RPM, chemistry, pressure, temperature, work,
+conversion, phasing, and retention results were not changed. All physical
+scope limitations in the independent disposition remain open.

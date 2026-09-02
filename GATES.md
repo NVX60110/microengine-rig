@@ -28,6 +28,20 @@ nonreacting transport run without a reason.
 | Conservative display-engine screen | Positive gross IMEP, 10-90% conversion, Tmax < 1600 K, MPRR <= 10 bar/deg, CA50 between -15 and +20 CAD ATDC | Screening gate, not hardware validation |
 | Mechanism provenance | Mechanism source, conversion path, and validation status recorded | Parent retention is not experimental validation |
 
+### Low-idle operating-map gates
+
+| Gate | Requirement | Notes |
+|---|---:|---|
+| Four-stroke timing | Report `t_rev=60/N`, `t_4stroke=120/N`, and the modeled crank interval explicitly | The current −180 to +180 CAD solver covers one revolution, not a complete four-stroke cycle |
+| Transition numerics | Use `step_deg <= 0.125`, `rtol=1e-9`, `atol=1e-15` for promoted transition rows; retry isolated stiff failures at a finer crank step without relaxing chemistry tolerances | PR #24 / Cantera 3.2 preflight |
+| Mechanism aggregation | A common boundary requires every declared mechanism to have a successful row and pass the stated screen | A missing/numerically failed mechanism is not extinction and not an all-mechanism pass |
+| Numerical-failure class | Store solver errors as `screen_class=numerical_failure`, separate from physical `implausible` rows | Consumers must not turn an error count into a physical boundary |
+| Evolving-state timing | Store actual reacting P/T and global inventory/heat-release event definitions; do not label 1% conversion as experimental ignition delay | The Cantera path evolves along compression; no fixed `tau_ign` is substituted |
+| Retained-mass condition | The 0.87 end-mass threshold may localize the Beta 2.6 nominal boundary but must remain labelled campaign-specific and uncalibrated | It is neither a universal sealing standard nor hardware stability proof |
+| Stable-idle promotion | Requires a periodic 720-CAD model with intake/exhaust pumping, residual species/temperature carry-over, friction, crank inertia/motor torque and cycle-to-cycle convergence | Positive closed-pass gross IMEP is insufficient |
+| Motor requirement | Report modeled negative work and any 720-CAD average lower-bound proxy separately from instantaneous or hardware motor torque | The unmodeled gas-exchange revolution may not be assigned a measured load |
+| Robust operating region | Show mechanism spread and declared one-factor/multifactor sensitivities; do not promote the exact crossing of a threshold as a precision RPM prediction | Parameter-control requirements are part of the result |
+
 ## Nonreacting CFD transport gates
 
 | Gate | Requirement | Notes |

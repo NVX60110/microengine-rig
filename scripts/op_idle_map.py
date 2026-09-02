@@ -191,8 +191,12 @@ def run_job(job: dict[str, Any]) -> dict[str, Any]:
             "compression_start_boundary_temperature_K": float(compression_start["boundaryTemperature_K"]),
             "gross_work_supported_mJ": float(summary["gross_indicated_work_mJ"]),
             "minimum_motor_work_proxy_mJ": max(0.0, -float(summary["gross_indicated_work_mJ"])),
+            # Full-four-stroke average lower bound: spread any negative work
+            # from the modeled 360-CAD closed pass over 720 CAD (4*pi rad),
+            # while deliberately assigning zero load to the unmodeled gas-
+            # exchange revolution. This is not instantaneous motor torque.
             "minimum_motor_torque_proxy_Nm": max(
-                0.0, -float(summary["gross_indicated_work_mJ"]) * 1e-3 / (2.0 * 3.141592653589793)
+                0.0, -float(summary["gross_indicated_work_mJ"]) * 1e-3 / (4.0 * 3.141592653589793)
             ),
             "pressure_trace_digest": _trace_digest(rows),
             "wall_heat_mJ": float(summary["wall_energy_gas_to_wall_mJ"]),
@@ -219,7 +223,7 @@ def run_job(job: dict[str, Any]) -> dict[str, Any]:
             "status": "error", "error": f"{type(exc).__name__}: {exc}",
             **job["identity"], "rpm": job["config_patch"].get("rpm"),
             "stable_idle_status": "unresolved",
-            "screen_class": "implausible", "limiting_mechanism": "numerical_failure",
+            "screen_class": "numerical_failure", "limiting_mechanism": "numerical_failure",
         }
 
 

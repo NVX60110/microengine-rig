@@ -95,13 +95,17 @@ maximum pressure rise 2.37554 bar/CAD, CA50 +4.20524 CAD, and end retention
 
 Each row stores compression-start pressure/temperature and the actual evolving
 reacting-state TDC pressure with separate core and boundary TDC temperatures,
-ignition/conversion and CA10/CA50/CA90, a compact
+the evolving-path 1% inventory-conversion onset and CA10/CA50/CA90, a compact
 pressure-trace digest, gross work/IMEP, peak pressure and pressure rise,
 wall heat, trapped mass/leakage, mass closure, event times, and a clearly
-labeled lower-bound motor-work/torque proxy.  The event timing uses
+labeled lower-bound motor-work/torque proxy. The torque proxy spreads any
+negative modeled-pass work over the full 720-CAD four-stroke cycle (`4*pi`)
+while assigning zero load to the unmodeled gas-exchange revolution; it is not
+instantaneous or required hardware torque. The event timing uses
 `t_rev=60/N` and `t_4stroke=120/N`; onset is the first global inventory row at
 1% conversion, while CA10 is based on cumulative chemical heat release.  No
-constant-volume TDC delay is presented as path ignition delay.
+constant-volume TDC delay or independent ignition-delay observable is
+presented as evolving-path ignition delay.
 
 ## Limitations and next physical limiter
 
@@ -118,8 +122,8 @@ chemistry, and full gas exchange.
 
 At the final 1105.957031-rpm uncertainty midpoint, the reference row is
 robust (3.7127 bar gross IMEP, 0.87009 retention).  The one-factor screen
-shows strong sensitivity: 5 µm/e=0.5 and 5 µm/e=1.0 become nonpositive-work
-cases; 3 µm/e=1.0 is also nonpositive-work; 3.5 bar intake, 350 K intake,
+shows strong sensitivity: every 5 µm row (e=0, 0.5 and 1.0) becomes a
+nonpositive-work case; 3 µm/e=1.0 is also nonpositive-work; 3.5 bar intake, 350 K intake,
 phi=0.5 and 600 K wall enter rapid-release or over-conversion branches.  The
 2.3 bar intake, 280 K intake, 520 K wall and phi=0.3 rows remain positive-work
 screen cases, with the 280 K row marginal on retention.  These are bounded

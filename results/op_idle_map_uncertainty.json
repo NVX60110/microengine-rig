@@ -908,7 +908,7 @@
       "compression_start_boundary_temperature_K": 300.0,
       "gross_work_supported_mJ": -95.49887799294899,
       "minimum_motor_work_proxy_mJ": 95.49887799294899,
-      "minimum_motor_torque_proxy_Nm": 0.015199118492307654,
+      "minimum_motor_torque_proxy_Nm": 0.007599559246153827,
       "pressure_trace_digest": {
         "P_bar_at_-180_CAD": 3.0000000000000004,
         "P_bar_at_-90_CAD": 6.929608519492461,
@@ -1070,7 +1070,7 @@
       "compression_start_boundary_temperature_K": 300.0,
       "gross_work_supported_mJ": -11.726579064607558,
       "minimum_motor_work_proxy_mJ": 11.726579064607558,
-      "minimum_motor_torque_proxy_Nm": 0.0018663430236902272,
+      "minimum_motor_torque_proxy_Nm": 0.0009331715118451136,
       "pressure_trace_digest": {
         "P_bar_at_-180_CAD": 3.0000000000000004,
         "P_bar_at_-90_CAD": 6.977052635611866,
@@ -1232,7 +1232,7 @@
       "compression_start_boundary_temperature_K": 300.0,
       "gross_work_supported_mJ": -132.84998216974867,
       "minimum_motor_work_proxy_mJ": 132.84998216974867,
-      "minimum_motor_torque_proxy_Nm": 0.02114373135198566,
+      "minimum_motor_torque_proxy_Nm": 0.01057186567599283,
       "pressure_trace_digest": {
         "P_bar_at_-180_CAD": 3.0000000000000004,
         "P_bar_at_-90_CAD": 6.8913276884194286,
@@ -1394,7 +1394,7 @@
       "compression_start_boundary_temperature_K": 300.0,
       "gross_work_supported_mJ": -229.47895623278836,
       "minimum_motor_work_proxy_mJ": 229.47895623278836,
-      "minimum_motor_torque_proxy_Nm": 0.03652271022001697,
+      "minimum_motor_torque_proxy_Nm": 0.018261355110008485,
       "pressure_trace_digest": {
         "P_bar_at_-180_CAD": 3.0000000000000004,
         "P_bar_at_-90_CAD": 6.779173510493102,

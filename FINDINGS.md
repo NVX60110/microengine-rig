@@ -35,6 +35,10 @@ mass, 10 ms mixing.
 | O7 | A bounded mixing window appears between extinction and rapid heat release | 72-case pilot, 3 bar, CR 7.75/8.0, three mechanisms; slow=100 ms, central=12-34 ms, fast=2.4-3.2 ms | SCREENING closure ensemble | Fast mixing: 0/24 acceptable; central: 10/24; slow: 10/24, `beta26_uncertainty.json` |
 | O8 | CR 7.75 and 8.0 are mechanism-robust under the 3 micrometre/e=.5 annulus plus central mixing closure | 3 bar, 25/75 DME/CH4, phi .40, 560 K wall; all three mechanisms pass the conservative display-engine screen | SCREENING, conditional on uncalibrated sealing/mixing | `beta26_uncertainty.csv`, `beta26_uncertainty_audit.png` |
 | O9 | Retention is necessary but not sufficient | Every acceptable pilot case retained at least .874 of end-cycle cylinder mass; sealed fast-mixing cases still ran away | SCREENING | `beta26_uncertainty.json` |
+| O10 | The nominal low-idle screen crosses the campaign-specific 0.87 retained-mass gate at about 1.11 krpm | 8.5 x 7 mm, CR7.75, 3 bar/300 K, phi .40, 560 K wall, 3 µm radial/e=.5 annulus, central mixing, three mechanisms; exact tested Zhao-full crossing 1105.859375–1106.0546875 rpm | PROJECT MODEL SCREENING; not a physical stable-idle boundary | `OP_IDLE_REPORT.md`, `results/op_idle_map_refine3.json` |
+| O11 | 1200 rpm passes all nominal closed-pass gates across three mechanisms but is not robust hardware idle | Gross IMEP 0.624–1.874 bar, conversion .325–.454, CA50 −6.12 to −1.76 CAD, retained mass .8821–.8850; friction, pumping, gas exchange, residuals and cycle variability absent | PROJECT MODEL RESULT; **possible but fragile** inference | `OP_IDLE_REPORT.md`, `results/op_idle_map_baseline.json` |
+| O12 | Slowing below the nominal crossing exposes two different modeled limits | 1000 rpm remains positive-work but retains only .856–.863; at 800 rpm all mechanisms enter 1868–1874 K / 63.5–72.2 bar-per-CAD branches while retaining only .808–.812 | PROJECT MODEL RESULT; leakage is first limiter below 1200, long-residence hot branch appears lower | `results/op_idle_map_baseline.json` |
+| O13 | The nominal all-mechanism closed-pass screen is roughly 1.11–2.0 krpm, not a 25k-rpm operability claim | 1500-rpm LLNL passes on isolated 0.0625-CAD retry; at 3000 rpm Zhao barely remains positive while LLNL is negative; at 5000+ all are negative under current autoignition state | PROJECT MODEL SCREENING; upper transition deliberately not refined | `OP_IDLE_REPORT.md`, `results/op_idle_map_baseline.json`, `results/op_idle_map_retry.json` |
 
 ## Sealing and mechanics
 
@@ -72,6 +76,9 @@ mass, 10 ms mixing.
 | M30 | ABC taper is independently documented qualitatively, but its numeric profile remains unknown | MECOA states ABC sets are intentionally tapered/choked cold and become effectively straight at operating temperature; no taper magnitude, local temperatures or clearance table was recovered | LITERATURE/MANUFACTURER qualitative evidence; no model promotion | `data/thermal/literature_sources.csv`, `data/thermal/LITERATURE_EVIDENCE.md` |
 | M31 | The full 1,200–25,000 rpm audit is a useful hypothesis map, not a promoted regime result | Correct four-stroke period is `120/N` s (100 ms at 1200 rpm; 4.8 ms at 25,000 rpm); the audit's Hersey/Stanton labels, universal Re/Fo crossings, hard CI-to-spark boundary, saddle claim and “no film” statement require recalculation or coupled validation | HYPOTHESIS ROUTING; no numerical regime or architecture promotion | `findings/FABLE51_REVIEW.md`, attached `AUDIT.md` |
 | M32 | Steel-piston temperature sensitivity is reduced only for matched piston/liner thermal states, not for piston-only perturbations | At 8.5 mm bore, `-R*alpha_steel` is approximately -52 nm/K for piston-temperature-only sensitivity; near-cancellation requires co-varying temperatures and matched CTE | CALCULATED dimensional correction | `findings/FABLE51_REVIEW.md` |
+| M33 | Axial local pairing preserves the order-10-µm Al/steel cold-fit result and exposes narrow-station sensitivity | 8.5 mm Al-4032/4140 neutral profile: 8.90–11.71 µm cold radial under constant h, 12.76–15.40 µm under angle sensitivity for 2–5 µm hot; ±2 µm taper/barrel and ±1 µm radial error can erase a common window | PROJECT MODEL SCREENING; no manufacturing drawing | `THERMAL_FIT_AXIAL_REPORT.md`, `data/thermal/thermal_fit_axial_summary.json` |
+| M34 | Common preheating is not guaranteed to open an Al-piston/steel-liner gap | Higher piston CTE can produce a `maximum_safe` rather than `minimum_safe` interval; the implemented scan reports bounded interval type and paired Tp/Tl values but has no lubrication/contact model | PROJECT MODEL RESULT; no safe-cranking permission | `physics/thermal_fit_axial.py`, `THERMAL_FIT_AXIAL_REPORT.md` |
+| M35 | Axial leakage must use pressure and gas temperature from the same state as the selected clearance profile | Neutral 8.5 mm/10 µm constant-h worst path occurs near +60 CAD at 18.589 bar and 721.66 K, giving 1.8663 mg/s; the rejected BDC-state mismatch gave 0.1107 mg/s | NUMERICAL COUPLING CORRECTION; flow remains uncalibrated | `OP_IDLE_INDEPENDENT_REVIEW.md`, `data/thermal/thermal_fit_axial_candidates.csv` |
 
 ## Numerics and method
 
@@ -82,6 +89,7 @@ mass, 10 ms mixing.
 | N3 | Source-term integration is retained only for reaction localization | Stiff hot branches can accumulate outer-step quadrature error | CONFIRMED safeguard | component residuals + inventory metric |
 | N4 | Accepted Beta2.4 shared-anchor results are crank-step converged | .25 to .03125 degree: sk39 IMEP 1.0446 to 1.0418; LLNL .6580 to .6537 | CONFIRMED numerical convergence | `two_zone_convergence.csv` |
 | N5 | Relaxed two-zone CVODE tolerances remove LLNL trace-radical stalls without material solution drift | rtol/atol 1e-7/1e-14 vs 1e-9/1e-15 at CR7.75, 3 bar, annular 3um/e=.5, central mixing: IMEP shifts .004 bar Zhao and .010 bar LLNL; Tmax <.5 K | CONFIRMED two-point numerical check | `BETA26_REPORT.md` |
+| N6 | The 1500-rpm LLNL 0.125-CAD failure is numerical, not nonignition | Baseline reaches the 100000-step CVODES ceiling; same physics and strict tolerances at 0.0625 CAD completes with 0.8295 bar gross IMEP, .3038 conversion, CA50 +4.21 CAD and .9067 retention | CONFIRMED bounded numerical retry | `results/op_idle_map_retry.json`, `OP_IDLE_INDEPENDENT_REVIEW.md` |
 
 ## CFD-01 / CFD-02 in-cylinder transport
 
@@ -127,15 +135,15 @@ CFD-02 changes only the piston/head clearance shape unless stated.
 |---|---|---|---|---|
 | A1 | Retain the motor-driven display-engine architecture | No accepted default two-zone anchor/clearance/eccentricity case paid idealized compressor power; friction and gas exchange remain incomplete | SCREENING decision, not impossibility theorem | `BETA24_REPORT.md` |
 | A2 | Canonical code is `microengine_rig.py` plus experimental `two_zone_model.py`; `microengine_v3.py` is retired | Beta2.5 repository | CONFIRMED project decision | README |
+| A3 | Physical stable idle remains unresolved despite the nominal closed-pass RPM screen | Current model omits the gas-exchange revolution, pumping, residual carry-over, friction, crank inertia, motor controller and cycle variability | OPEN; next justified simulator change is a periodic 720-CAD crank/gas-exchange layer | `OP_IDLE_REPORT.md`, `OP_IDLE_INDEPENDENT_REVIEW.md` |
 
 ## Open work, in priority order
 
-1. Review the Issue #17 wedge-axis result (F28): adopt `wedge` as the CFD-01 axis treatment and the `_wedge` histories as the flat references, then convert the S1/S2 mesh generators to the same axis treatment before any further squish comparison. Issue #10 is closed; the converged tracer solve and the regenerated flat/S1/S2 histories (F21-F25) are merged.
-2. Decide the B1 squish question from F25 under the regenerated numerics: the recommendation is to accept the flat-piston `tau(theta)` scale, run no S3, and couple no S1/S2 schedule into Cantera. A structurally bounded species-transport variant (F23) stays optional and would be validated against the converged function-object result before replacing it.
-3. Digitize or obtain Burke et al. DME/methane point data and run the direct mechanism gate.
-4. Audit/select Zhao parent pressure-dependent decomposition rates.
-5. Build a calibrated leakage scaling dataset; exclude uncalibrated leak-down percentages from quantitative regression.
-6. Replace the single-orifice ring-pack bracket with a multi-volume labyrinth model.
-7. Hot leak-down/crankcase-flow fixture when target hardware exists.
-8. Correct 720-degree friction/gas-exchange model and measure motoring torque.
-9. Multi-cycle residual-gas chemistry in the two-zone model.
+1. Build the minimal periodic 720-CAD gas-exchange/crank layer exposed by the low-idle campaign: valves and pumping, residual-species carry-over, crank inertia/motor controller, and a separately sourced friction bracket. Require periodic mass/species/energy/speed closure before using “stable idle.”
+2. Run the bounded 1000/1200/1500/2000-rpm repeat-cycle experiment at 2/3/5 µm hot-clearance brackets and all three mechanisms. First reproduce the closed-pass case when new terms are disabled; do not tune coefficients to retain 1200 rpm.
+3. Prepare the Issue #13 warm direct-flow fixture to measure paired axial temperature/clearance, taper/roundness, lubricant state and flow. This is the first physical test of the modeled low-idle limiter.
+4. Digitize or obtain Burke et al. DME/methane point data and run the direct mechanism gate.
+5. Audit/select Zhao parent pressure-dependent decomposition rates.
+6. Measure motoring torque versus crank angle and RPM when complete hardware exists; until then motor torque remains unresolved.
+7. Keep OpenFOAM on the accepted wedge-axis reference. Run no S3 and no new CFD unless a heat-flux or transport quantity becomes decision-limiting.
+8. Compare ringed and ringless thermal/leakage architectures only after a calibrated warm-flow lane exists; retain a future multi-volume ring pack as a separate model.
