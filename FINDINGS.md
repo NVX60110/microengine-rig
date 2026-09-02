@@ -62,11 +62,11 @@ mass, 10 ms mixing.
 | N4 | Accepted Beta2.4 shared-anchor results are crank-step converged | .25 to .03125 degree: sk39 IMEP 1.0446 to 1.0418; LLNL .6580 to .6537 | CONFIRMED numerical convergence | `two_zone_convergence.csv` |
 | N5 | Relaxed two-zone CVODE tolerances remove LLNL trace-radical stalls without material solution drift | rtol/atol 1e-7/1e-14 vs 1e-9/1e-15 at CR7.75, 3 bar, annular 3um/e=.5, central mixing: IMEP shifts .004 bar Zhao and .010 bar LLNL; Tmax <.5 K | CONFIRMED two-point numerical check | `BETA26_REPORT.md` |
 
-## CFD-01 in-cylinder transport
+## CFD-01 / CFD-02 in-cylinder transport
 
-Conditions for this section: 8.5 x 7.0 mm, CR 7.75, 1200 rpm, cold closed
-cylinder, passive tracer, flat piston, OpenFOAM 14, three meshes
-(2706 / 5289 / 10455 cells).
+Flat-piston CFD-01 conditions: 8.5 x 7.0 mm, CR 7.75, 1200 rpm, cold closed
+cylinder, passive tracer, OpenFOAM 14, three meshes (2706 / 5289 / 10455 cells).
+CFD-02 changes only the piston/head clearance shape unless stated.
 
 | ID | Finding | Conditions | Status | Evidence |
 |---|---|---|---|---|
@@ -76,15 +76,16 @@ cylinder, passive tracer, flat piston, OpenFOAM 14, three meshes
 | F4 | Beta 2.4's 10 ms prescribed mixing time was close to the measured flat-piston value near the combustion window | roughly +/-20 CAD | SCREENING model implication | `cfd/results/cfd01_mixing_time.csv` |
 | F5 | A single scalar mixing time is not an adequate full-cycle closure | fine history spans ~10.65 ms near TDC to >=39 ms by +45 CAD | CONFIRMED within CFD-01 | scalar history + addendum |
 | F6 | The +90 CAD negative local derivative is not evidence of physical un-mixing; the direct concentration difference remains positive and late-cycle differentiation is noise-sensitive | +90 CAD onward | CORRECTED interpretation | per-mesh scalar histories; `findings/CFD01_ADDENDUM.md` |
-| F7 | +45 CAD is not mesh-converged: coarse 24.67 / medium 32.11 / fine 39.07 ms | requested +45 CAD | OPEN; fine value is a lower bound | per-mesh scalar histories |
-| F8 | Outer-shell zone definition is stable at approximately 0.1984 of cylinder volume | moving cycle | CONFIRMED numerical check | scalar histories |
-| F9 | Slider-crank volume closure is approximately 0.1407% across meshes | all meshes | CONFIRMED | `cfd/results/cfd01_mesh_convergence.csv` |
-| F10 | Closed-domain mass drift is 5.986e-7 relative on the fine stored run; legacy fields were evaluated with perfect-gas `rho=p/(RT)` fallback | moving mesh, v8 stored fields | CONFIRMED numerical gate | `cfd/results/cfd01_mesh_convergence.csv`, `CFD01_REPORT.md` |
+| F7 | +45 CAD pointwise `tau_mix` is not mesh-converged: coarse 24.67 / medium 32.11 / fine 39.07 ms | requested +45 CAD | OPEN bound; not a blocker for the near-TDC squish decision | per-mesh scalar histories, Issue #5 |
+| F8 | Flat-piston outer-shell zone definition is stable at approximately 0.1984 of cylinder volume | moving flat-piston cycle | CONFIRMED numerical check | scalar histories |
+| F9 | Slider-crank volume closure is approximately 0.1407% across flat meshes | all meshes | CONFIRMED | `cfd/results/cfd01_mesh_convergence.csv` |
+| F10 | Closed-domain mass drift is 5.986e-7 relative on the flat fine stored run; legacy fields were evaluated with perfect-gas `rho=p/(RT)` fallback | moving mesh, v8 stored fields | CONFIRMED numerical gate | `cfd/results/cfd01_mesh_convergence.csv`, `CFD01_REPORT.md` |
 | F11 | `correctPhi=no` is acceptable for the validated CFD-01 baseline; reopen only if a new timestep, mesh, or geometry fails continuity/mass gates | moving mesh, stored v8 fields | CONFIRMED baseline decision; conditional reopen | `GATES.md`, `CFD01_REPORT.md` |
-| F12 | Preserve/interpolate the measured `tau(theta)` schedule before fitting a lower-order closure | full cycle | METHOD NOTE | `findings/CFD01_ADDENDUM.md` |
+| F12 | Preserve/interpolate measured transport histories before fitting a lower-order closure | full cycle | METHOD NOTE | `findings/CFD01_ADDENDUM.md`, `GATES.md` |
 | F13 | maxDeltaT=0.25 CAD passes the 5% answer gate but is not faster in the measured coarse run; 0.35/0.45 CAD fail max Co (0.740/0.854) | coarse mesh, maxCo target 0.15 | CONFIRMED numerical sweep; retain 0.15 CAD recommendation | `cfd/results/cfd01_timestep_sweep.csv`, `CFD01_REPORT.md` |
-| F14 | S1 mild constant-CR squish coarse passes all numerical gates but does not show a faster TDC tracer timescale: local `tau_mix` 34.15 ms versus flat-piston 10.65 ms | 3.25 mm bowl radius, 1.00 mm squish width, 0.50 mm TDC gap, 0.918 mm recess; 2,763 cells; 1200 rpm; OpenFOAM 14 | SCREENING; geometry decision pending medium/fine confirmation and S2 comparison | `CFD02_S1_REPORT.md`, `cfd/results/cfd02_s1_coarse_metadata.json` |
-| F15 | Global mass-weighted tracer RMS is the valid cross-geometry diagnostic when the fixed-radius shell fraction changes; S1/flat raw RMS is 0.835 at TDC, while the +/-5 CAD fitted tau is 43.33/39.51 ms | CFD-01 fine versus S1 coarse; shell fraction flat 19.84% constant, S1 16.74% BDC to 8.65% near TDC; tracer inventory drift <=6.83e-5 relative | SCREENING; S1 has a lower cumulative contrast but no uniform local-rate improvement | `cfd/compare_tracer_mixing.py`, `cfd/results/cfd01_vs_cfd02_s1_tracer_mixing.json`, `CFD02_S1_REPORT.md` |
+| F14 | S1 mild constant-CR squish coarse passes its numerical gates; its inherited fixed-radius `DeltaC/tau_mix` is geometry-specific because shell volume falls from 16.74% at BDC to 8.65% near TDC | 3.25 mm bowl radius, 1.00 mm squish width, 0.50 mm TDC gap, 0.918 mm recess; 2,763 cells; 1200 rpm | CONFIRMED method warning; S1 remains SCREENING physics | `CFD02_S1_REPORT.md`, `cfd/results/cfd02_s1_coarse_metadata.json` |
+| F15 | Cross-geometry cumulative mixing must use each case's mass-weighted tracer RMS normalized by its own initial RMS when initial tracer amplitude differs. At TDC S1/flat normalized RMS is 0.8922, while the +/-5 CAD fitted tau is 43.33/39.51 ms | Flat initial raw RMS 0.39875866; S1 initial 0.37335030 (ratio 0.9363); tracer inventory drift <=6.83e-5 relative | SCREENING; S1 has ~10.8% less initial-normalized segregation remaining at TDC but no uniform local-rate improvement | `cfd/compare_tracer_mixing.py`, `cfd/results/cfd01_vs_cfd02_s1_tracer_mixing.json`, `CFD02_S1_REPORT.md` |
+| F16 | S1 changes the timing of mixing: its +/-5 CAD fitted tau is faster than flat through much of compression (e.g. -20 CAD: 35.15 vs 50.85 ms) but slower at TDC (43.33 vs 39.51 ms) and after | S1 coarse vs flat fine global normalized RMS fit | SCREENING history-shape result | `cfd/results/cfd01_vs_cfd02_s1_tracer_mixing.json` |
 
 ## Architecture decision
 
@@ -95,12 +96,12 @@ cylinder, passive tracer, flat piston, OpenFOAM 14, three meshes
 
 ## Open work, in priority order
 
-1. Close the +45 CAD mesh-convergence hole; retain the 0.15-CAD cap for now.
-2. Run squish CFD and replace the provisional transport closure with measured `tau(theta)` if robust.
-3. Digitize or obtain Burke et al. DME/methane point data and run the direct gate.
+1. Run the single bounded CFD-02 S2 coarse screen and compare initial-normalized RMS history against both flat and S1.
+2. Refine only the better squish geometry if the S2 history shows a coherent benefit large enough to matter to the two-zone chemistry branch.
+3. Digitize or obtain Burke et al. DME/methane point data and run the direct mechanism gate.
 4. Audit/select Zhao parent pressure-dependent decomposition rates.
 5. Build a calibrated leakage scaling dataset; exclude uncalibrated leak-down percentages from quantitative regression.
-7. Replace the single-orifice ring-pack bracket with a multi-volume labyrinth model.
-8. Hot leak-down/crankcase-flow fixture when target hardware exists.
-9. Correct 720-degree friction/gas-exchange model and measure motoring torque.
-10. Multi-cycle residual-gas chemistry in the two-zone model.
+6. Replace the single-orifice ring-pack bracket with a multi-volume labyrinth model.
+7. Hot leak-down/crankcase-flow fixture when target hardware exists.
+8. Correct 720-degree friction/gas-exchange model and measure motoring torque.
+9. Multi-cycle residual-gas chemistry in the two-zone model.
