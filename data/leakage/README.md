@@ -116,3 +116,9 @@ dimensions, taper, piston and liner temperature, pressure, gas state, and
 lubricant condition together with direct flow.  A warm fit measurement is the
 missing link between the existing engineering clearance brackets and a
 credible hot blow-by datum.
+
+The follow-up `physics/thermal_state.py` / `scripts/thermal_state_rc.py` screen
+uses the repository's existing calculated constant-`h` history and an explicitly
+unvalidated angle-dependent sensitivity to produce a temperature envelope. Its
+outputs live in `data/thermal/` and are still calculated screening artifacts;
+they must not be copied into `records.csv` or treated as measured temperatures.
