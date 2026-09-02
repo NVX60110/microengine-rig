@@ -1,0 +1,24 @@
+{
+  "source": {
+    "author": "Christopher M. Zinner",
+    "title": "Methane And Dimethyl Ether Oxidation At Elevated Temperatures And Pressure",
+    "year": 2008,
+    "institution": "University of Central Florida",
+    "record_url": "https://stars.library.ucf.edu/etd/3695/",
+    "identifier": "CFE0002096",
+    "appendix": "TABULATED DATA",
+    "source_pdf_sha256": "049589348D3FDE50C938476846D62DD5AA4E714B5A45B23D8711F70B4A7D88F6",
+    "source_pdf_note": "Hash is for the user-provided PDF attachment; the copyrighted PDF is not committed."
+  },
+  "status": "recovered_local_attachment",
+  "rows_ingested": 167,
+  "mixtures": {
+    "80CH4_20DME": [1, 2, 3, 4],
+    "60CH4_40DME": [5, 6, 7, 8]
+  },
+  "recovery_note": "Exact numeric rows transcribed from the Appendix tables, PDF pages 69-73 (printed pages 55-59). No figure digitization, interpolation, or inferred values.",
+  "data_classification": "measured_zinner_shock_tube_table",
+  "facility_note": "The thesis describes Aerospace Corporation and the Aul/Petersen facility, but Appendix rows are not facility-labeled; facility is therefore explicitly not_stated_per_appendix_row.",
+  "adjustment_note": "The table reports adjusted average T/P alongside original P/T. tau_ign is retained as printed; adjustment_status does not claim the delay itself was adjusted.",
+  "provenance_policy": "These are measured Zinner shock-tube table rows, distinct from Burke 2015 plot/supplement data; do not treat them as the complete Burke dataset."
+}
