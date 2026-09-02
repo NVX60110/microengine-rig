@@ -1,0 +1,13 @@
+{
+  "mesh_level": "medium",
+  "axis": "wedge",
+  "initial_delta_t_cad": 0.01,
+  "nominal_spacing_mm": 0.1,
+  "radial_cells": 43,
+  "azimuthal_cells": 1,
+  "axial_cells_bdc": 41,
+  "processors": 1,
+  "status": "ok",
+  "error": "",
+  "runtime_s": 111.98794821300001
+}

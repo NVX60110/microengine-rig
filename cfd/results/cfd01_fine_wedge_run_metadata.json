@@ -1,0 +1,13 @@
+{
+  "mesh_level": "fine",
+  "axis": "wedge",
+  "initial_delta_t_cad": 0.01,
+  "nominal_spacing_mm": 0.05,
+  "radial_cells": 85,
+  "azimuthal_cells": 1,
+  "axial_cells_bdc": 41,
+  "processors": 1,
+  "status": "ok",
+  "error": "",
+  "runtime_s": 228.619564946
+}
