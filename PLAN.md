@@ -412,11 +412,13 @@ The bounded preflight exposed two useful constraints before that larger model:
   numerical gates. This is a regression anchor for the future gas-exchange
   model, not a residual-fraction calibration.
 
-1. Implement the minimal 720-CAD gas-exchange/residual/crank layer, preserving
-   the closed-pass reference when new terms are disabled and reproducing the
-   prescribed-residual adapter when its replacement fraction/state is imposed.
-2. Run 1,000/1,200/1,500/2,000 rpm at 2/3/5 µm hot-clearance brackets and all
-   three mechanisms; require periodic mass/species/energy/speed convergence.
+1. Diagnose and close one 1,200-rpm valve-enabled 720-CAD reference cycle:
+   isolate valve mass/energy mapping and timing/area assumptions, then require
+   periodic mass/species/energy/temperature closure before adding friction or
+   motor dynamics.
+2. After that gate passes, run 1,000/1,200/1,500/2,000 rpm at 2/3/5 µm
+   hot-clearance brackets and all three mechanisms; require periodic
+   mass/species/energy/speed convergence.
 3. In parallel, digitize/obtain Burke DME/CH4 data and run the direct mechanism
    gate, then audit Zhao pressure-dependent decomposition. Do not optimize a
    new fuel recipe against the currently divergent constant-volume mechanisms.

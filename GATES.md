@@ -39,6 +39,7 @@ nonreacting transport run without a reason.
 | Evolving-state timing | Store actual reacting P/T and global inventory/heat-release event definitions; do not label 1% conversion as experimental ignition delay | The Cantera path evolves along compression; no fixed `tau_ign` is substituted |
 | Retained-mass condition | The 0.87 end-mass threshold may localize the Beta 2.6 nominal boundary but must remain labelled campaign-specific and uncalibrated | It is neither a universal sealing standard nor hardware stability proof |
 | Stable-idle promotion | Requires a periodic 720-CAD model with intake/exhaust pumping, residual species/temperature carry-over, friction, crank inertia/motor torque and cycle-to-cycle convergence | Positive closed-pass gross IMEP is insufficient |
+| 720-CAD staging order | At 1,200 rpm, close the valve-enabled mass/species/enthalpy/temperature state first; only then enable friction, crank dynamics/motor control or widen the RPM campaign | The bounded preflight stopped at 3.19% mass and 1.14% enthalpy drift after four cycles; later stages cannot repair a non-periodic state |
 | Motor requirement | Report modeled negative work and any 720-CAD average lower-bound proxy separately from instantaneous or hardware motor torque | The unmodeled gas-exchange revolution may not be assigned a measured load |
 | Robust operating region | Show mechanism spread and declared one-factor/multifactor sensitivities; do not promote the exact crossing of a threshold as a precision RPM prediction | Parameter-control requirements are part of the result |
 
