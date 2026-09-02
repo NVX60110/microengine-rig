@@ -6,6 +6,13 @@ controls, while increasing squish area and reducing the TDC squish gap.  The
 central bowl recess is chosen to preserve the analytic CR=7.75 TDC clearance
 volume.  This is a bounded coarse screening run only; do not refine S2 until
 its geometry-independent tracer history is compared against flat and S1.
+
+Issue #10 (scalar inventory): the passive tracer is solved by the OpenFOAM 14
+`scalarTransport` function object.  Its inventory loss was an unconverged
+linear solve (shared relTol 0.01 entry, one PBiCGStab iteration), not a
+moving-mesh flux defect.  `--tracer-solver tight` (default) converges the
+solve; `--tracer-solver legacy` reproduces the failed baseline.  See
+`CFD02_S2_SCALAR_ISOLATION_REPORT.md`.
 """
 from __future__ import annotations
 
@@ -62,6 +69,16 @@ TRACER_SCHEMES = {
     "upwind": "upwind",
     "linearUpwind": "linearUpwind grad(tracer)",
     "cubic": "cubic",
+}
+# Issue #10: the base fvSolution carries an exact-keyword `tracer` entry (exact
+# keys override the shared "(U|e|tracer).*" pattern).  "tight" is the
+# converged solve that closes the S2 inventory gate (9.9e-12 relative drift).
+# "legacy" writes the values the shared pattern entry used to supply, which
+# stopped PBiCGStab after one iteration and leaked 1.67e-4 relative tracer
+# mass; it exists only to reproduce the failed baseline.
+TRACER_SOLVERS: dict[str, dict[str, str]] = {
+    "tight": {"tolerance": "1e-13", "relTol": "0", "maxIter": "500"},
+    "legacy": {"tolerance": "1e-8", "relTol": "0.01", "maxIter": "200"},
 }
 
 
@@ -224,7 +241,31 @@ boundary
 '''
 
 
-def prepare(case: Path, overwrite: bool, tracer_scheme: str) -> None:
+TRACER_BLOCK_RE = re.compile(r"(\n[ \t]*tracer[ \t]*\n[ \t]*\{\n)(.*?)(\n[ \t]*\}\n)", re.S)
+
+
+def apply_tracer_solver(solution_text: str, settings: dict[str, str]) -> str:
+    """Rewrite the exact-keyword `tracer` solver block values in an fvSolution text.
+
+    The base case must already contain the block; refusing to insert one keeps a
+    single source of truth in `cold_flow_tracer/system/fvSolution`.
+    """
+    match = TRACER_BLOCK_RE.search(solution_text)
+    if match is None:
+        raise ValueError("fvSolution has no exact-keyword tracer solver block")
+    if "tracerFinal" not in solution_text:
+        raise ValueError("fvSolution has no tracerFinal solver block")
+    body = match.group(2)
+    for key, value in settings.items():
+        body, count = re.subn(rf"(?m)^([ \t]*{key}[ \t]+)[^;]+;", rf"\g<1>{value};", body)
+        if count != 1:
+            raise ValueError(f"tracer solver block has {count} `{key}` entries; expected 1")
+    return solution_text[: match.start(2)] + body + solution_text[match.end(2):]
+
+
+def prepare(
+    case: Path, overwrite: bool, tracer_scheme: str, tracer_solver: str = "tight"
+) -> None:
     if case.exists():
         if not overwrite:
             raise FileExistsError(f"{case} exists; use --overwrite")
@@ -241,6 +282,10 @@ def prepare(case: Path, overwrite: bool, tracer_scheme: str) -> None:
     if old_entry not in schemes_text:
         raise ValueError(f"expected tracer scheme entry missing in {schemes_path}")
     schemes_path.write_text(schemes_text.replace(old_entry, new_entry, 1))
+    solution_path = case / "system" / "fvSolution"
+    solution_path.write_text(
+        apply_tracer_solver(solution_path.read_text(), TRACER_SOLVERS[tracer_solver])
+    )
 
 
 def validate_case(case: Path, output: Path) -> tuple[list[dict[str, float]], dict[str, object], list[str]]:
@@ -362,6 +407,12 @@ def main() -> None:
         default="upwind",
         help="finite-volume convection scheme for tracer (default: upwind)",
     )
+    parser.add_argument(
+        "--tracer-solver",
+        choices=tuple(TRACER_SOLVERS),
+        default="tight",
+        help="tracer linear-solver convergence: tight (converged, Issue #10 fix) or legacy (relTol 0.01 baseline reproduction)",
+    )
     parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "cfd/results/cfd02_s2_coarse_scalar_history.csv")
     args = parser.parse_args()
     if shutil.which("foamRun") is None:
@@ -374,7 +425,7 @@ def main() -> None:
         if not case.exists():
             raise SystemExit(f"existing case not found: {case}")
     else:
-        prepare(case, args.overwrite, args.tracer_scheme)
+        prepare(case, args.overwrite, args.tracer_scheme, args.tracer_solver)
 
     started = time.monotonic()
     previous_metadata: dict[str, object] = {}
@@ -419,6 +470,8 @@ def main() -> None:
     metadata = {
         "case": "CFD-02 S2 medium squish coarse",
         "tracer_scheme": args.tracer_scheme,
+        "tracer_solver": args.tracer_solver,
+        "tracer_solver_settings": TRACER_SOLVERS[args.tracer_solver],
         "geometry": geometry_summary(),
         "radial_cells": BOWL_RADIAL_CELLS + LAND_RADIAL_CELLS,
         "azimuthal_cells": AZIMUTHAL_CELLS,

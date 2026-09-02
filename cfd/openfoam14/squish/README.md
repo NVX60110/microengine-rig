@@ -65,26 +65,78 @@ inventory gate (`<=1e-4` relative): volume closure <=0.2%, mass drift <=1e-4
 relative, tracer in [0,1], max Courant <=0.5, output spacing <=0.5 CAD, and
 `checkMesh` at BDC/TDC/+180 CAD.
 
-The completed coarse run is retained as `gate_failed`: all mesh, volume,
-gas-mass, Courant, tracer-bounds, and output-cadence checks passed, but tracer
-inventory drift was `1.67264e-4` relative (`0.0167264%`), above the gate.
-Consequently its mixing history is diagnostic only and is not eligible for
-refinement or Cantera coupling. See `CFD02_S2_REPORT.md` for the comparison
-and decision record.
+The original coarse run (`cfd02_s2_coarse_*`) is retained as `gate_failed`:
+all mesh, volume, gas-mass, Courant, tracer-bounds, and output-cadence checks
+passed, but tracer inventory drift was `1.67264e-4` relative (`0.0167264%`),
+above the gate. See `CFD02_S2_REPORT.md` for the comparison and decision
+record of that run.
 
-The one-line `linearUpwind` tracer-scheme check is also retained as a failed
+### Issue #10: scalar inventory resolved (converged tracer solve)
+
+The inventory loss was the tracer linear solve stopping after one PBiCGStab
+iteration under the shared `"(U|e|tracer).*" relTol 0.01` entry, not a
+moving-mesh or wall-flux defect. The base
+`cold_flow_tracer/system/fvSolution` now carries an exact-keyword converged
+`tracer`/`tracerFinal` entry (`tolerance 1e-13; relTol 0`), and the S2 runner
+selects it by default (`--tracer-solver tight`). On the identical S2 coarse
+case this gives:
+
+- tracer inventory drift `9.9e-12` relative from solver fields
+  (`1.63e-10` by the postprocessor), tracer in `[0, 1]`;
+- volume closure, Courant, gas mass and `checkMesh` unchanged;
+- physical answer changed by at most 0.005% at the requested angles;
+- runtime +7% (OpenFOAM 239.9 s versus 224.5 s).
+
+Promoted files: `cfd/results/cfd02_s2_tighttol_scalar_history.csv`,
+`_mixing_time.csv`, `_metadata.json` (status `ok`). Full evidence:
+`CFD02_S2_SCALAR_ISOLATION_REPORT.md`. The run above (default options) now
+reproduces this converged case; use `--tracer-solver legacy` to reproduce the
+failed baseline exactly.
+
+Audit any stored case from its solver-written `rho`, `Vc`, `tracer` and
+`phi` (including wall patch fluxes):
+
+```bash
+python3 cfd/audit_scalar_inventory.py \
+  /home/gflip/OpenFOAM/cfd02-squish/s2_coarse \
+  /home/gflip/OpenFOAM/cfd02-squish-tighttol/s2_coarse \
+  /home/gflip/OpenFOAM/cfd02-squish/s1_coarse \
+  /home/gflip/OpenFOAM/cfd01-cold-flow-tracer-v8/fine \
+  --labels s2_coarse_upwind_legacy s2_coarse_upwind_tight \
+           s1_coarse_upwind_legacy flat_fine_v8_legacy \
+  --output cfd/results/cfd02_scalar_inventory_audit.json
+```
+
+The promoted S1 coarse and flat fine histories were produced with the
+unconverged solve and carried the same defect below the gate (`6.8e-5` and
+`2.4e-5` relative). They have been regenerated with the current base
+`fvSolution` (`CFD02_REGEN_TIGHT_REPORT.md`): the converged histories are
+`cfd/results/cfd01_scalar_history_{coarse,medium,fine}_tight.csv` and
+`cfd/results/cfd02_s1_tight_*`, the audit is
+`cfd/results/cfd02_scalar_inventory_audit_tight.json`, and the comparisons
+are `cfd/results/*_tight_tracer_mixing.json` and
+`*_tight_mass_zone_mixing.json`. All six comparison gates are `ok` and the
+legacy ratios are reproduced to `<= 0.001`. The legacy promoted files are
+kept unchanged as the record of the pre-fix numerics.
+
+`run_squish_cfd.py` now derives its companion `_mixing_time.csv` and
+`_metadata.json` names from `--output`, so a variant run never overwrites the
+promoted S1 files, and its metadata records the tracer solver entry used.
+
+The one-line `linearUpwind` tracer-scheme check is retained as a failed
 diagnostic. It can be reproduced without overwriting the upwind case:
 
 ```bash
 python3 cfd/openfoam14/squish/run_s2_cfd.py \
   --run-root /home/gflip/OpenFOAM/cfd02-squish-linearupwind \
-  --tracer-scheme linearUpwind \
+  --tracer-scheme linearUpwind --tracer-solver legacy \
   --output cfd/results/cfd02_s2_linearupwind_scalar_history.csv \
   --overwrite
 ```
 
 That variant overshot tracer (`min=-0.01924`) and failed inventory
-conservation, so it is not an acceptable drop-in scheme.
+conservation; with the converged solve it would still be unbounded, so it is
+not an acceptable drop-in scheme.
 
 ## Cross-geometry comparison
 

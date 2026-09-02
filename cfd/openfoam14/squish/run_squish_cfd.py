@@ -312,6 +312,29 @@ def write_target_summary(history: list[dict[str, float]], path: Path) -> None:
             })
 
 
+def sibling_output(path: Path, suffix: str) -> Path:
+    """Derive a companion output from --output so variants never clobber the promoted S1 files."""
+    name = path.name
+    marker = "_scalar_history.csv"
+    if name.endswith(marker):
+        return path.with_name(name[: -len(marker)] + suffix)
+    return path.with_name(path.stem + suffix)
+
+
+def tracer_solver_settings(case: Path) -> dict[str, str] | None:
+    """Record the exact-keyword tracer solver entry the case actually used (Issue #10)."""
+    text = (case / "system" / "fvSolution").read_text()
+    match = re.search(r"\n[ \t]*tracer[ \t]*\n[ \t]*\{\n(.*?)\n[ \t]*\}\n", text, flags=re.S)
+    if match is None:
+        return None
+    settings = {}
+    for key in ("solver", "preconditioner", "tolerance", "relTol", "maxIter"):
+        value = re.search(rf"(?m)^[ \t]*{key}[ \t]+([^;]+);", match.group(1))
+        if value:
+            settings[key] = value.group(1).strip()
+    return settings
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-root", type=Path, default=Path("/home/gflip/OpenFOAM/cfd02-squish"))
@@ -354,7 +377,7 @@ def main() -> None:
         history, metrics, failures = validate_case(case, args.output.resolve())
         write_target_summary(
             history,
-            args.output.resolve().with_name("cfd02_s1_coarse_mixing_time.csv"),
+            sibling_output(args.output.resolve(), "_mixing_time.csv"),
         )
         status = "ok" if not failures else "gate_failed"
         error = "; ".join(failures)
@@ -370,6 +393,7 @@ def main() -> None:
     )
     metadata = {
         "case": "CFD-02 S1 mild squish coarse",
+        "tracer_solver_settings": tracer_solver_settings(case) if case.exists() else None,
         "geometry": geometry_summary(),
         "radial_cells": BOWL_RADIAL_CELLS + LAND_RADIAL_CELLS,
         "azimuthal_cells": AZIMUTHAL_CELLS,
@@ -384,7 +408,7 @@ def main() -> None:
         **metrics,
     }
     (case / "cfd02_s1_metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
-    args.output.resolve().with_name("cfd02_s1_coarse_metadata.json").write_text(
+    sibling_output(args.output.resolve(), "_metadata.json").write_text(
         json.dumps(metadata, indent=2) + "\n"
     )
     if status != "ok":
