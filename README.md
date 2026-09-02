@@ -20,6 +20,10 @@ Read [`FINDINGS.md`](FINDINGS.md) before using a result. The project rule is:
   dilution, and signed ignition-delay-slope hypothesis screen.
 - `residual_fixed_point.py` — prescribed residual-composition fixed-point
   adapter around the one-revolution two-zone model; not a valve/720-CAD model.
+- `cycle720.py` — minimum viable -360..+360 CAD four-stroke wrapper with
+  explicit gas-exchange phases, configurable valve/orifice screen, residual
+  state iteration, and crank/motor bookkeeping. The disabled-feature path
+  delegates directly to `two_zone_model.py` for regression.
 - `two_zone_temperature_stability.py` — three-mechanism CR transition campaign.
 - `sealing_prior.py` — public-data evidence ledger and explicit sealing brackets.
 - `uncertainty_campaign.py` — mechanism x mixing x sealing robustness runner.
@@ -58,6 +62,12 @@ Tested with CPython 3.12 and Cantera 3.2 on Linux x86-64.
 
 For a batch, pass `--sweep grid.json --jobs 4`. Confirm every transition at
 0.125 crank degree or finer.
+
+The bounded 720-CAD scaffold can be smoke-tested from the repository root with
+`python scripts/run_cycle720.py --rpm 1200 --step-deg 2 --cycles 3`. Its cycle
+convention is `-360..+360 CAD`, with firing TDC at `0 CAD`; see
+`experiments/CYCLE720_REPORT.md`. A valve-enabled run is a project-model
+screen, not evidence of a stable idle or calibrated valve flow.
 
 ## Run the mechanism gates
 
