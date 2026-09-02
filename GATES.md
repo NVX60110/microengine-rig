@@ -42,6 +42,17 @@ nonreacting transport run without a reason.
 | Motor requirement | Report modeled negative work and any 720-CAD average lower-bound proxy separately from instantaneous or hardware motor torque | The unmodeled gas-exchange revolution may not be assigned a measured load |
 | Robust operating region | Show mechanism spread and declared one-factor/multifactor sensitivities; do not promote the exact crossing of a threshold as a precision RPM prediction | Parameter-control requirements are part of the result |
 
+### Fuel-sensitivity and prescribed-residual gates
+
+| Gate | Requirement | Notes |
+|---|---:|---|
+| Signed temperature sensitivity | Define `S = d ln(tau_ign) / d ln(T)` with ordinary ignition giving `S < 0`; hold pressure, composition, and ignition criterion fixed | A positive or near-zero secant is an ignition-delay shape diagnostic, not proof of system stability |
+| Curve resolution | Retain intermediate temperatures and local slopes in addition to an endpoint secant | Endpoints alone can hide curvature, NTC turning points, or criterion changes |
+| Cross-mechanism fuel claim | Require the target delay and slope behavior to survive at least two credible, independent lineages; preserve each mechanism's validation limitations | Parent retention and package compatibility are not experimental validation |
+| Residual definition | State mass/mole basis, fresh-stream equivalence ratio, residual source state, pressure normalization, and enthalpy treatment | Externally supplied EGR and internally retained residual are not interchangeable |
+| Residual fixed point | Require both composition and intake-temperature convergence to declared tolerances; keep numerical pressure/volume/mass gates independent | Reaching an iteration cap with decreasing residual is unresolved, not converged |
+| Residual scope | Label the current adapter as a prescribed one-revolution composition operator | It omits valves, pumping, exhaust blowdown, friction, inertia, motor control, and full 720-CAD periodic closure |
+
 ## Nonreacting CFD transport gates
 
 | Gate | Requirement | Notes |

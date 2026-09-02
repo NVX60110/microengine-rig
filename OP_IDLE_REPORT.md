@@ -194,6 +194,32 @@ local piston/liner temperatures and taper, and motoring/friction torque. Direct
 Burke DME/CH4 point data and the Zhao pressure-dependent decomposition choice
 remain chemistry credibility limits.
 
+## Fuel and prescribed-residual preflight
+
+Two bounded follow-ups test the external Fable fuel/residual hypotheses without
+rerunning the RPM campaign.
+
+The 40-bar constant-volume fuel screen defines
+`S = d ln(tau_ign) / d ln(T)` over 875-975 K and retains every 10 K point and
+local slope. No tested DME/CO-plus-N2/CO2/H2O recipe simultaneously reaches the
+2-5 ms delay target and preserves a nonnegative/near-flat response across the
+Zhao and LLNL lineages. This rejects the supplied recipe as a current design
+baseline; it does not establish system stability or prove that residual/EGR
+control is useless in an evolving engine.
+
+The separate one-revolution prescribed-residual adapter mixes fresh charge with
+the preceding modeled end state on a mass basis and conserves stream enthalpy.
+At the nominal 1200-rpm Zhao-sk39 anchor, `f_res=0.05` and `0.30` remain on cool
+branches through eight iterations, with final gross IMEP about 3.76 and
+1.95 bar respectively. Neither reaches the declared composition/temperature
+fixed-point tolerances. Independent-process runs are byte-identical and all
+mass, component-mass, pressure, volume, and retention gates pass, so these are
+reproducible unresolved trends—not periodic 720-CAD states.
+
+These follow-ups do not change the report's idle classification. They make
+valve-derived residual carry-over and periodic convergence explicit acceptance
+tests for the next simulator layer.
+
 ## Simulator improvement exposed by this experiment
 
 The next justified model change is not CFD. It is a minimal repeat-cycle

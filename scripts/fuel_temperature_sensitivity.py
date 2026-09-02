@@ -15,11 +15,12 @@ for a common ignition criterion.  Ordinary ignition has S < 0.  Eleven
 temperatures (10 K spacing) and adjacent local slopes are retained so that
 an endpoint secant cannot hide a non-monotonic delay curve.
 
-Run from any working directory with, for example::
+Run from the repository root with, for example::
 
     python scripts/fuel_temperature_sensitivity.py --output-dir results
 
-Mechanism paths are resolved relative to the repository root, never cwd.
+Mechanism paths are resolved relative to the repository root rather than the
+caller's current directory once the script has been located.
 """
 from __future__ import annotations
 

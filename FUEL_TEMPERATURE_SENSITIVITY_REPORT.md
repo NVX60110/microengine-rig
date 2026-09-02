@@ -64,10 +64,10 @@ perturbations) remain in force.
 ## Decision-relevant results
 
 The recorded run used all 11 temperatures for every row (`summary_count=86`,
-`row_count=946`; 21 cases per primary mechanism plus the bounded Zhao partner
-fraction screen, and 17 Burke diagnostic cases). Values below are `tau_925` in
-milliseconds, endpoint S over 875–975 K, and the minimum/maximum adjacent
-10-K local S.
+`row_count=946`; 35 Zhao-sk39 summaries, including the bounded partner-fraction
+screen, and 17 summaries each for Zhao-full, LLNL79, and Burke). Values below
+are `tau_925` in milliseconds, endpoint S over 875–975 K, and the
+minimum/maximum adjacent 10-K local S.
 
 | mechanism | fuel case | tau925 ms | endpoint S | local S range |
 |---|---|---:|---:|---:|

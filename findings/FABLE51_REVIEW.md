@@ -2,15 +2,25 @@
 
 This note records a review of the external Fable 5.1 handoff. It is not a findings promotion. Claims below remain hypotheses unless tied to repository evidence or cited literature.
 
-## 1. CFD state after 9265604
+## 1. CFD state after Issue #10 resolution
 
 The fixed-20%-mass-zone audit supersedes the earlier global-RMS squish interpretation for the two-zone design question:
 
-- S1/flat normalized core/shell contrast at TDC: **1.3545**.
-- S2/flat normalized core/shell contrast at TDC: **1.2613**, but S2 fails tracer-inventory conservation.
-- `linearUpwind grad(tracer)` also fails scalar gates: inventory drift `2.01883e-4` relative and tracer minimum `-0.01924`.
+- S1/flat normalized core/shell contrast at TDC: **1.3541**.
+- S2/flat normalized core/shell contrast at TDC: **1.2608**.
+- The original S2 loss was an under-converged tracer linear solve. The
+  exact-key `tracer` solver entry (`tolerance 1e-13`, `relTol 0`) reduces
+  inventory drift to approximately `1e-11`; regenerated flat/S1/S2 results
+  reproduce the mixing answers within the accepted gates.
+- `linearUpwind grad(tracer)` remains a rejected scheme experiment because it
+  both lost inventory and produced a negative scalar. It is not the accepted
+  repair.
 
-Therefore no S1/S2 squish transport schedule is eligible for Cantera coupling and S3 must remain blocked until a bounded, inventory-conserving scalar treatment is demonstrated.
+Therefore no S1/S2 squish transport schedule is eligible for Cantera coupling,
+but the reason is now the negative geometry decision: neither tested squish
+case improves the fixed-20%-mass-zone TDC contrast. Issue #10 is resolved and
+closed. S3 remains blocked because the present evidence does not justify the
+geometry campaign, not because scalar conservation is unresolved.
 
 ## 2. Swirl-decay claim: arithmetic rejected
 
@@ -27,7 +37,20 @@ For `R = 4.25 mm`, order-of-magnitude ideal-gas/air-property estimates give:
 - around `500 K, 1.5-3 bar`: `nu ~ 1.3e-5 to 2.6e-5 m^2/s`, hence `tau ~ 0.05-0.10 s`;
 - around `900-925 K, 40 bar`: `nu ~ 2-3e-6 m^2/s`, hence `tau ~ 0.4-0.6 s`.
 
-Thus "swirl dies in 0.14-0.54 ms" is rejected by roughly two to three orders of magnitude. Low Reynolds number implies laminar flow, not automatically sub-millisecond loss of angular momentum. Whether a groove/bowl can create useful rotation remains an open geometry/CFD question and must not be closed from the Fable arithmetic.
+Thus "swirl dies in 0.14-0.54 ms" is rejected by roughly two to three orders
+of magnitude. A more explicit state audit gives about `0.23 s` at 3 bar/300 K,
+`0.05-0.10 s` at 1.5-3 bar/500 K, `0.49 s` at 40 bar/900 K, and
+`0.79-1.05 s` at the modeled OP-IDLE TDC states. At 1200 rpm those are about
+`0.5-2.3` four-stroke-cycle e-folding times in intake-like states and
+`4.9-10.5` at the instantaneous compressed states.
+
+This rescues swirl as a hypothesis, not as a result. A cycle needs the
+time-varying integral `exp(-integral(dt/tau(theta)))`, and real end walls,
+geometry, turbulence, intake and exhaust can add loss. The current closed
+cylinder has no intake valve, tangential inlet, or swirl velocity field, so it
+cannot show that intake-generated swirl persists for 5-10 complete cycles.
+Low Reynolds number implies laminar flow, not automatically sub-millisecond
+loss of angular momentum.
 
 Sources for the review: Acheson, *Elementary Fluid Dynamics*, spin-down of azimuthal flow in a cylinder using `J1` modes; standard air viscosity data/Sutherland-level estimates. Exact project-mixture viscosity should be computed if swirl becomes decision-critical.
 
@@ -35,7 +58,9 @@ Sources for the review: Acheson, *Elementary Fluid Dynamics*, spin-down of azimu
 
 The qualitative idea that a squish land displaces outer gas toward the bowl without requiring turbulence is physically reasonable. However, the fixed-20%-mass audit shows the tested S1 geometry retains **more**, not less, core/shell contrast at TDC. Therefore "make the squish band coincide with the wall layer" is a hypothesis for a future geometry, not a result of S1/S2.
 
-No S3 should be run until the scalar transport defect is isolated under Issue #10.
+No S3 should be run under the current decision gate. Issue #10 has already
+isolated and repaired the scalar solve; the remaining blocker is that S1/S2 did
+not provide the required two-zone transport gain.
 
 ## 4. Residual-gas / repeated-cycle chemistry: valid missing model, no 8% default
 
@@ -70,15 +95,28 @@ A future controller should define measurable hard limits before hardware work. C
 
 ## 9. Pure-DME + EGR hypothesis: test, do not promote
 
-EGR is a credible DME/HCCI phasing lever, but the Fable table is not currently reproduced in the repository and its stability slope `S` is not yet formally defined in a project artifact.
+EGR is a credible DME/HCCI phasing lever. The Fable table has now been replaced
+by a reproducible repository campaign using the signed definition
+`S = d ln(tau_ign) / d ln(T)` and a common max-dP/dt criterion. Ordinary
+ignition has `S < 0`; positive `S` is only an NTC-like shape diagnostic.
+
+The proposed 25/75 DME/CO blend is nearly flat in both Zhao lineages but is too
+fast near 925 K (~1.3 ms), while LLNL gives a strongly negative endpoint slope.
+Adding N2, CO2, or H2O can move the delay toward 2-5 ms, but none of the tested
+recipes retains a nonnegative/near-flat response across Zhao and LLNL. No fuel
+or EGR architecture is promoted.
 
 Published high-pressure DME work shows that H2O/CO2/N2 dilution have different thermal and chemical effects. In particular, steam can chemically accelerate DME ignition relative to equivalent N2 dilution in some temperature ranges. Therefore statements such as "H2O is the best retarder" or "CO-rich exhaust provides negative feedback" are mechanism-, state-, and composition-dependent.
 
-Before promotion:
+Before any future promotion:
 
-1. define `S` mathematically and reproduce every Fable table entry with versioned mechanism/configuration;
-2. cross-check Zhao sk39, Zhao full, LLNL and preferably Burke Mech_56.54 after direct Burke validation;
-3. iterate exhaust composition and EGR fraction to a repeated-cycle fixed point rather than injecting one frozen Beta 2.3 exhaust vector;
+1. retain the versioned 40-bar curve and signed/local-slope definition already
+   implemented in `scripts/fuel_temperature_sensitivity.py`;
+2. resolve the Zhao pressure-rate choice and direct Burke validation before
+   treating cross-mechanism disagreement as a fuel-optimization surface;
+3. replace the completed prescribed residual-composition adapter with a
+   valve-derived 720-CAD periodic state rather than injecting one frozen Beta
+   2.3 exhaust vector;
 4. perturb wall temperature, residual fraction and EGR fraction and require the feedback sign to remain stabilizing;
 5. only then test the concept in the two-zone/repeated-cycle model.
 
@@ -123,8 +161,16 @@ clearance architecture or mode-switch rpm is promoted by this audit.
 
 ## Routing
 
-Immediate active work remains:
+Current routing is:
 
-1. Issue #10: isolate moving-mesh scalar conservation/boundedness before any S3 or squish-to-Cantera coupling.
-2. Issue #4: direct Burke DME/CH4 mechanism validation can proceed independently in parallel.
-3. Pure-DME + EGR and repeated-cycle chemistry are queued hypotheses after mechanism validation, not current architecture decisions.
+1. Keep Issue #10 closed and keep S3 blocked under the geometry-value gate.
+2. Treat the merged OP-IDLE RPM map and axial thermal-fit screen as the current
+   conditional baselines; do not rerun them merely to reproduce this handoff.
+3. Reproduce the supplied fuel-temperature tables with the repository ignition
+   criterion and compare mechanisms before evaluating a fuel/EGR architecture.
+4. Add only a bounded residual-composition fixed-point adapter before a full
+   720-CAD gas-exchange/crank model. A prescribed residual fraction is not a
+   valve-model result.
+5. Issue #4 direct Burke validation remains open pending original or explicitly
+   digitized experiment points. The direct-flow fixture already includes a
+   room-temperature first matrix, so no second fixture model is needed.

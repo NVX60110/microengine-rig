@@ -16,6 +16,10 @@ Read [`FINDINGS.md`](FINDINGS.md) before using a result. The project rule is:
 - `two_zone_model.py` — experimental pressure-coupled core/boundary extension.
 - `mechanism_gate.py` — parent-retention and ChemKED experimental gates.
 - `operability_sensitivity.py` — correct max-dP/dt temperature-sensitivity map.
+- `scripts/fuel_temperature_sensitivity.py` — reproducible 40-bar fuel,
+  dilution, and signed ignition-delay-slope hypothesis screen.
+- `residual_fixed_point.py` — prescribed residual-composition fixed-point
+  adapter around the one-revolution two-zone model; not a valve/720-CAD model.
 - `two_zone_temperature_stability.py` — three-mechanism CR transition campaign.
 - `sealing_prior.py` — public-data evidence ledger and explicit sealing brackets.
 - `uncertainty_campaign.py` — mechanism x mixing x sealing robustness runner.
