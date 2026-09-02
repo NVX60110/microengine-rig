@@ -29,6 +29,7 @@ def main() -> None:
             "step_deg": step_deg,
             "runtime_s": time.perf_counter() - t0,
             "mass_balance_residual_mg": accounting["mass_balance_residual_mg"],
+            "mass_balance_residual_rel_cycle_start": accounting["mass_balance_residual_rel_cycle_start"],
             "mass_balance_residual_rel_closed_kernel": accounting["mass_balance_residual_rel_closed_kernel"],
             "closed_kernel_mass_balance_residual_mg": accounting["closed_kernel_mass_balance_residual_mg"],
             "energy_balance_residual_J": accounting["energy_balance_residual_J"],
