@@ -246,6 +246,7 @@ def _advance_lumped(c: RigConfig, state: Mapping[str, Any], volume_old: float,
         remaining = dt
         elapsed = 0.0
         substeps = 0
+        n_species = int(gas.n_species)
         # Limit each explicit substep to 2% of the current lump.  The local
         # time step is chosen from the instantaneous signed flow and therefore
         # adapts again after a pressure reversal; no arbitrary mass fraction
@@ -281,19 +282,31 @@ def _advance_lumped(c: RigConfig, state: Mapping[str, Any], volume_old: float,
             choked_any = choked_any or bool(details["choked"])
             if total is None:
                 total = dict(details)
-                total["species_mass_in_kg"] = list(details["species_mass_in_kg"])
-                total["species_mass_out_kg"] = list(details["species_mass_out_kg"])
+                # A closed/zero-flow substep may report an empty inflow
+                # vector.  Keep accounting vectors at mechanism length so a
+                # later reverse-flow substep cannot be silently truncated by
+                # zip().
+                total["species_mass_in_kg"] = [0.0] * n_species
+                total["species_mass_out_kg"] = [0.0] * n_species
+                for i, value in enumerate(details.get("species_mass_in_kg", ())):
+                    if i >= n_species:
+                        break
+                    total["species_mass_in_kg"][i] = float(value)
+                for i, value in enumerate(details.get("species_mass_out_kg", ())):
+                    if i >= n_species:
+                        break
+                    total["species_mass_out_kg"][i] = float(value)
             else:
                 for key in ("mass_in_kg", "mass_out_kg", "enthalpy_in_J",
                             "enthalpy_out_J", "work_by_gas_J",
                             "wall_heat_to_gas_J"):
                     total[key] += details[key]
-                total["species_mass_in_kg"] = [
-                    a + b for a, b in zip(total["species_mass_in_kg"], details["species_mass_in_kg"])
-                ]
-                total["species_mass_out_kg"] = [
-                    a + b for a, b in zip(total["species_mass_out_kg"], details["species_mass_out_kg"])
-                ]
+                for key in ("species_mass_in_kg", "species_mass_out_kg"):
+                    detail_vector = details.get(key, ())
+                    total_vector = total[key]
+                    for i in range(n_species):
+                        if i < len(detail_vector):
+                            total_vector[i] += float(detail_vector[i])
                 total["internal_energy_out_J"] = details["internal_energy_out_J"]
             elapsed += local_dt
             remaining -= local_dt
@@ -587,12 +600,16 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
         exhaust_enthalpy_in += details["enthalpy_in_J"]
         exhaust_enthalpy_out += details["enthalpy_out_J"]
         exhaust_work += details["work_by_gas_J"]
-        if valve_species_in is None:
-            valve_species_in = [0.0] * len(details["species_mass_in_kg"])
-        valve_species_in = [a + b for a, b in zip(valve_species_in, details["species_mass_in_kg"])]
-        if valve_species_out is None:
-            valve_species_out = [0.0] * len(details["species_mass_out_kg"])
-        valve_species_out = [a + b for a, b in zip(valve_species_out, details["species_mass_out_kg"])]
+        if details["species_mass_in_kg"]:
+            if valve_species_in is None:
+                valve_species_in = [0.0] * len(fresh.species_names)
+            valve_species_in = [a + b for a, b in zip(
+                valve_species_in, details["species_mass_in_kg"])]
+        if details["species_mass_out_kg"]:
+            if valve_species_out is None:
+                valve_species_out = [0.0] * len(fresh.species_names)
+            valve_species_out = [a + b for a, b in zip(
+                valve_species_out, details["species_mass_out_kg"])]
         total_in += max(0.0, net * dt); total_out += max(0.0, -net * dt)
         exhaust_rows.append({"cycle_deg": deg, "phase": "exhaust", "pressure_bar": state["P_bar"],
                              "temperature_K": state["T_K"], "mass_kg": state["mass_kg"],
@@ -840,12 +857,16 @@ def simulate_motored_cycle720(
         accounting["enthalpy_out_J"] += details["enthalpy_out_J"]
         accounting["work_by_gas_J"] += details["work_by_gas_J"]
         accounting["wall_heat_to_gas_J"] += details["wall_heat_to_gas_J"]
-        accounting["species_in_kg"] = [
-            a + b for a, b in zip(accounting["species_in_kg"], details["species_mass_in_kg"])
-        ]
-        accounting["species_out_kg"] = [
-            a + b for a, b in zip(accounting["species_out_kg"], details["species_mass_out_kg"])
-        ]
+        if details["species_mass_in_kg"]:
+            accounting["species_in_kg"] = [
+                a + b for a, b in zip(
+                    accounting["species_in_kg"], details["species_mass_in_kg"])
+            ]
+        if details["species_mass_out_kg"]:
+            accounting["species_out_kg"] = [
+                a + b for a, b in zip(
+                    accounting["species_out_kg"], details["species_mass_out_kg"])
+            ]
         if valve_name is not None:
             event = accounting["events"][valve_name]
             event["steps"] += 1

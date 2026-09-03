@@ -123,6 +123,9 @@ class Cycle720Tests(unittest.TestCase):
         self.assertIn("exhaust", summary["accounting"]["events"])
         self.assertAlmostEqual(summary["accounting"]["mass_balance_residual_kg"], 0.0, places=18)
         self.assertTrue(any(row["valve_flow_direction"] != "closed" for row in result["rows"]))
+        accounting = summary["accounting"]
+        self.assertEqual(len(accounting["species_in_kg"]), len(accounting["species_out_kg"]))
+        self.assertGreater(len(accounting["species_out_kg"]), 0)
 
     def test_option_validation_rejects_bad_valve_and_motor(self):
         config = RigConfig()
