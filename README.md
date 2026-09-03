@@ -24,6 +24,9 @@ Read [`FINDINGS.md`](FINDINGS.md) before using a result. The project rule is:
   explicit gas-exchange phases, configurable valve/orifice screen, residual
   state iteration, and crank/motor bookkeeping. The disabled-feature path
   delegates directly to `two_zone_model.py` for regression.
+- `scripts/run_motored_valve_diagnostic.py` — bounded 1,200-rpm, nonreacting
+  fixed-speed diagnostic for signed/bidirectional valve flow and homologous
+  state-map accounting. It is not a reacting idle prediction.
 - `two_zone_temperature_stability.py` — three-mechanism CR transition campaign.
 - `sealing_prior.py` — public-data evidence ledger and explicit sealing brackets.
 - `uncertainty_campaign.py` — mechanism x mixing x sealing robustness runner.
@@ -68,6 +71,13 @@ The bounded 720-CAD scaffold can be smoke-tested from the repository root with
 convention is `-360..+360 CAD`, with firing TDC at `0 CAD`; see
 `experiments/CYCLE720_REPORT.md`. A valve-enabled run is a project-model
 screen, not evidence of a stable idle or calibrated valve flow.
+
+The signed-valve gas-exchange diagnostic can be run with
+`python scripts/run_motored_valve_diagnostic.py --step-deg 2 --cycles 3`.
+It records reverse-flow events, valve mass/enthalpy/species accounting, and
+minimum/maximum temperature context in
+`results/cycle720_1200_motored_bidirectional.json`; see
+`experiments/CYCLE720_1200_MOTORED_BIDIRECTIONAL_REPORT.md`.
 
 The bounded 1,200-rpm staged gate is reproducible with
 `python scripts/run_cycle720_1200_experiment.py`; it first checks the disabled

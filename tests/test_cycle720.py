@@ -2,6 +2,8 @@ import json
 import unittest
 from unittest.mock import patch
 
+import cantera as ct
+
 from cycle720 import (
     Cycle720Options,
     FrictionBracket,
@@ -13,6 +15,7 @@ from cycle720 import (
     phase_at,
     serialize_cycle_state,
     simulate_cycle720,
+    simulate_motored_cycle720,
 )
 from microengine_rig import RigConfig, build_geometry
 from scripts.run_cycle720 import _json_safe
@@ -78,6 +81,51 @@ class Cycle720Tests(unittest.TestCase):
         self.assertEqual(details["mass_in_kg"], 0.0)
         self.assertEqual(details["mass_out_kg"], 0.0)
         self.assertTrue(details["internal_energy_out_J"] != 0.0)
+
+    def test_bidirectional_lumped_step_preserves_reverse_port_to_cylinder_flow(self):
+        config = RigConfig(fuel_profile="methane", intake_temperature_K=300.0,
+                           intake_pressure_bar=1.0, equivalence_ratio=0.4)
+        geometry = build_geometry(config)
+        state = _fresh_state(config, geometry.volume(0.0))
+        state.update({"P_bar": 0.5, "deg": 100.0})
+        reservoir = ct.Solution("gri30.yaml", "gri30")
+        reservoir.TPX = 300.0, 2.0e5, "CH4:0.01, O2:0.21, N2:0.78, AR:0.01"
+        valve = ValveConfig(0.0, 200.0, effective_area_m2=1e-7)
+        next_state, net, details = _advance_lumped(
+            config, state, geometry.volume(0.0), geometry.volume(0.0),
+            1e-5, valve, reservoir, "in", return_details=True,
+            bidirectional=True)
+        self.assertGreater(net, 0.0)  # net is positive into cylinder
+        self.assertEqual(details["flow_direction"], "port_to_cylinder")
+        self.assertGreater(details["mass_in_kg"], 0.0)
+        self.assertEqual(details["mass_out_kg"], 0.0)
+        self.assertTrue(details["choked"])
+        self.assertGreater(next_state["mass_kg"], state["mass_kg"])
+
+    def test_motored_diagnostic_reports_signed_flow_and_accounting(self):
+        config = RigConfig(
+            fuel_profile="methane", intake_pressure_bar=1.2,
+            intake_temperature_K=300.0, equivalence_ratio=0.4,
+            wall_mode="adiabatic", rpm=1200.0, step_deg=30.0,
+        )
+        options = Cycle720Options(
+            step_deg=30.0, max_cycles=2, valves_enabled=True,
+            bidirectional_valves=True,
+            intake_valve=ValveConfig(-360.0, -160.0, effective_area_m2=1e-6),
+            exhaust_valve=ValveConfig(160.0, 360.0, effective_area_m2=1e-6),
+        )
+        result = simulate_motored_cycle720(config, options)
+        summary = result["summary"]
+        self.assertEqual(len(result["rows"]), 25)
+        self.assertIn(summary["diagnostics"]["minimum_temperature"]["cycle_deg"],
+                      [row["cycle_deg"] for row in result["rows"]])
+        self.assertIn("intake", summary["accounting"]["events"])
+        self.assertIn("exhaust", summary["accounting"]["events"])
+        self.assertAlmostEqual(summary["accounting"]["mass_balance_residual_kg"], 0.0, places=18)
+        self.assertTrue(any(row["valve_flow_direction"] != "closed" for row in result["rows"]))
+        accounting = summary["accounting"]
+        self.assertEqual(len(accounting["species_in_kg"]), len(accounting["species_out_kg"]))
+        self.assertGreater(len(accounting["species_out_kg"]), 0)
 
     def test_option_validation_rejects_bad_valve_and_motor(self):
         config = RigConfig()

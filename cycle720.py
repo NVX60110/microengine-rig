@@ -24,6 +24,7 @@ from typing import Any, Mapping
 import cantera as ct
 
 from microengine_rig import RigConfig, build_geometry, compressible_orifice_mdot, resolve_fuel_profile
+from physics.valve_flow import signed_valve_mdot
 from two_zone_model import TwoZoneOptions, simulate_two_zone
 
 
@@ -95,6 +96,10 @@ class Cycle720Options:
 
     step_deg: float = 1.0
     valves_enabled: bool = False
+    # The original staged wrapper intentionally used one-way flow.  The
+    # diagnostic path can opt into a signed orifice calculation without
+    # changing the canonical regression result.
+    bidirectional_valves: bool = False
     friction_enabled: bool = False
     crank_dynamics_enabled: bool = False
     motor_enabled: bool = False
@@ -194,9 +199,11 @@ def serialize_cycle_state(state: Mapping[str, Any]) -> str:
     return json.dumps(clean, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
-def _state_phase(c: RigConfig, state: Mapping[str, Any]) -> ct.Solution:
+def _state_phase(c: RigConfig, state: Mapping[str, Any],
+                 gas: ct.Solution | None = None) -> ct.Solution:
     path, phase = _mechanism(c)
-    gas = ct.Solution(path, phase) if phase else ct.Solution(path)
+    if gas is None:
+        gas = ct.Solution(path, phase) if phase else ct.Solution(path)
     gas.TPY = float(state["T_K"]), float(state["P_bar"]) * 1e5, dict(state["Y"])
     # A two-zone end state can preserve its directly aggregated internal
     # energy.  Reconstructing only from mass-weighted h at an effective
@@ -216,33 +223,170 @@ def _state_enthalpy(c: RigConfig, state: Mapping[str, Any]) -> float:
 def _advance_lumped(c: RigConfig, state: Mapping[str, Any], volume_old: float,
                     volume_new: float, dt: float, valve: ValveConfig | None,
                     reservoir: ct.Solution | None, direction: str,
-                    return_details: bool = False):
+                    return_details: bool = False,
+                    bidirectional: bool = False,
+                    wall_heat_J: float = 0.0,
+                    working_gas: ct.Solution | None = None,
+                    _substep_level: int = 0):
     """Advance an ideal-gas lump with explicit valve mass and energy balance."""
-    gas = _state_phase(c, state)
+    gas = _state_phase(c, state, working_gas)
     m0, u0, p0, t0 = float(state["mass_kg"]), gas.int_energy_mass, gas.P, gas.T
+    # The valve relation is explicit in this lumped diagnostic.  If a coarse
+    # external CAD step would transfer an appreciable fraction of the lump,
+    # resolve that same signed flow over internal substeps instead of clipping
+    # it at an arbitrary fraction of the mass.  This is a numerical stability
+    # measure only; each substep re-evaluates pressure, direction, and choking.
+    if (bidirectional and _substep_level == 0 and valve is not None
+            and reservoir is not None and valve.area_at(float(state.get("deg", 0.0))) > 0.0):
+        sub_state = dict(state)
+        total: dict[str, Any] | None = None
+        directions: list[str] = []
+        raw_integral = 0.0
+        choked_any = False
+        remaining = dt
+        elapsed = 0.0
+        substeps = 0
+        n_species = int(gas.n_species)
+        # Limit each explicit substep to 2% of the current lump.  The local
+        # time step is chosen from the instantaneous signed flow and therefore
+        # adapts again after a pressure reversal; no arbitrary mass fraction
+        # is clipped from the physical transfer.
+        while remaining > dt * 1.0e-12:
+            sub_state["deg"] = float(state.get("deg", 0.0))
+            sub_gas = _state_phase(c, sub_state, working_gas)
+            sub_raw, _ = signed_valve_mdot(
+                sub_gas.P, sub_gas.T, reservoir.P, reservoir.T,
+                valve.area_at(float(state.get("deg", 0.0))) * 1.0e6,
+                valve.discharge_coefficient, valve.gamma,
+                valve.gas_constant_J_kgK)
+            local_dt = remaining
+            if abs(sub_raw) > 0.0:
+                local_dt = min(local_dt, 0.02 * float(sub_state["mass_kg"]) / abs(sub_raw))
+            if local_dt <= dt * 1.0e-14:
+                # The state has become too small for a meaningful explicit
+                # transfer step.  Stop with a diagnostic failure rather than
+                # passing a near-zero mass to Cantera's UV root solver.
+                raise RuntimeError(
+                    "bidirectional valve substep underflow: "
+                    f"mass={sub_state['mass_kg']:.6e} kg, mdot={sub_raw:.6e} kg/s"
+                )
+            sub_old = volume_old + (volume_new - volume_old) * elapsed / dt
+            sub_new = volume_old + (volume_new - volume_old) * (elapsed + local_dt) / dt
+            sub_state, _, details = _advance_lumped(
+                c, sub_state, sub_old, sub_new, local_dt,
+                valve, reservoir, direction, return_details=True,
+                bidirectional=True, wall_heat_J=wall_heat_J * local_dt / dt,
+                working_gas=working_gas, _substep_level=1)
+            raw_integral += details["raw_signed_mdot_cylinder_to_port_kg_s"] * local_dt
+            directions.append(details["flow_direction"])
+            choked_any = choked_any or bool(details["choked"])
+            if total is None:
+                total = dict(details)
+                # A closed/zero-flow substep may report an empty inflow
+                # vector.  Keep accounting vectors at mechanism length so a
+                # later reverse-flow substep cannot be silently truncated by
+                # zip().
+                total["species_mass_in_kg"] = [0.0] * n_species
+                total["species_mass_out_kg"] = [0.0] * n_species
+                for i, value in enumerate(details.get("species_mass_in_kg", ())):
+                    if i >= n_species:
+                        break
+                    total["species_mass_in_kg"][i] = float(value)
+                for i, value in enumerate(details.get("species_mass_out_kg", ())):
+                    if i >= n_species:
+                        break
+                    total["species_mass_out_kg"][i] = float(value)
+            else:
+                for key in ("mass_in_kg", "mass_out_kg", "enthalpy_in_J",
+                            "enthalpy_out_J", "work_by_gas_J",
+                            "wall_heat_to_gas_J"):
+                    total[key] += details[key]
+                for key in ("species_mass_in_kg", "species_mass_out_kg"):
+                    detail_vector = details.get(key, ())
+                    total_vector = total[key]
+                    for i in range(n_species):
+                        if i < len(detail_vector):
+                            total_vector[i] += float(detail_vector[i])
+                total["internal_energy_out_J"] = details["internal_energy_out_J"]
+            elapsed += local_dt
+            remaining -= local_dt
+            substeps += 1
+            if substeps > 10000:
+                raise RuntimeError("bidirectional valve substep limit exceeded")
+        assert total is not None
+        total["internal_energy_in_J"] = total["internal_energy_in_J"]
+        total["raw_signed_mdot_cylinder_to_port_kg_s"] = raw_integral / dt
+        total["signed_mdot_cylinder_to_port_kg_s"] = (
+            total["mass_out_kg"] - total["mass_in_kg"]
+        ) / dt
+        unique_directions = set(directions) - {"zero"}
+        if len(unique_directions) > 1:
+            total["flow_direction"] = "mixed"
+        elif unique_directions:
+            total["flow_direction"] = next(iter(unique_directions))
+        else:
+            total["flow_direction"] = "zero"
+        total["choked"] = choked_any
+        total["substeps"] = substeps
+        total["transfer_limiter_fraction"] = 0.0
+        return sub_state, (
+            total["mass_in_kg"] - total["mass_out_kg"]
+        ) / dt, total
     # Capture the outlet enthalpy before mutating the lumped state.  The
     # control-volume balance removes mass carrying the pre-step gas state;
     # using post-step enthalpy here would manufacture an energy residual.
     h0 = gas.enthalpy_mass
     dm_in = dm_out = 0.0
+    raw_mdot_cylinder_to_port = 0.0
+    choked = False
+    flow_direction = "closed"
     if valve is not None and reservoir is not None:
         area = valve.area_at(float(state.get("deg", 0.0)))
-        if direction == "in":
-            mdot = compressible_orifice_mdot(reservoir.P, reservoir.T, p0, area,
-                                              valve.discharge_coefficient, valve.gamma,
-                                              valve.gas_constant_J_kgK)[0]
-            dm_in = min(mdot * dt, max(0.0, m0 * 0.5))
+        if bidirectional:
+            # ``signed_valve_mdot`` is positive from cylinder to port.  This
+            # convention remains the same for intake and exhaust valves, so a
+            # pressure reversal naturally exchanges cylinder composition and
+            # upstream enthalpy in the reverse direction.
+            raw_mdot_cylinder_to_port, choked = signed_valve_mdot(
+                p0, t0, reservoir.P, reservoir.T, area * 1.0e6,
+                valve.discharge_coefficient, valve.gamma,
+                valve.gas_constant_J_kgK)
+            transfer = raw_mdot_cylinder_to_port * dt
+            # Only enforce positivity if a step would mathematically empty
+            # the lump.  Unlike the former 10/50% transfer cap, this does not
+            # clip a valid reverse-flow transfer in normal operation.
+            cap = max(0.0, m0 * (1.0 - 1.0e-12))
+            if transfer >= 0.0:
+                dm_out = min(transfer, cap)
+            else:
+                dm_in = min(-transfer, cap)
+            if dm_out > 0.0:
+                flow_direction = "cylinder_to_port"
+            elif dm_in > 0.0:
+                flow_direction = "port_to_cylinder"
+            else:
+                flow_direction = "zero"
         else:
-            mdot = compressible_orifice_mdot(p0, t0, reservoir.P, area,
-                                              valve.discharge_coefficient, valve.gamma,
-                                              valve.gas_constant_J_kgK)[0]
-            dm_out = min(mdot * dt, max(0.0, m0 * 0.5))
+            if direction == "in":
+                mdot = compressible_orifice_mdot(reservoir.P, reservoir.T, p0, area,
+                                                  valve.discharge_coefficient, valve.gamma,
+                                                  valve.gas_constant_J_kgK)[0]
+                dm_in = min(mdot * dt, max(0.0, m0 * 0.5))
+                if dm_in > 0.0:
+                    flow_direction = "port_to_cylinder"
+            else:
+                mdot = compressible_orifice_mdot(p0, t0, reservoir.P, area,
+                                                  valve.discharge_coefficient, valve.gamma,
+                                                  valve.gas_constant_J_kgK)[0]
+                dm_out = min(mdot * dt, max(0.0, m0 * 0.5))
+                if dm_out > 0.0:
+                    flow_direction = "cylinder_to_port"
     m1 = max(1e-30, m0 + dm_in - dm_out)
-    y0 = gas.Y
+    y0 = gas.Y.copy()
     y1 = (m0 * y0 + dm_in * reservoir.Y - dm_out * y0) / m1 if reservoir is not None else y0
     # First-order p*dV work and enthalpy transport. The method is intentionally
     # inspectable; it is not a substitute for a valve-volume CFD calculation.
-    u1 = (m0 * u0 - p0 * (volume_new - volume_old)
+    u1 = (m0 * u0 - p0 * (volume_new - volume_old) + wall_heat_J
           + dm_in * (reservoir.enthalpy_mass if reservoir is not None else 0.0)
           - dm_out * gas.enthalpy_mass) / m1
     gas.TPY = max(150.0, min(5000.0, t0)), max(1.0, p0), y1
@@ -261,6 +405,14 @@ def _advance_lumped(c: RigConfig, state: Mapping[str, Any], volume_old: float,
         "enthalpy_in_J": dm_in * (reservoir.enthalpy_mass if reservoir is not None else 0.0),
         "enthalpy_out_J": dm_out * h0,
         "work_by_gas_J": p0 * (volume_new - volume_old),
+        "wall_heat_to_gas_J": float(wall_heat_J),
+        "wall_heat_rate_W": float(wall_heat_J) / dt if dt > 0.0 else 0.0,
+        "raw_signed_mdot_cylinder_to_port_kg_s": raw_mdot_cylinder_to_port,
+        "signed_mdot_cylinder_to_port_kg_s": (dm_out - dm_in) / dt if dt > 0.0 else 0.0,
+        "flow_direction": flow_direction,
+        "choked": bool(choked),
+        "transfer_limiter_fraction": 0.0 if bidirectional else 0.50,
+        "substeps": 1,
         "internal_energy_in_J": m0 * u0,
         "internal_energy_out_J": m1 * gas.int_energy_mass,
         "species_mass_in_kg": (dm_in * reservoir.Y).tolist() if reservoir is not None else [],
@@ -349,7 +501,12 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
     fresh.set_equivalence_ratio(c.equivalence_ratio, profile.fuel, profile.oxidizer)
     fresh.TP = c.intake_temperature_K, c.intake_pressure_bar * 1e5
     exhaust = ct.Solution(path, phase) if phase else ct.Solution(path)
-    exhaust.TP = c.crankcase_temperature_K, (options.exhaust_pressure_bar or c.crankcase_pressure_bar) * 1e5
+    # Do not leave a mechanism-dependent default composition in the exhaust
+    # reservoir.  This is immaterial for the legacy one-way path, but becomes
+    # physically important as soon as reverse valve flow is enabled.
+    exhaust.TPX = c.crankcase_temperature_K, (
+        options.exhaust_pressure_bar or c.crankcase_pressure_bar
+    ) * 1e5, fresh.X
     state = dict(initial_state) if initial_state and "mass_kg" in initial_state else _fresh_state(c, g.volume(0.0))
     state.setdefault("speed_rpm", c.rpm)
     cycle_initial_state = dict(state)
@@ -379,7 +536,7 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
                 c, state, g.volume(math.radians(previous["cycle_deg"])),
                 g.volume(math.radians(deg)), dt,
                 options.intake_valve if options.valves_enabled else None, fresh, "in",
-                return_details=True)
+                return_details=True, bidirectional=options.bidirectional_valves)
             valve_enthalpy_in += details["enthalpy_in_J"]
             valve_enthalpy_out += details["enthalpy_out_J"]
             valve_work += details["work_by_gas_J"]
@@ -436,19 +593,23 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
             c, state, g.volume(math.radians(previous["cycle_deg"])),
             g.volume(math.radians(deg)), dt,
             options.exhaust_valve if options.valves_enabled else None, exhaust, "out",
-            return_details=True)
+            return_details=True, bidirectional=options.bidirectional_valves)
         valve_enthalpy_in += details["enthalpy_in_J"]
         valve_enthalpy_out += details["enthalpy_out_J"]
         valve_work += details["work_by_gas_J"]
         exhaust_enthalpy_in += details["enthalpy_in_J"]
         exhaust_enthalpy_out += details["enthalpy_out_J"]
         exhaust_work += details["work_by_gas_J"]
-        if valve_species_in is None:
-            valve_species_in = [0.0] * len(details["species_mass_in_kg"])
-        valve_species_in = [a + b for a, b in zip(valve_species_in, details["species_mass_in_kg"])]
-        if valve_species_out is None:
-            valve_species_out = [0.0] * len(details["species_mass_out_kg"])
-        valve_species_out = [a + b for a, b in zip(valve_species_out, details["species_mass_out_kg"])]
+        if details["species_mass_in_kg"]:
+            if valve_species_in is None:
+                valve_species_in = [0.0] * len(fresh.species_names)
+            valve_species_in = [a + b for a, b in zip(
+                valve_species_in, details["species_mass_in_kg"])]
+        if details["species_mass_out_kg"]:
+            if valve_species_out is None:
+                valve_species_out = [0.0] * len(fresh.species_names)
+            valve_species_out = [a + b for a, b in zip(
+                valve_species_out, details["species_mass_out_kg"])]
         total_in += max(0.0, net * dt); total_out += max(0.0, -net * dt)
         exhaust_rows.append({"cycle_deg": deg, "phase": "exhaust", "pressure_bar": state["P_bar"],
                              "temperature_K": state["T_K"], "mass_kg": state["mass_kg"],
@@ -566,6 +727,224 @@ def simulate_cycle720(c: RigConfig, options: Cycle720Options = Cycle720Options()
             "periodic_metrics": {}, "options": asdict(options)}
 
 
+def simulate_motored_cycle720(
+    c: RigConfig, options: Cycle720Options = Cycle720Options(
+        valves_enabled=True, bidirectional_valves=True,
+    ), initial_state: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Run one nonreacting, fixed-speed 720-CAD gas-exchange cycle.
+
+    This is a diagnostic for valve/state semantics, not an engine operating
+    point.  It advances one ideal-gas lump through the same geometry, valve
+    timings, manifold states, and wall-temperature boundary used by the
+    staged wrapper, but deliberately excludes chemistry, blow-by, friction,
+    crank dynamics, and motor control.  ``bidirectional_valves`` must be true:
+    reverse flow uses cylinder composition and enthalpy for the outgoing side
+    and the reservoir state for the incoming side.
+
+    ``mass_kg`` and ``u_J_kg`` are carried explicitly in the returned state so
+    that the end state is a valid Poincare-map input rather than a pressure /
+    temperature-only reconstruction.  Wall heat is a first-order explicit
+    term using ``effective_h_W_m2K`` and ``wall_temperature_K``; it is an
+    inspectable diagnostic closure, not a resolved heat-transfer model.
+    """
+    options.validate(c)
+    if not options.valves_enabled or not options.bidirectional_valves:
+        raise ValueError("motored diagnostic requires bidirectional valves_enabled")
+    if options.friction_enabled or options.crank_dynamics_enabled or options.motor_enabled:
+        raise ValueError("motored diagnostic excludes friction and crank/motor dynamics")
+    if c.wall_mode not in {"adiabatic", "fixed"}:
+        raise ValueError("motored diagnostic requires adiabatic or fixed wall mode")
+
+    g = build_geometry(c)
+    path, phase = _mechanism(c)
+    profile = resolve_fuel_profile(c)
+    fresh = ct.Solution(path, phase) if phase else ct.Solution(path)
+    fresh.set_equivalence_ratio(c.equivalence_ratio, profile.fuel, profile.oxidizer)
+    fresh.TP = c.intake_temperature_K, c.intake_pressure_bar * 1e5
+    exhaust = ct.Solution(path, phase) if phase else ct.Solution(path)
+    # A bare Solution carries the mechanism's arbitrary default composition
+    # (for GRI this is not air).  A motored/no-chemistry exhaust manifold
+    # must not inject that composition during reverse flow; use the same
+    # inert/fresh mixture as the intake reservoir unless a future manifold
+    # model supplies a measured residual composition.
+    exhaust.TPX = c.crankcase_temperature_K, (
+        options.exhaust_pressure_bar or c.crankcase_pressure_bar
+    ) * 1e5, fresh.X
+    working_gas = ct.Solution(path, phase) if phase else ct.Solution(path)
+    state = dict(initial_state) if initial_state is not None else _fresh_state(c, g.volume(0.0))
+    state.setdefault("speed_rpm", c.rpm)
+    state.setdefault("volume_m3", g.volume(0.0))
+    cycle_initial_state = dict(state)
+    n = int(round(720.0 / options.step_deg))
+    if abs(n * options.step_deg - 720.0) > 1.0e-9:
+        raise ValueError("step_deg must divide 720 exactly for motored diagnostics")
+    dt = math.radians(options.step_deg) / g.omega_rad_s
+    angles = [-360.0 + i * options.step_deg for i in range(n + 1)]
+    rows: list[dict[str, Any]] = []
+    accounting = {
+        "mass_in_kg": 0.0, "mass_out_kg": 0.0,
+        "enthalpy_in_J": 0.0, "enthalpy_out_J": 0.0,
+        "work_by_gas_J": 0.0, "wall_heat_to_gas_J": 0.0,
+        "species_in_kg": [0.0] * len(fresh.species_names),
+        "species_out_kg": [0.0] * len(fresh.species_names),
+        "events": {
+            "intake": {"steps": 0, "reverse_steps": 0, "mass_in_kg": 0.0,
+                        "mass_out_kg": 0.0, "choked_steps": 0},
+            "exhaust": {"steps": 0, "reverse_steps": 0, "mass_in_kg": 0.0,
+                         "mass_out_kg": 0.0, "choked_steps": 0},
+        },
+    }
+
+    def state_row(deg: float, phase_name: str, valve_name: str | None,
+                  net: float, details: Mapping[str, Any] | None,
+                  wall_heat_rate: float, piston_work_rate: float) -> dict[str, Any]:
+        detail = details or {}
+        return {
+            "cycle_deg": deg, "phase": phase_name,
+            "pressure_bar": float(state["P_bar"]),
+            "temperature_K": float(state["T_K"]),
+            "mass_kg": float(state["mass_kg"]),
+            "valve_name": valve_name or "closed",
+            "valve_open": valve_name is not None,
+            "valve_mass_flow_kg_s": float(net),
+            "signed_mdot_cylinder_to_port_kg_s": float(
+                detail.get("signed_mdot_cylinder_to_port_kg_s", 0.0)
+            ),
+            "raw_signed_mdot_cylinder_to_port_kg_s": float(
+                detail.get("raw_signed_mdot_cylinder_to_port_kg_s", 0.0)
+            ),
+            "valve_flow_direction": detail.get("flow_direction", "closed"),
+            "valve_choked": bool(detail.get("choked", False)),
+            "wall_heat_rate_W": float(wall_heat_rate),
+            "piston_work_rate_W": float(piston_work_rate),
+            "speed_rpm": float(state.get("speed_rpm", c.rpm)),
+        }
+
+    # The first point is a homologous intake-TDC snapshot.  Subsequent points
+    # use the previous angle to select the active valve and evaluate dV.
+    rows.append(state_row(angles[0], phase_at(angles[0]), "intake", 0.0, None, 0.0, 0.0))
+    for index in range(1, len(angles)):
+        previous_deg = angles[index - 1]
+        deg = angles[index]
+        phase_name = phase_at(previous_deg)
+        if options.intake_valve.area_at(previous_deg) > 0.0:
+            valve_name, valve, reservoir = "intake", options.intake_valve, fresh
+        elif options.exhaust_valve.area_at(previous_deg) > 0.0:
+            valve_name, valve, reservoir = "exhaust", options.exhaust_valve, exhaust
+        else:
+            valve_name, valve, reservoir = None, None, None
+        state["deg"] = previous_deg
+        gas_before = _state_phase(c, state)
+        wall_heat_rate = 0.0
+        if c.wall_mode == "fixed":
+            wall_heat_rate = c.effective_h_W_m2K * g.surface_area(
+                math.radians(0.5 * (previous_deg + deg))
+            ) * (c.wall_temperature_K - gas_before.T)
+        next_state, net, details = _advance_lumped(
+            c, state,
+            g.volume(math.radians(previous_deg)),
+            g.volume(math.radians(deg)), dt,
+            valve, reservoir, "in" if valve_name == "intake" else "out",
+            return_details=True, bidirectional=True,
+            wall_heat_J=wall_heat_rate * dt,
+            working_gas=working_gas,
+        )
+        state = next_state
+        accounting["mass_in_kg"] += details["mass_in_kg"]
+        accounting["mass_out_kg"] += details["mass_out_kg"]
+        accounting["enthalpy_in_J"] += details["enthalpy_in_J"]
+        accounting["enthalpy_out_J"] += details["enthalpy_out_J"]
+        accounting["work_by_gas_J"] += details["work_by_gas_J"]
+        accounting["wall_heat_to_gas_J"] += details["wall_heat_to_gas_J"]
+        if details["species_mass_in_kg"]:
+            accounting["species_in_kg"] = [
+                a + b for a, b in zip(
+                    accounting["species_in_kg"], details["species_mass_in_kg"])
+            ]
+        if details["species_mass_out_kg"]:
+            accounting["species_out_kg"] = [
+                a + b for a, b in zip(
+                    accounting["species_out_kg"], details["species_mass_out_kg"])
+            ]
+        if valve_name is not None:
+            event = accounting["events"][valve_name]
+            event["steps"] += 1
+            event["reverse_steps"] += int(details["flow_direction"] == "port_to_cylinder")
+            event["mass_in_kg"] += details["mass_in_kg"]
+            event["mass_out_kg"] += details["mass_out_kg"]
+            event["choked_steps"] += int(details["choked"])
+        rows.append(state_row(
+            deg, phase_name, valve_name, net, details,
+            wall_heat_rate, details["work_by_gas_J"] / dt,
+        ))
+
+    def total_internal_energy(snapshot: Mapping[str, Any]) -> float:
+        gas = _state_phase(c, snapshot, working_gas)
+        return float(snapshot["mass_kg"]) * gas.int_energy_mass
+
+    initial_mass = float(cycle_initial_state["mass_kg"])
+    final_mass = float(state["mass_kg"])
+    mass_residual = initial_mass + accounting["mass_in_kg"] - accounting["mass_out_kg"] - final_mass
+    initial_gas = _state_phase(c, cycle_initial_state, working_gas)
+    final_gas = _state_phase(c, state, working_gas)
+    initial_species = initial_mass * initial_gas.Y
+    final_species = final_mass * final_gas.Y
+    species_residual = [
+        float(a + b - c_) for a, b, c_ in zip(
+            initial_species, accounting["species_in_kg"],
+            [x + y for x, y in zip(accounting["species_out_kg"], final_species)],
+        )
+    ]
+    initial_u = total_internal_energy(cycle_initial_state)
+    final_u = total_internal_energy(state)
+    energy_residual = final_u - (
+        initial_u + accounting["enthalpy_in_J"] - accounting["enthalpy_out_J"]
+        - accounting["work_by_gas_J"] + accounting["wall_heat_to_gas_J"]
+    )
+    minimum = min(rows, key=lambda row: row["temperature_K"])
+    maximum = max(rows, key=lambda row: row["temperature_K"])
+    diagnostics = {
+        "minimum_temperature": dict(minimum),
+        "maximum_temperature": dict(maximum),
+        "temperature_excursion_K": maximum["temperature_K"] - minimum["temperature_K"],
+        "state_map_norm_definition": (
+            "sqrt(mass_rel^2 + (delta_T/300 K)^2 + (delta_P/max(P,1 bar))^2 "
+            "+ species_max^2); diagnostic only"
+        ),
+    }
+    accounting.update({
+        "initial_mass_kg": initial_mass, "final_mass_kg": final_mass,
+        "mass_balance_residual_kg": mass_residual,
+        "mass_balance_residual_rel_initial": mass_residual / max(initial_mass, 1e-30),
+        "initial_total_internal_energy_J": initial_u,
+        "final_total_internal_energy_J": final_u,
+        "energy_balance_residual_J": energy_residual,
+        "species_balance_residual_kg": species_residual,
+        "species_balance_residual_max_kg": max((abs(x) for x in species_residual), default=0.0),
+    })
+    state["deg"] = 360.0
+    return {
+        "rows": rows,
+        "summary": {
+            "model": "nonreacting-motored-720-CAD-signed-valve-diagnostic",
+            "four_stroke_period_s": 120.0 / c.rpm,
+            "accounting": accounting,
+            "diagnostics": diagnostics,
+            "state_in": cycle_initial_state,
+            "state_out": state,
+            "provenance": {
+                "measured": False, "literature_derived": False,
+                "project_model_assumptions": True,
+                "note": "Fixed-speed ideal-gas motored diagnostic; valve areas, Cd, wall h and wall temperature are assumptions.",
+            },
+        },
+        "cycle_state_in": cycle_initial_state,
+        "cycle_state_out": state,
+        "closed_pass": False,
+    }
+
+
 def _state_metrics(previous: Mapping[str, Any], current: Mapping[str, Any]) -> dict[str, float]:
     y_names = sorted(set(previous["Y"]) | set(current["Y"]))
     species = max((abs(float(current["Y"].get(k, 0.0)) - float(previous["Y"].get(k, 0.0))) for k in y_names), default=0.0)
@@ -588,6 +967,80 @@ def _specific_enthalpy(state: Mapping[str, Any]) -> float:
         return gas.enthalpy_mass
     except Exception:
         return 1005.0 * float(state["T_K"])
+
+
+def iterate_motored_periodic_720(
+    c: RigConfig, options: Cycle720Options = Cycle720Options(
+        valves_enabled=True, bidirectional_valves=True,
+    ), initial_state: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Directly iterate the fixed-speed motored Poincare map.
+
+    No acceleration is applied here.  The cycle map is intentionally exposed
+    as ordinary direct cycling so any future fixed-point accelerator can be
+    checked against this reference.  The returned ``map_norm`` is a scaled
+    diagnostic, while the component metrics remain the actual gate quantities.
+    """
+    options.validate(c)
+    state = dict(initial_state) if initial_state is not None else None
+    history: list[dict[str, Any]] = []
+    result = None
+    for cycle in range(1, options.max_cycles + 1):
+        result = simulate_motored_cycle720(c, options, state)
+        out = result["cycle_state_out"]
+        if state is not None:
+            metrics = _state_metrics(state, out)
+            pressure_rel = abs(float(out["P_bar"]) - float(state["P_bar"])) / max(
+                abs(float(state["P_bar"])), 1.0
+            )
+            map_norm = math.sqrt(
+                metrics["mass_rel"] ** 2
+                + (metrics["temperature_K"] / 300.0) ** 2
+                + pressure_rel ** 2
+                + metrics["species_max"] ** 2
+            )
+        else:
+            metrics = {"mass_rel": math.inf, "species_max": math.inf,
+                       "enthalpy_rel": math.inf, "temperature_K": math.inf,
+                       "speed_rpm": math.inf}
+            map_norm = math.inf
+        accounting = result["summary"]["accounting"]
+        history.append({
+            "cycle": cycle, **metrics, "pressure_rel": pressure_rel if state is not None else math.inf,
+            "map_norm": map_norm,
+            "accounting": accounting,
+            "diagnostics": result["summary"]["diagnostics"],
+            "homologous_end_state": {
+                "mass_kg": float(out["mass_kg"]), "T_K": float(out["T_K"]),
+                "P_bar": float(out["P_bar"]),
+                "Y": {str(k): float(v) for k, v in out["Y"].items()},
+            },
+            "state_hash": serialize_cycle_state(out),
+        })
+        state = out
+        if cycle > 1 and all((
+            metrics["mass_rel"] <= options.mass_tolerance_rel,
+            metrics["species_max"] <= options.species_tolerance,
+            metrics["enthalpy_rel"] <= options.enthalpy_tolerance_rel,
+            metrics["temperature_K"] <= options.temperature_tolerance_K,
+            metrics["speed_rpm"] <= options.speed_tolerance_rpm,
+        )):
+            return {"converged": True, "cycles": cycle, "history": history,
+                    "result": result, "state": state,
+                    "gates": {"mass": True, "species": True, "enthalpy": True,
+                               "temperature": True, "speed": True}}
+    last = history[-1]
+    return {
+        "converged": False, "cycles": options.max_cycles,
+        "history": history, "result": result, "state": state,
+        "gates": {
+            "mass": last["mass_rel"] <= options.mass_tolerance_rel,
+            "species": last["species_max"] <= options.species_tolerance,
+            "enthalpy": last["enthalpy_rel"] <= options.enthalpy_tolerance_rel,
+            "temperature": last["temperature_K"] <= options.temperature_tolerance_K,
+            "speed": last["speed_rpm"] <= options.speed_tolerance_rpm,
+        },
+    }
 
 
 def iterate_periodic_720(c: RigConfig, options: Cycle720Options = Cycle720Options(),
@@ -641,4 +1094,6 @@ def iterate_periodic_720(c: RigConfig, options: Cycle720Options = Cycle720Option
 
 
 __all__ = ["ValveConfig", "FrictionBracket", "MotorController", "Cycle720Options",
-           "phase_at", "serialize_cycle_state", "simulate_cycle720", "iterate_periodic_720"]
+           "phase_at", "serialize_cycle_state", "simulate_cycle720",
+           "simulate_motored_cycle720", "iterate_periodic_720",
+           "iterate_motored_periodic_720"]
