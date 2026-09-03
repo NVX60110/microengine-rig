@@ -57,13 +57,23 @@ cross-check over 12 cycles also remained unresolved, with map norms varying
 between approximately 0.0107 and 0.0652; the coarse map should not be used to
 infer convergence.
 
+An extended direct-cycle check was run after the accounting correction. At the
+validated 2 CAD step, 12 cycles remained outside the strict state gate. The
+map norm was non-monotonic: it reached 0.00179 at cycle 5, then rose to 0.03097
+at cycle 10 and ended at 0.00286 at cycle 12. The component state changes also
+oscillated (cycle-to-cycle temperature changes ranged from 0.11 to 7.18 K).
+A separate 5 CAD, 20-cycle check showed the same behavior, with map norms from
+0.00803 to 0.06517 and a final norm of 0.03978. These bounded runs establish
+that direct cycling has not reached a reproducible periodic state; they do not
+prove that no fixed point exists.
+
 At the 2 CAD cycle-3 endpoint, the independent accounting checks were:
 
 | quantity | value |
 |---|---:|
 | mass-balance residual / initial mass | -2.14e-14 |
 | energy-balance residual | 4.79e-9 J |
-| maximum species-balance residual | 0 kg |
+| maximum species-balance residual | 2.33e-21 kg |
 | intake mass in / out | 1.4483 / 0.5018 mg |
 | exhaust mass in / out | 0.0713 / 1.0183 mg |
 | intake reverse-flow samples | 46 / 101 |
@@ -119,6 +129,11 @@ For a deliberately coarse stability cross-check:
 ```bash
 python scripts/run_motored_valve_diagnostic.py --step-deg 5 --cycles 12
 ```
+
+The extended direct-cycle checks used the same runner with `--step-deg 2
+--cycles 12` and `--step-deg 5 --cycles 20`; their JSON outputs were kept in
+the local temporary directory because they are audit runs rather than
+canonical result artifacts.
 
 The current result is suitable for diagnosing valve/state semantics only.
 Before a reacting 1,200-rpm periodic idle run, the next required work is to
