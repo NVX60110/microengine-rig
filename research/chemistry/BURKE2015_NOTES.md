@@ -143,5 +143,5 @@ This supports the project hypothesis that relatively modest DME fractions can co
 ## Immediate follow-up
 
 - Recover the original Burke 2015 Supplementary Material if possible.
-- Ingest Zinner’s tabulated upstream 80/20 and 60/40 shock-tube rows as a separate, explicitly identified dataset.
+- Zinner’s tabulated upstream 80/20 and 60/40 shock-tube rows are already ingested as the separate, explicitly identified dataset [`data/zinner2008/shock_tube_tabulated.csv`](../../data/zinner2008/shock_tube_tabulated.csv) (167 rows; see its README and ingestion report).
 - Compare Zhao, LLNL, AramcoMech 2.0 and Burke/Mech 56.54-compatible chemistry against the recovered experimental rows before selecting a canonical ignition-delay mechanism for OP-IDLE.

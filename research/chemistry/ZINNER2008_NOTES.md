@@ -90,7 +90,13 @@ The source appendix identifies Mix #1 as 80/20 CH4/DME, `phi = 2.0`. A few rows 
 | 1650 | 0.9 | 92 | 1.0 | 1656 |
 | 1459 | 1.3 | 265 | 1.3 | 1472 |
 
-Do not use these sample rows as a substitute for extracting the full appendix.
+The complete 167-row transcription is now preserved in
+[`data/zinner2008/shock_tube_tabulated.csv`](../../data/zinner2008/shock_tube_tabulated.csv),
+with row-level printed/PDF page provenance. The ingestion and source-hash
+checks are documented in [`data/zinner2008/README.md`](../../data/zinner2008/README.md)
+and [`data/zinner2008/INGESTION_REPORT.md`](../../data/zinner2008/INGESTION_REPORT.md).
+The sample rows above are only a provenance anchor, not a substitute for that
+machine-readable table.
 
 ## Correlation ranges — AUTHOR MODEL, not raw evidence
 
@@ -134,7 +140,7 @@ Adjusted T/P should retain an additional field describing them as **author-reduc
 
 ## Immediate project use
 
-1. Extract the full Appendix TABULATED DATA into `data/zinner2008/` with a provenance README.
+1. Use the ingested 167-row Appendix TABULATED DATA table and its provenance checks.
 2. Cross-reference Zinner rows to the existing Burke 2015 panel catalog.
 3. Do not assume every Burke 2015 plot point is present in Zinner; the later paper has a wider facility/data scope.
-4. Use the resulting point-level dataset for Cantera mechanism validation before any project-specific chemistry tuning.
+4. Use the point-level dataset for Cantera mechanism validation before any project-specific chemistry tuning.
