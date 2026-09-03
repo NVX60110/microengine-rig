@@ -35,10 +35,10 @@ rapid-pressure-rise branch. The model therefore does not support the simple
 claim that “slower is always easier.”
 
 The complete-cycle preflight does not overturn that closed-pass result. It stops
-promotion earlier: the current lumped valve/state wrapper changes mass by 3.19%
-and specific enthalpy by 1.14% after four cycles at 1,200 rpm, so residuals and
-thermal state have not reached a periodic solution. This is an unresolved
-project-model gate, not evidence that the engine fails physically.
+promotion earlier: the signed bidirectional, nonreacting valve diagnostic closes
+mass and species transfer accounting to roundoff, but its homologous state map
+remains unresolved and oscillatory after bounded direct cycling. This is an
+unresolved project-model gate, not evidence that the engine fails physically.
 
 ## Provenance
 
@@ -81,26 +81,36 @@ delay.
 
 This bounded experiment is the first complete-cycle check and is intentionally
 not an RPM sweep. The disabled-regression bridge reproduces the canonical
-two-zone trace exactly at the stored precision. With the assumed 1.0 mm²
-half-sine intake/exhaust effective areas, 0.70 discharge coefficient, and
-fixed-speed 1,200-rpm crank, four valve-enabled cycles took approximately
-80.4 s and stopped at `unresolved_periodic_state`:
+two-zone trace exactly at the stored precision. The signed bidirectional
+nonreacting diagnostic uses 1.0 mm² half-sine intake/exhaust effective areas,
+0.70 discharge coefficient, a fixed-speed 1,200-rpm crank, and the existing
+fixed-wall screen. Its 2 CAD/3-cycle artifact remains
+`unresolved_periodic_state`:
 
-| gate | final cycle-to-cycle change | result |
-|---|---:|---|
-| mass | 3.19e-2 relative | fail |
-| species | 1.11e-4 max mass fraction | fail |
-| specific enthalpy | 1.14e-2 relative | fail |
-| temperature | 6.65 K | fail |
-| speed | 0 rpm (prescribed) | not tested dynamically |
+| quantity | result |
+|---|---:|
+| mass-balance residual / initial mass | -2.14e-14 |
+| maximum species-balance residual | 2.33e-21 kg |
+| energy-balance residual | 4.79e-9 J |
+| map norm, cycle 2 -> 3 | 3.3386e-2 -> 1.8943e-2 |
+| intake reverse-flow samples | 46 / 101 |
+| exhaust reverse-flow samples | 3 / 100 |
 
-The staged runner therefore did not enable friction, crank inertia, or motor
-control. Its final open-system bookkeeping reports 1.476 mg intake,
-1.293 mg exhaust, 1.995 bar signed PMEP, and 5.787 bar gas-work MEP. These are
-project-model outputs under an assumed valve closure, not measurements or a
-stable-idle prediction. The first justified follow-up is a nonreacting
-valve/energy/state-mapping test and a bounded valve timing/area check; only a
-closed 1,200-rpm reference cycle should unlock the broader RPM sweep.
+An extended 2 CAD/12-cycle direct check remained outside the strict state gate:
+the map norm reached 0.00179 at cycle 5, rose to 0.03097 at cycle 10, and
+ended at 0.00286. A separate 5 CAD/20-cycle check showed the same non-monotonic
+behavior (0.00803–0.06517, ending at 0.03978). These bounded runs establish
+that direct cycling has not reached a reproducible periodic state; they do not
+prove that no fixed point exists. The modeled extrema in the final 2 CAD cycle
+were 410.34 K at +176 CAD / 1.156 bar and 860.40 K at -6 CAD / 40.85 bar.
+
+Friction, crank inertia, and motor control remain disabled. These are
+project-model diagnostics under assumed valve closure and wall heat transfer,
+not measurements or a stable-idle prediction. The next justified change is to
+resolve the nonreacting state map (or replace the lumped valve closure with a
+better-supported manifold model) before enabling reacting periodicity, pumping,
+friction, or the broader RPM sweep. See
+`experiments/CYCLE720_1200_MOTORED_BIDIRECTIONAL_REPORT.md`.
 
 ## Nominal speed map
 
@@ -218,7 +228,7 @@ No ringless, ringed, or material architecture is promoted.
 | numerical reproduction of the nominal closed-pass map | high within the implemented model | strict settings, explicit failure row, targeted retry, independent reruns |
 | ~1.11 krpm retained-mass screen crossing | high as a project-model calculation | narrow numerical bracket, but controlled by an uncalibrated leakage law and nonuniversal gate |
 | 1,200 rpm can support useful combustion | medium-low | three mechanisms agree nominally; omitted losses and state uncertainty are large |
-| 1,200 rpm is physically stable idle | unresolved | no 720-CAD gas exchange, residual carry-over, friction, inertia, controller, or cycle variability |
+| 1,200 rpm is physically stable idle | unresolved | signed nonreacting valve accounting closes, but the 720-CAD state map is still non-periodic; reacting gas exchange, residual carry-over, friction, inertia, controller, and cycle variability remain untested |
 | 8.9–15.4 µm cold axial fit envelope | medium-low as a thermal screen | arithmetic is checked; temperature field, taper and conductances are assumed |
 | ringless hardware leakage | low / uncalibrated | no direct warm-flow data or measured hot profile |
 
@@ -256,12 +266,12 @@ tests for the next simulator layer.
 ## Simulator gate and next experiment
 
 The 720-CAD scaffold is now present, but it is not yet a stable-idle model.
-The next justified change is specifically to diagnose the failed 1,200-rpm
-valve stage: isolate nonreacting valve mass/energy mapping, inspect the assumed
-timing/area closure, and then repeat until mass, species, enthalpy and
-temperature close to their declared tolerances. Only after that gate passes
-should friction, crank inertia/motor control, or the 1,000/1,500/2,000-rpm
-campaign be enabled. No coefficient may be tuned merely to preserve 1,200 rpm.
+Signed bidirectional flow and explicit accounting have removed the earlier
+bookkeeping ambiguity; the remaining gate is a non-periodic state map under the
+current lumped valve/manifold closure. Only after a reproducible nonreacting
+and then reacting 1,200-rpm cycle is established should friction, crank
+inertia/motor control, or the 1,000/1,500/2,000-rpm campaign be enabled. No
+coefficient may be tuned merely to preserve 1,200 rpm.
 
 ## External software decisions
 

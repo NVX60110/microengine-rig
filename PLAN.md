@@ -415,11 +415,11 @@ The bounded preflight exposed two useful constraints before that larger model:
   model, not a residual-fraction calibration.
 
 1. Diagnose and close one 1,200-rpm valve-enabled 720-CAD reference cycle:
-   isolate valve mass/energy mapping and timing/area assumptions, then require
-   periodic mass/species/energy/temperature closure before adding friction or
-   motor dynamics. The first accounting pass is classified as a
-   transient/unresolved state with step-dependent residuals; it is not a stable
-   idle claim.
+   the signed bidirectional nonreacting diagnostic now closes transfer
+   accounting, but bounded direct cycling remains a non-monotonic,
+   unresolved state map. Establish a reproducible nonreacting and then
+   reacting periodic state before adding friction or motor dynamics. This is
+   not a stable-idle claim.
 2. After that gate passes, run 1,000/1,200/1,500/2,000 rpm at 2/3/5 µm
    hot-clearance brackets and all three mechanisms; require periodic
    mass/species/energy/speed convergence.
