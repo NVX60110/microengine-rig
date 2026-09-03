@@ -307,9 +307,12 @@ def _advance_lumped(c: RigConfig, state: Mapping[str, Any], volume_old: float,
             total["mass_out_kg"] - total["mass_in_kg"]
         ) / dt
         unique_directions = set(directions) - {"zero"}
-        total["flow_direction"] = (
-            directions[0] if len(unique_directions) <= 1 else "mixed"
-        )
+        if len(unique_directions) > 1:
+            total["flow_direction"] = "mixed"
+        elif unique_directions:
+            total["flow_direction"] = next(iter(unique_directions))
+        else:
+            total["flow_direction"] = "zero"
         total["choked"] = choked_any
         total["substeps"] = substeps
         total["transfer_limiter_fraction"] = 0.0
